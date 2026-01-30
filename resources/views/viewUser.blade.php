@@ -13,14 +13,14 @@
         .animate-fadeInUp {
             animation: fadeInUp 0.6s ease-out forwards;
         }
-        /* Specific styles for chat modal text visibility */
+        /* Estilos específicos para visibilidad del texto en el chat */
         #chatModal #chatInput {
             color: black !important;
         }
         #chatModal #chatInput::placeholder {
-            color: #555 !important; /* Darker grey for placeholder */
+            color: #555 !important;
         }
-        #chatModal .text-gray-500 { /* For the "Inicia una conversación..." text */
+        #chatModal .text-gray-500 {
             color: #333 !important;
         }
     </style>
@@ -28,12 +28,12 @@
 <body class="bg-gray-100">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-{{-- Contenido principal sin sidebar --}}
+{{-- Contenido principal --}}
 <main class="min-h-screen">
-    <div class="w-full min-h-screen p-8 space-y-10 font-[system-ui] bg-gradient-to-br from-[#112134] to-[#000000]">
+    <div class="w-full min-h-screen p-8 space-y-10 font-[system-ui]" style="background:#7d7d7d">
 
-        {{-- Bienvenida --}}
-        <header class="flex flex-col md:flex-row items-center md:items-center md:justify-center gap-8 animate-fadeInUp py-10 bg-[#3c3c3c] border-b border-[rgba(216,196,149,0.35)] shadow-[0_4px_10px_rgba(0,0,0,0.2)]">
+        {{-- Bienvenida Refinada (Header Isla) --}}
+        <header class="flex flex-row items-center justify-between w-full animate-fadeInUp py-4 px-6 mb-6 rounded-2xl shadow-2xl border-b border-white/10" style="background-color: #3C3C3C;">
             <div class="flex items-center gap-4">
                 <div class="relative group">
                     @php
@@ -83,7 +83,7 @@
         {{-- Contenedor de Acciones y Recuadro de Anuncios --}}
         <section class="mt-12 grid grid-cols-1 md:grid-cols-5 gap-6">
 
-            {{-- Fila superior: Las 5 opciones originales se mantienen intactas --}}
+            {{-- Fila superior: Las 5 opciones originales --}}
             <a href="{{ route('facturacion') }}" class="bg-white rounded-2xl p-6 text-center shadow-lg border-t-4 border-blue-500 hover:scale-[1.05] transition transform flex flex-col items-center justify-center space-y-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-blue-600">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375H12a1.125 1.125 0 0 1-1.125-1.125V1.5A2.25 2.25 0 0 0 8.75 0H7.5A2.25 2.25 0 0 0 5.25 1.5V3.75a3.375 3.375 0 0 0 3.375 3.375H12c.621 0 1.125.504 1.125 1.125v2.625c0 .621-.504 1.125-1.125 1.125H8.75a2.25 2.25 0 0 0-2.25 2.25v2.25A2.25 2.25 0 0 0 8.75 21H12c.621 0 1.125-.504 1.125-1.125V18.75a3.375 3.375 0 0 0 3.375-3.375z" />
@@ -124,10 +124,9 @@
                 <span class="text-sm text-gray-500">Visualiza activos</span>
             </a>
 
-            {{-- Espaciado y Recuadro de Anuncios --}}
+            {{-- Fila inferior: Recuadro de Anuncios --}}
             <div class="hidden md:block md:col-span-3"></div>
 
-            {{-- Recuadro con altura ajustada a la línea roja --}}
             <div class="md:col-span-2 h-[480px] bg-white/5 backdrop-blur-sm rounded-2xl border-2 border-dashed border-[#d8c495]/20 flex flex-col items-center justify-center p-6 text-white text-center shadow-xl mb-16">
                 <div class="opacity-40">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mx-auto mb-2 text-[#d8c495]">
@@ -137,67 +136,63 @@
                 </div>
             </div>
         </section>
-
-
     </div>
 </main>
-    <!-- Floating Chat Button -->
-    <button id="openChatBtn" style="position: fixed; bottom: 24px; right: 24px; background-color: #3b82f6; color: white; padding: 16px; border-radius: 9999px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); z-index: 9999; cursor: pointer;">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px;">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H15.75m6.375 0a9.75 9.75 0 1 1-19.5 0 9.75 9.75 0 0 1 19.5 0Z" />
-        </svg>
-    </button>
 
-    <!-- Chat Modal -->
-    <div id="chatModal" style="position: fixed; bottom: 80px; right: 24px; width: 320px; height: 384px; background-color: white; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; z-index: 9999; display: none;">
-        <div style="background-color: #3C3C3C; color: white; padding: 12px; border-top-left-radius: 8px; border-top-right-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-            <h3 style="font-weight: bold;">Atención al Cliente</h3>
-            <button id="closeChatBtn" style="color: #d9d9d9; cursor: pointer;">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-        <div id="chatMessages" style="flex: 1; padding: 12px; overflow-y: auto; background-color: #f3f4f6;">
-            <!-- Messages will be loaded here -->
-            <div style="text-align: center; color: #6b7280; padding-top: 16px; padding-bottom: 16px;">Inicia una conversación...</div>
-        </div>
-        <div style="padding: 12px; border-top: 1px solid #e5e7eb; background-color: white;">
-            <input type="text" id="chatInput" placeholder="Escribe tu mensaje..." style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; outline: none; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0); color: black !important;">
-            <button id="sendChatBtn" style="margin-top: 8px; width: 100%; background-color: #3b82f6; color: white; padding: 8px; border-radius: 4px; cursor: pointer;">Enviar</button>
-        </div>
+{{-- Botón Flotante Chat --}}
+<button id="openChatBtn" style="position: fixed; bottom: 24px; right: 24px; background-color: #3b82f6; color: white; padding: 16px; border-radius: 9999px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 9999; cursor: pointer;">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px;">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H15.75m6.375 0a9.75 9.75 0 1 1-19.5 0 9.75 9.75 0 0 1 19.5 0Z" />
+    </svg>
+</button>
+
+{{-- Modal Chat --}}
+<div id="chatModal" style="position: fixed; bottom: 80px; right: 24px; width: 320px; height: 384px; background-color: white; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); flex-direction: column; z-index: 9999; display: none;">
+    <div style="background-color: #3C3C3C; color: white; padding: 12px; border-top-left-radius: 8px; border-top-right-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-weight: bold;">Atención al Cliente</h3>
+        <button id="closeChatBtn" style="color: #d9d9d9; cursor: pointer; background: none; border: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+        </button>
     </div>
+    <div id="chatMessages" style="flex: 1; padding: 12px; overflow-y: auto; background-color: #f3f4f6;">
+        <div style="text-align: center; color: #6b7280; padding-top: 16px;">Inicia una conversación...</div>
+    </div>
+    <div style="padding: 12px; border-top: 1px solid #e5e7eb;">
+        <input type="text" id="chatInput" placeholder="Escribe tu mensaje..." style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; outline: none;">
+        <button id="sendChatBtn" style="margin-top: 8px; width: 100%; background-color: #3b82f6; color: white; padding: 8px; border-radius: 4px; border: none; cursor: pointer;">Enviar</button>
+    </div>
+</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Chat button and modal logic
         const openChatBtn = document.getElementById('openChatBtn');
         const closeChatBtn = document.getElementById('closeChatBtn');
         const chatModal = document.getElementById('chatModal');
+        const chatMessagesDiv = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendChatBtn = document.getElementById('sendChatBtn');
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         if (openChatBtn && closeChatBtn && chatModal) {
-            openChatBtn.addEventListener('click', function() {
-                chatModal.style.display = 'flex'; // Show modal
-                fetchMessages(); // Fetch messages when chat modal opens
+            openChatBtn.addEventListener('click', () => {
+                chatModal.style.display = 'flex';
+                fetchMessages();
             });
 
-            closeChatBtn.addEventListener('click', function() {
-                chatModal.style.display = 'none'; // Hide modal
+            closeChatBtn.addEventListener('click', () => {
+                chatModal.style.display = 'none';
             });
-
-            const chatMessagesDiv = document.getElementById('chatMessages');
-            const chatInput = document.getElementById('chatInput');
-            const sendChatBtn = document.getElementById('sendChatBtn');
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
             function scrollToBottom() {
                 chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
             }
 
             function displayMessages(messages) {
-                chatMessagesDiv.innerHTML = ''; // Clear previous messages
+                chatMessagesDiv.innerHTML = '';
                 if (messages.length === 0) {
-                    chatMessagesDiv.innerHTML = '<div style="text-align: center; color: #6b7280; padding-top: 16px; padding-bottom: 16px;">Inicia una conversación...</div>';
+                    chatMessagesDiv.innerHTML = '<div style="text-align: center; color: #6b7280; padding-top: 16px;">Inicia una conversación...</div>';
                     return;
                 }
 
@@ -205,20 +200,16 @@
                     const messageElement = document.createElement('div');
                     const isSender = message.sender_id === {{ Js::from($user->id) }};
 
-                    messageElement.style.marginBottom = '8px';
-                    messageElement.style.padding = '8px';
-                    messageElement.style.borderRadius = '8px';
-                    messageElement.style.maxWidth = '70%';
+                    Object.assign(messageElement.style, {
+                        marginBottom: '8px',
+                        padding: '8px',
+                        borderRadius: '8px',
+                        maxWidth: '70%',
+                        backgroundColor: isSender ? '#3b82f6' : '#d1d5db',
+                        color: isSender ? 'white' : '#1f2937',
+                        marginLeft: isSender ? 'auto' : '0'
+                    });
 
-                    if (isSender) {
-                        messageElement.style.backgroundColor = '#3b82f6';
-                        messageElement.style.color = 'white';
-                        messageElement.style.marginLeft = 'auto';
-                    } else {
-                        messageElement.style.backgroundColor = '#d1d5db';
-                        messageElement.style.color = '#1f2937';
-                        messageElement.style.marginRight = 'auto';
-                    }
                     messageElement.textContent = message.message;
                     chatMessagesDiv.appendChild(messageElement);
                 });
@@ -228,64 +219,38 @@
             async function fetchMessages() {
                 try {
                     const response = await fetch('{{ route('chat.getMessages') }}', {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': csrfToken
-                        }
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken }
                     });
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch messages');
-                    }
-                    const messages = await response.json();
-                    displayMessages(messages);
-                } catch (error) {
-                    console.error('Error fetching messages:', error);
-                    chatMessagesDiv.innerHTML = '<div style="text-align: center; color: #dc2626; padding-top: 16px; padding-bottom: 16px;">Error al cargar mensajes.</div>';
-                }
+                    if (response.ok) displayMessages(await response.json());
+                } catch (error) { console.error('Error:', error); }
             }
 
             async function sendMessage() {
-                const messageText = chatInput.value.trim();
-                if (messageText === '') {
-                    return;
-                }
+                const text = chatInput.value.trim();
+                if (!text) return;
 
                 try {
                     const response = await fetch('{{ route('chat.sendMessage') }}', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Requested-with': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': csrfToken
-                        },
-                        body: JSON.stringify({ message: messageText })
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                        body: JSON.stringify({ message: text })
                     });
-
-                    if (!response.ok) {
-                        throw new Error('Failed to send message');
+                    if (response.ok) {
+                        chatInput.value = '';
+                        fetchMessages();
                     }
-
-                    chatInput.value = ''; // Clear input
-                } catch (error) {
-                    console.error('Error sending message:', error);
-                }
+                } catch (error) { console.error('Error:', error); }
             }
 
             sendChatBtn.addEventListener('click', sendMessage);
-            chatInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
-            });
+            chatInput.addEventListener('keypress', (e) => e.key === 'Enter' && sendMessage());
 
-            // Poll for new messages every 5 seconds when chat is open
             setInterval(() => {
-                if (chatModal.style.display === 'flex') { // Check if modal is visible
-                    fetchMessages();
-                }
+                if (chatModal.style.display === 'flex') fetchMessages();
             }, 5000);
         }
     });
 </script>
+
 </body>
 </html>
