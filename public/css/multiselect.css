@@ -1,0 +1,109 @@
+.multiselect-dropdown {
+  display: flex;            /* Flexbox para alinear en fila */
+  flex-wrap: wrap;          /* Si no caben, bajan a otra línea */
+  align-items: center;
+  gap: 6px;                 /* Espacio entre chips */
+  padding: 5px 40px 5px 5px;
+  border-radius: 4px;
+  border: solid 1px #ced4da;
+  background-color: #e5e7eb;
+  position: relative;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right .75rem center;
+  background-size: 16px 20px;
+  min-height: 40px;
+  cursor: pointer;
+}
+
+.multiselect-dropdown span.optext,
+.multiselect-dropdown span.placeholder {
+  display: inline-flex;
+  align-items: center;
+  background-color: #d4a017;  /*  estilo chips */
+  color: white;
+  font-weight: 500;
+  border-radius: 25px;
+  padding: 4px 12px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.multiselect-dropdown span.optext .optdel {
+  margin-left: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: white;
+}
+
+.multiselect-dropdown span.optext .optdel:hover {
+  color: #ffcccc; /* Rojo claro al pasar el mouse */
+}
+
+.multiselect-dropdown span.placeholder {
+  background-color: transparent;
+  color: #575555;
+  font-weight: normal;
+}
+
+/* Lista desplegable */
+.multiselect-dropdown-list-wrapper {
+  box-shadow: gray 0 3px 8px;
+  z-index: 100;
+  padding: 2px;
+  border-radius: 4px;
+  border: solid 1px #ced4da;
+  display: none;
+  margin: -1px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: white;
+}
+
+.multiselect-dropdown-list-wrapper .multiselect-dropdown-search {
+  margin-bottom: 5px;
+}
+
+.multiselect-dropdown-list {
+  padding: 2px;
+  height: 15rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.multiselect-dropdown-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.multiselect-dropdown-list::-webkit-scrollbar-thumb {
+  background-color: #bec4ca;
+  border-radius: 3px;
+}
+
+.multiselect-dropdown-list div {
+  padding: 5px;
+}
+
+.multiselect-dropdown-list input {
+  height: 1.15em;
+  width: 1.15em;
+  margin-right: 0.35em;
+}
+
+.multiselect-dropdown-list div:hover {
+  background-color: #ced4da;
+}
+
+.multiselect-dropdown span.maxselected {
+  width: 100%;
+  background-color: #d4a017;
+  color: white;
+  border-radius: 25px;
+  text-align: center;
+}
+
+.multiselect-dropdown-all-selector {
+  border-bottom: solid 1px #999;
+}

@@ -1,0 +1,225 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+body {
+  background-color: #112134 !important;
+  background-image: url('https://lawebdelasesor.com/wp-content/uploads/2025/06/Noche2.png') !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-attachment: fixed !important;
+  font-family: 'Montserrat', sans-serif !important;
+  color: #fff !important;
+}
+body::before {
+  content:"";
+  position:fixed;
+  inset:0;
+  background:#112134;
+  opacity:.9;
+  z-index:-1;
+}
+
+header, #sidebar, main { /* General dark background for major sections */
+  background-color: rgba(17,33,52,.85) !important;
+  color: #fff !important; /* Ensure text is white */
+}
+
+/* Specific adjustments for header */
+header {
+  background-color: rgba(17,33,52,.9) !important;
+  border-bottom: 1px solid rgba(216,196,149,.35) !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,.2) !important;
+}
+
+/* Specific adjustments for sidebar */
+#sidebar {
+  background-color: rgba(17,33,52,.95) !important;
+}
+
+/* Table styling from INTERFAZ.HTML */
+table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin-top: 20px !important; /* Add some spacing if needed */
+}
+th {
+  background-color: rgba(17,33,52,.9) !important;
+  color: #d8c495 !important; /* Gold/amber color for headers */
+  padding: 12px !important;
+  text-align: left !important;
+  font-weight: 700 !important;
+  border-bottom: 2px solid #d8c495 !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1 !important;
+}
+td {
+  border-bottom: 1px solid #d8c495 !important;
+  padding: 10px !important;
+  color: #fff !important;
+  background-color: rgba(17,33,52,.78) !important;
+  text-align: left !important; /* Defaulting to left, adjust if needed */
+}
+tr:nth-child(even) td {
+  background-color: rgba(25,42,66,.78) !important;
+}
+tr:hover td {
+  background-color: rgba(28,50,88,.9) !important;
+}
+
+/* Styles for form controls (input, select, textarea) */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="password"],
+input[type="search"],
+input[type="date"],
+input[type="month"],
+select,
+textarea {
+  background: rgba(255,255,255,.06) !important;
+  color: #fff !important;
+  border: 1px solid rgba(216,196,149,.35) !important;
+  border-radius: 8px !important;
+  padding: 6px 10px !important;
+  font-weight: 700 !important;
+  -webkit-appearance: none !important; /* Remove default browser styling */
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+/* Placeholder text color */
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.7) !important;
+  opacity: 1 !important; /* Firefox compatibility */
+}
+/* Ensure combobox arrows are visible if custom styled */
+select {
+    padding-right: 25px !important; /* Make space for custom arrow */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e8d4a5' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 8px center !important;
+    background-size: 16px 12px !important;
+}
+
+/* Specific styling for phone prefix */
+.phone-prefix {
+  background-color: rgba(255,255,255,.06) !important;
+  color: #fff !important;
+  border: 1px solid rgba(216,196,149,.35) !important;
+  border-right: none !important; /* To merge visually with input */
+  height: auto !important; /* Ensure it matches input height */
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Adjust input next to phone-prefix */
+input[type="tel"]#phone {
+  border-left: none !important; /* To merge visually with prefix */
+}
+
+/* Minimal Multiselect Dropdown Styling for Colors Only */
+.multiselect-dropdown {
+  background: rgba(255,255,255,.06) !important;
+  color: #fff !important; /* Default text color */
+  border: 1px solid rgba(216,196,149,.35) !important;
+  border-radius: 8px !important;
+  /* Avoid layout properties like padding, width, height, display, position, flex-wrap, cursor */
+}
+
+.multiselect-dropdown-list-wrapper {
+  background: rgba(17,33,52,.95) !important;
+  border: 1px solid rgba(216,196,149,.35) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 16px rgba(0,0,0,.4) !important;
+  /* Avoid layout properties like position, z-index, top, left, right, padding, display */
+}
+
+.multiselect-dropdown-search {
+  background: rgba(255,255,255,.08) !important;
+  color: #fff !important;
+  border: 1px solid rgba(216,196,149,.45) !important;
+  border-radius: 6px !important;
+  /* Avoid layout properties like padding, margin, width */
+}
+
+.multiselect-dropdown-list {
+  /* Scrollbar styling from previous attempt - less likely to break functionality */
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(216,196,149,.6) rgba(17,33,52,.5) !important;
+}
+
+.multiselect-dropdown-list::-webkit-scrollbar {
+  width: 8px !important;
+}
+.multiselect-dropdown-list::-webkit-scrollbar-track {
+  background: rgba(17,33,52,.5) !important;
+  border-radius: 10px !important;
+}
+.multiselect-dropdown-list::-webkit-scrollbar-thumb {
+  background: rgba(216,196,149,.6) !important;
+  border-radius: 10px !important;
+}
+.multiselect-dropdown-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(216,196,149,.8) !important;
+}
+
+
+.multiselect-dropdown-list > div { /* Individual options */
+  color: #fff !important;
+  /* Avoid layout properties like padding, display, gap */
+}
+
+.multiselect-dropdown-list > div:hover {
+  background-color: rgba(216,196,149,.15) !important;
+  border-radius: 4px !important;
+}
+
+.multiselect-dropdown-list > div.checked {
+  background-color: rgba(216,196,149,.25) !important;
+  border-radius: 4px !important;
+}
+
+.multiselect-dropdown-list input[type="checkbox"] {
+  accent-color: #d8c495 !important; /* Checkbox color */
+}
+
+.multiselect-dropdown span.optext,
+.multiselect-dropdown span.placeholder {
+  background: rgba(216,196,149,.2) !important;
+  color: #d8c495 !important;
+  border: 1px solid rgba(216,196,149,.5) !important;
+  border-radius: 6px !important;
+  padding: 4px 8px !important;
+  margin: 2px !important;
+  font-size: 0.9em !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.multiselect-dropdown span.optdel {
+  color: rgba(255,255,255,.7) !important;
+  /* Avoid layout properties like cursor, font-weight, font-size */
+}
+.multiselect-dropdown span.optdel:hover {
+  color: #fff !important;
+}
+
+.multiselect-dropdown span.placeholder {
+  color: rgba(255,255,255,.6) !important;
+  background: transparent !important;
+  border: none !important;
+  /* Avoid layout properties like font-weight */
+}
+
