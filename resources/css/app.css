@@ -1,4 +1,7 @@
 @import 'tailwindcss';
+@import './defstyle.css';
+@import './multiselect.css';
+@import './notstyle.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -222,4 +225,5 @@ input[type="tel"]#phone {
   border: none !important;
   /* Avoid layout properties like font-weight */
 }
+
 
