@@ -31,76 +31,69 @@
 {{-- Contenido principal sin sidebar --}}
 <main class="min-h-screen">
     <div class="w-full min-h-screen p-8 space-y-10 font-[system-ui]"
-         style="background: linear-gradient(135deg, #112134, #000000);">
+         style="background:#7d7d7d ">
 
         {{-- Bienvenida --}}
-        <header class="flex flex-col md:flex-row items-center md:items-center md:justify-center gap-8 animate-fadeInUp py-10">
-            <!-- Avatar -->
-            <div class="relative group">
-                @if($user->foto)
-                    <img id="avatar-preview" src="{{ asset('storage/' . $user->foto) . '?v=' . $user->updated_at->timestamp }}" alt="Avatar Preview" class="w-40 h-40 md:w-48 md:h-48 rounded-full object-cover border-4 border-[#d8c495] shadow-2xl ring-8 ring-[#d8c495]/30">
-                    <div id="avatar-initial" class="hidden w-40 h-40 md:w-48 md:h-48 flex items-center justify-center rounded-full bg-[#112134] text-white font-bold text-6xl shadow-xl border-4 border-[#d8c495] ring-8 ring-[#d8c495]/30">
-                        {{ strtoupper(substr($user->name, 0, 1)) }}
-                    </div>
-                @else
-                    <div id="avatar-initial" class="w-40 h-40 md:w-48 md:h-48 flex items-center justify-center rounded-full bg-[#112134] text-white font-bold text-6xl shadow-xl border-4 border-[#d8c495] ring-8 ring-[#d8c495]/30">
-                        {{ strtoupper(substr($user->name, 0, 1)) }}
-                    </div>
-                    <img id="avatar-preview" src="" alt="Avatar Preview" class="hidden w-40 h-40 md:w-48 md:h-48 rounded-full object-cover border-4 border-[#d8c495] shadow-2xl ring-8 ring-[#d8c495]/30">
-                @endif
-                <!-- Overlay al pasar el cursor -->
-                <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center
-                opacity-0 group-hover:opacity-100 transition">
-                    <label for="fotoPerfilUsuario" class="cursor-pointer flex flex-col items-center text-white">
-                        <!-- Ícono subir foto -->
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15m0-3-3-3m0 0-3 3m3-3V15" />
-                        </svg>
+        <header class="flex flex-row items-center justify-between w-full animate-fadeInUp py-4 px-6 border-b border-white/10 mb-6 bg-[#3C3C3C] rounded-2xl shadow-xl"
+                style="background-color: #3C3C3C !important;">
+            <div class="flex items-center gap-4">
+                <div class="relative group">
+                    @php
+                        $avatarSize = "w-16 h-16 md:w-20 md:h-20";
+                    @endphp
 
-                        <span class="text-xs font-medium">Cambiar foto</span>
-                    </label>
+                    @if($user->foto)
+                        <img id="avatar-preview" src="{{ asset('storage/' . $user->foto) . '?v=' . $user->updated_at->timestamp }}"
+                             alt="Avatar Preview"
+                             class="{{ $avatarSize }} rounded-full object-cover border-2 border-[#d8c495] shadow-lg">
+                    @else
+                        <div id="avatar-initial" class="{{ $avatarSize }} flex items-center justify-center rounded-full bg-[#112134] text-white font-bold text-2xl shadow-lg border-2 border-[#d8c495]">
+                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                        </div>
+                    @endif
 
-                    <!-- Formulario oculto -->
-                    <form id="formFotoPerfilUsuario"
-                          action="{{ route('perfil.foto') }}"
-                          method="POST" enctype="multipart/form-data"
-                          class="hidden">
-                        @csrf
-                        @method('PUT')
-                        <input type="file" id="fotoPerfilUsuario" name="foto" class="hidden"
-                               onchange="document.getElementById('formFotoPerfilUsuario').submit()">
-                    </form>
+                    <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                        <label for="fotoPerfilUsuario" class="cursor-pointer text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                            </svg>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex flex-col">
+                    <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight">
+                        Bienvenido, <span class="text-[#d8c495]">{{ $user->name ?? 'Usuario' }}</span>
+                    </h1>
+                    <p class="text-sm text-gray-400 font-light italic">Panel de Cliente</p>
                 </div>
             </div>
-            <!-- Texto -->
-                            <div class="text-center md:text-left space-y-3">
-                                <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight drop-shadow-sm">
-                                    Bienvenido, {{ $user->name ?? 'Usuario' }}
-                                </h1>
-                <p class="text-lg text-gray-300 font-light">
-                     Usuario
-                </p>
 
-                <form method="get" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit"
-                            class="px-4 py-2 bg-[#d8c495] text-[#112134] rounded-xl shadow hover:shadow-md hover:bg-[#c3aa75] transition">
-                        Cerrar sesión
-                    </button>
-                </form>
-            </div>
+            <form method="get" action="{{ route('logout') }}" class="m-0">
+                @csrf
+                <button type="submit"
+                        class="px-4 py-2 text-sm border border-[#d8c495] text-[#d8c495] rounded-xl hover:bg-[#d8c495] hover:text-[#112134] transition-all duration-300 flex items-center gap-2 group">
+                    <span>Cerrar sesión</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 group-hover:translate-x-1 transition-transform">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                    </svg>
+                </button>
+            </form>
         </header>
 
-        {{-- Acciones --}}
+        {{-- Contenedor de Acciones y Recuadro de Anuncios --}}
         <section class="mt-12 grid grid-cols-1 md:grid-cols-5 gap-6">
+
+            {{-- Fila superior: Las 5 opciones originales se mantienen intactas --}}
             <a href="{{ route('facturacion') }}" class="bg-white rounded-2xl p-6 text-center shadow-lg border-t-4 border-blue-500 hover:scale-[1.05] transition transform flex flex-col items-center justify-center space-y-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-blue-600">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375H12a1.125 1.125 0 0 1-1.125-1.125V1.5A2.25 2.25 0 0 0 8.75 0H7.5A2.25 2.25 0 0 0 5.25 1.5V3.75a3.375 3.375 0 0 0 3.375 3.375H12c.621 0 1.125.504 1.125 1.125v2.625c0 .621-.504 1.125-1.125 1.125H8.75a2.25 2.25 0 0 0-2.25 2.25v2.25A2.25 2.25 0 0 0 8.75 21H12c.621 0 1.125-.504 1.125-1.125V18.75a3.375 3.375 0 0 0 3.375-3.375z" />
                 </svg>
-
                 <span class="font-semibold text-lg text-blue-800">Facturación</span>
                 <span class="text-sm text-gray-500">Subir y validar XMLs/PDFs</span>
             </a>
+
             <a href="{{ route('notificaciones.index') }}" class="bg-white rounded-2xl p-6 text-center shadow-lg border-t-4 border-green-500 hover:scale-[1.05] transition transform flex flex-col items-center justify-center space-y-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-green-600">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0M3.124 7.5A8.969 8.969 0 0 1 5.292 3m13.416 0a8.969 8.969 0 0 1 2.168 4.5" />
@@ -108,29 +101,45 @@
                 <span class="font-semibold text-lg text-green-800">Notificaciones</span>
                 <span class="text-sm text-gray-500">Ver avisos importantes</span>
             </a>
+
             <a href="{{ route('cuentasCobrar') }}" class="bg-white rounded-2xl p-6 text-center shadow-lg border-t-4 border-yellow-500 hover:scale-[1.05] transition transform flex flex-col items-center justify-center space-y-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-yellow-600">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5V17.25m11.2-4.5H12.975m2.475 0a.75.75 0 0 1 .75.75v3.75m-2.475-4.5a.75.75 0 0 0-.75.75v3.75m2.475-4.5H12.975m-2.475-4.5a.75.75 0 0 1 .75.75v3.75m-2.475-4.5a.75.75 0 0 0-.75.75v3.75m-1.248-8.79a7.5 7.5 0 0 1 10.607 0C21.497 9.873 22 11.234 22 12.75c0 1.517-.503 2.878-1.47 3.966M7.5 7.5h.008v.008H7.5V7.5Zm6.002 0h.008v.008h-.008V7.5ZM21.75 12c0 3.993-3.266 7.25-7.258 7.25H3.75a60.07 60.07 0 0 1-15.797-2.101A.75.75 0 0 1 0 18.75V17.25C0 14.733 3.504 12.75 6.75 12.75a7.5 7.5 0 0 0 1.248-8.79Z" />
                 </svg>
                 <span class="font-semibold text-lg text-yellow-800">Cuentas por Cobrar</span>
-                <span class="text-sm text-gray-500">Gestiona tus pagos pendientes</span>
+                <span class="text-sm text-gray-500">Pagos pendientes</span>
             </a>
+
             <a href="{{ route('estadosDeCuenta') }}" class="bg-white rounded-2xl p-6 text-center shadow-lg border-t-4 border-purple-500 hover:scale-[1.05] transition transform flex flex-col items-center justify-center space-y-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-purple-600">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.079 0-2.15.221-3.133.664a10.973 10.973 0 0 0 6.267 19.344c.414.165.918-.293.918-.75V18.75a2.25 2.25 0 0 0-2.25-2.25H9.75a2.25 2.25 0 0 0-2.25 2.25v.375c0 .621-.504 1.125-1.125 1.125H4.5a2.25 2.25 0 0 1-2.25-2.25V6.042a48.08 48.08 0 0 1 9-.664Z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 1 18 3.75c1.079 0 2.15.221 3.133.664a10.973 10.973 0 0 1-6.267 19.344c-.414.165-.918-.293-.918-.75V18.75a2.25 2.25 0 0 0-2.25-2.25H14.25a2.25 2.25 0 0 0-2.25 2.25v.375c0 .621.504 1.125 1.125 1.125H19.5a2.25 2.25 0 0 0 2.25-2.25V6.042a48.08 48.08 0 0 0-9-.664Z" />
                 </svg>
                 <span class="font-semibold text-lg text-purple-800">Estados de Cuenta</span>
-                <span class="text-sm text-gray-500">Historial de tus estados</span>
+                <span class="text-sm text-gray-500">Historial de estados</span>
             </a>
+
             <a href="{{ route('contratos.index') }}" class="bg-white rounded-2xl p-6 text-center shadow-lg border-t-4 border-red-500 hover:scale-[1.05] transition transform flex flex-col items-center justify-center space-y-2">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-red-600">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375H12a1.125 1.125 0 0 1-1.125-1.125V1.5A2.25 2.25 0 0 0 8.75 0H7.5A2.25 2.25 0 0 0 5.25 1.5V3.75a3.375 3.375 0 0 0 3.375 3.375H12c.621 0 1.125.504 1.125 1.125v2.625c0 .621-.504 1.125-1.125 1.125H8.75a2.25 2.25 0 0 0-2.25 2.25v2.25A2.25 2.25 0 0 0 8.75 21H12c.621 0 1.125-.504 1.125-1.125V18.75a3.375 3.375 0 0 0 3.375-3.375z" />
                 </svg>
                 <span class="font-semibold text-lg text-red-800">Contratos</span>
-                <span class="text-sm text-gray-500">Visualiza tus contratos activos</span>
+                <span class="text-sm text-gray-500">Visualiza activos</span>
             </a>
+
+            {{-- Espaciado y Recuadro de Anuncios --}}
+            <div class="hidden md:block md:col-span-3"></div>
+
+            {{-- Recuadro con altura ajustada a la línea roja --}}
+            <div class="md:col-span-2 h-[480px] bg-white/5 backdrop-blur-sm rounded-2xl border-2 border-dashed border-[#d8c495]/20 flex flex-col items-center justify-center p-6 text-white text-center shadow-xl mb-16">
+                <div class="opacity-40">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 mx-auto mb-2 text-[#d8c495]">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    <p class="text-[#d8c495] font-semibold uppercase tracking-widest text-xs">Espacio para Anuncios</p>
+                </div>
+            </div>
         </section>
+
 
     </div>
 </main>
@@ -143,9 +152,9 @@
 
     <!-- Chat Modal -->
     <div id="chatModal" style="position: fixed; bottom: 80px; right: 24px; width: 320px; height: 384px; background-color: white; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; z-index: 9999; display: none;">
-        <div style="background-color: #1f2937; color: white; padding: 12px; border-top-left-radius: 8px; border-top-right-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="background-color: #3C3C3C; color: white; padding: 12px; border-top-left-radius: 8px; border-top-right-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
             <h3 style="font-weight: bold;">Atención al Cliente</h3>
-            <button id="closeChatBtn" style="color: white; cursor: pointer;">
+            <button id="closeChatBtn" style="color: #d9d9d9; cursor: pointer;">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                 </svg>
