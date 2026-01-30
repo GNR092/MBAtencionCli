@@ -1,12 +1,11 @@
 function loginUsuario(event) {
     event.preventDefault();
 
-    const name = document.getElementById('name').value.trim();
     const password = document.getElementById('password').value.trim();
     const email = document.getElementById('email').value.trim();
     const mensajeDiv = document.getElementById('loginMensaje');
 
-    if (!name || !password || !email) {
+    if (!password || !email) {
         mensajeDiv.innerHTML = '<p class="text-red-500">Por favor, complete todos los campos.</p>';
         return;
     }
@@ -18,7 +17,7 @@ function loginUsuario(event) {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         },
         credentials: 'same-origin',
-        body: JSON.stringify({ name, password, email })
+        body: JSON.stringify({ password, email })
     })
     .then(response => response.json())
     .then(data => {

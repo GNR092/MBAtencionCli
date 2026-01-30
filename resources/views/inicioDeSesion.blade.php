@@ -28,10 +28,6 @@
         <div class="bg-black p-6 rounded-lg">
             <h2 class="text-2xl font-bold mb-6">Iniciar Sesión</h2>
 <form id="login-form" onsubmit="loginUsuario(event)">
-    <div class="py-2">
-        <label for="name" class="text-white block text-sm font-medium">Usuario</label>
-        <input type="text" id="name" autocomplete="off" required class="text-white bg-gray-800 rounded-lg"/>
-    </div>
 
     <div class="py-2">
         <label for="email" class="text-white block text-sm font-medium">Correo Electrónico</label>

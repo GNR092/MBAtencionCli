@@ -38,11 +38,14 @@ header, #sidebar, main { /* General dark background for major sections */
 }
 
 /* Specific adjustments for header */
-header {
-  background-color: rgba(17,33,52,.9) !important;
-  border-bottom: 1px solid rgba(216,196,149,.35) !important;
-  box-shadow: 0 4px 10px rgba(0,0,0,.2) !important;
-}
+/*
+  [Refactored to Tailwind] - The following header rule was removed to allow Tailwind classes to apply.
+  header {
+    background-color: rgba(17,33,52,.9) !important;
+    border-bottom: 1px solid rgba(216,196,149,.35) !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,.2) !important;
+  }
+*/
 
 /* Specific adjustments for sidebar */
 #sidebar {

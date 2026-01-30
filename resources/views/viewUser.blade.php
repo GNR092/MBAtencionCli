@@ -30,12 +30,10 @@
 
 {{-- Contenido principal sin sidebar --}}
 <main class="min-h-screen">
-    <div class="w-full min-h-screen p-8 space-y-10 font-[system-ui]"
-         style="background:#7d7d7d ">
+    <div class="w-full min-h-screen p-8 space-y-10 font-[system-ui] bg-gradient-to-br from-[#112134] to-[#000000]">
 
         {{-- Bienvenida --}}
-        <header class="flex flex-row items-center justify-between w-full animate-fadeInUp py-4 px-6 border-b border-white/10 mb-6 bg-[#3C3C3C] rounded-2xl shadow-xl"
-                style="background-color: #3C3C3C !important;">
+        <header class="flex flex-col md:flex-row items-center md:items-center md:justify-center gap-8 animate-fadeInUp py-10 bg-[#3c3c3c] border-b border-[rgba(216,196,149,0.35)] shadow-[0_4px_10px_rgba(0,0,0,0.2)]">
             <div class="flex items-center gap-4">
                 <div class="relative group">
                     @php

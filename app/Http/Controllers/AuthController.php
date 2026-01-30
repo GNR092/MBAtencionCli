@@ -17,24 +17,16 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'name' => 'required|string',
             'password' => 'required|string',
             'email' => 'required|email',
         ]);
 
-        $user = User::where('name', $request->name)->first();
+        $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Usuario o contraseña incorrectos'
-            ]);
-        }
-
-        if ($user->email !== $request->email) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Correo electrónico incorrecto'
+                'message' => 'Correo electrónico o contraseña incorrectos'
             ]);
         }
 
@@ -46,8 +38,6 @@ class AuthController extends Controller
             'message' => 'Bienvenido '.$user->name,
             'rol' => $user->rol
         ]);
-
-
     }
 
     public function logout()
