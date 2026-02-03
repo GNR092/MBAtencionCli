@@ -147,6 +147,7 @@
                         <a href="/enviar-avisos" class="block py-2 pl-8 font-medium text-gray-200 no-underline transition-all duration-200 hover:border-l-4 hover:border-[#d8c495] hover:bg-white/10 hover:text-white">Avisos</a>
                         <a href="{{ route('admin.users.chat-directory') }}" class="block py-2 pl-8 font-medium text-gray-200 no-underline transition-all duration-200 hover:border-l-4 hover:border-[#d8c495] hover:bg-white/10 hover:text-white">Directorio de Usuarios (Chat)</a>
                         <a href="{{ route('admin.logos.index') }}" class="block py-2 pl-8 font-medium text-[#d8c495] no-underline transition-all duration-200 hover:border-l-4 hover:border-[#d8c495] hover:bg-white/10 hover:text-white"> Gestión de Logos (Carrusel)</a>
+                        <a href="{{ route('admin.anuncios.index') }}" class="block py-2 pl-8 font-medium text-[#d8c495] no-underline transition-all duration-200 hover:border-l-4 hover:border-[#d8c495] hover:bg-white/10 hover:text-white"> Gestión de Anuncios</a>
                     </div>
                 </div>
 

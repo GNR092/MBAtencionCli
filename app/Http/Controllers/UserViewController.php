@@ -21,6 +21,14 @@ class UserViewController extends Controller
             return redirect()->route('login.form')->withErrors('Usuario no encontrado o sesión caducada.');
         }
 
+        // --- LÓGICA DE ANUNCIOS DINÁMICOS ---
+        // Obtenemos solo anuncios activos
+        // Ordenamos por prioridad (Alta primero) y luego por fecha de creación
+        $anuncios = \App\Models\Anuncio::where('estado', 'activo')
+            ->orderByRaw("FIELD(prioridad, 'alta', 'media', 'baja')")
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         // Dummy data for now
         $ticketsCount = 0;
         $equiposAsignados = 0;
@@ -46,7 +54,8 @@ class UserViewController extends Controller
             'equipos',
             'usuarios',
             'misResguardos',
-            'administradores'
+            'administradores',
+            'anuncios' // Pasamos la variable a la vista
         ));
     }
 

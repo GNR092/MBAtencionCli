@@ -23,6 +23,7 @@ use App\Http\Controllers\AdminChatController; // Added for admin chat directory
 use App\Http\Controllers\UserChatController; // Added for user chat functionality
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Admin\LogoController;
+use App\Http\Controllers\AnuncioController;
 
 // Rutas públicas
 Route::get('/', function () {
@@ -154,6 +155,14 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
         Route::get('/admin/chat/messages/{userId}', [AdminChatController::class, 'getMessages'])->name('admin.chat.getMessages');
 
         Route::post('/admin/chat/messages/{userId}', [AdminChatController::class, 'sendMessage'])->name('admin.chat.sendMessage');
+
+
+        // Rutas de administración para anuncios
+    Route::get('/anuncios-admin', [AnuncioController::class, 'index'])->name('admin.anuncios.index');
+    Route::post('/anuncios-admin', [AnuncioController::class, 'store'])->name('admin.anuncios.store');
+    Route::post('/anuncios-admin/{id}/toggle', [AnuncioController::class, 'toggleStatus'])->name('admin.anuncios.toggle');
+    Route::put('/anuncios-admin/{id}', [AnuncioController::class, 'update'])->name('admin.anuncios.update');
+    Route::delete('/anuncios-admin/{id}', [AnuncioController::class, 'destroy'])->name('admin.anuncios.destroy');
 
     });
 
