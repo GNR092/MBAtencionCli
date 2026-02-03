@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,16 +7,16 @@
 
     <title inertia>MB SIGNATURE PROPERTIES</title>
 
+    <link rel="preload" as="image" href="https://lawebdelasesor.com/wp-content/uploads/2025/06/Noche2.png">
+
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <link href="https://fonts.cdnfonts.com/css/lt-afficher-neue" rel="stylesheet">
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
-        /* Estilos que no se pueden poner fácilmente como clases directas */
+        /* --- ESTILOS BASE Y FONDO --- */
         body {
             background-color: #112134 !important;
             background-image: url('https://lawebdelasesor.com/wp-content/uploads/2025/06/Noche2.png') !important;
@@ -26,144 +26,235 @@
             background-attachment: fixed !important;
             font-family: 'Montserrat', sans-serif !important;
             color: #fff !important;
+            margin: 0;
+            overflow: hidden; /* Evita doble scroll con el main */
         }
-        /* El overlay oscuro del body original */
+
         body::before {
             content: "";
             position: fixed;
             inset: 0;
             background: #112134;
-            opacity: .9;
+            opacity: .85;
             z-index: -1;
         }
 
-        /* Lógica de acordeón del sidebar */
-        .dropdown .accordion-content { display: none; }
-        .dropdown.active .accordion-content { display: block; }
-        .dropdown.active .arrow { transform: rotate(180deg); }
-        .arrow { transition: transform 0.3s ease; display: inline-block; margin-left: 5px; }
-
-        /* Estilos para tablas que se inyectarán en las vistas hijas */
-        table { width: 100% !important; border-collapse: collapse !important; margin-top: 20px !important; }
-        th { background-color: rgba(17,33,52,.9) !important; color: #d8c495 !important; padding: 12px !important; text-align: left !important; font-weight: 700 !important; border-bottom: 2px solid #d8c495 !important; position: sticky !important; top: 0 !important; z-index: 1 !important; }
-        td { border-bottom: 1px solid #d8c495 !important; padding: 10px !important; color: #fff !important; background-color: rgba(17,33,52,.78) !important; }
-        tr:nth-child(even) td { background-color: rgba(25,42,66,.78) !important; }
-        tr:hover td { background-color: rgba(28,50,88,.9) !important; }
-
-        /* REGLA NUEVA: Texto negro para inputs donde el usuario escribe */
-        input:not([type="button"]):not([type="submit"]),
-        select,
-        textarea {
-            color: #000000 !important; /* Texto negro al escribir */
-            background-color: rgba(255, 255, 255, 0.9) !important; /* Fondo claro para que se lea el negro */
+        /* --- SIDEBAR RESPONSIVO (MOBILE FIRST) --- */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: -100%; /* Oculto en móviles */
+            height: 100vh;
+            width: 280px;
+            z-index: 50;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background-color: rgba(11, 22, 36, 0.98) !important;
+            border-right: 1px solid rgba(216, 196, 149, 0.2);
         }
 
-        /* Ajuste para placeholders (que se vean gris suave) */
-        input::placeholder, textarea::placeholder {
-            color: #666 !important;
+        /* Estado activo en móvil */
+        #sidebar.sidebar-active {
+            left: 0;
+        }
+
+        /* Overlay para cerrar menú móvil */
+        #sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(2px);
+            z-index: 40;
+        }
+        #sidebar-overlay.active { display: block; }
+
+        /* Pantallas Grandes (Desktop) */
+        @media (min-width: 1024px) {
+            #sidebar {
+                position: relative;
+                left: 0;
+                width: 260px;
+                background-color: rgba(17, 33, 52, 0.95) !important;
+            }
+            #sidebar.sidebar-collapsed {
+                margin-left: -260px;
+            }
+        }
+
+        /* --- CONTENIDO Y TABLAS --- */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        th {
+            background-color: rgba(17, 33, 52, 1);
+            color: #d8c495;
+            padding: 14px;
+            text-align: left;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            border-bottom: 2px solid #d8c495;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(216, 196, 149, 0.1);
+            font-size: 0.9rem;
+        }
+
+        /* --- COMPONENTES --- */
+        .dropdown .accordion-content { display: none; }
+        .dropdown.active .accordion-content { display: block; }
+        .arrow { transition: transform 0.3s ease; }
+        .dropdown.active .arrow { transform: rotate(180deg); }
+
+        input:not([type="button"]):not([type="submit"]), select, textarea {
+            color: #000 !important;
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            border-radius: 6px;
+        }
+
+        /* Animación suave para la carga inicial */
+        .fade-in-content {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
-<div class="h-screen flex flex-col">
-    <header class="relative flex items-center justify-between p-2 text-white shadow-md border-b border-[#d8c495]/35"
-            style="background-color: rgba(17,33,52,0.85) !important;">
 
-        <div class="flex items-center">
-            <button id="sidebar-toggle" class="mr-2 text-white focus:outline-none">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<div id="sidebar-overlay"></div>
+
+<div class="h-screen flex flex-col">
+
+    <header class="relative z-30 flex items-center justify-between px-4 py-3 text-white shadow-lg border-b border-[#d8c495]/30 bg-[#112134]/90 backdrop-blur-md">
+
+        <div class="flex items-center gap-3">
+            <button id="sidebar-toggle" class="p-1 hover:bg-white/10 rounded-lg transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                 </svg>
             </button>
-            <h1 class="text-lg uppercase">BIENVENIDO {{ currentUser()->name }}</h1>
+            <h1 class="text-xs md:text-sm font-bold uppercase tracking-wider text-[#d8c495] truncate max-w-[120px] md:max-w-none">
+                {{ currentUser()->name }}
+            </h1>
 
-            <div class="relative inline-block ml-4" id="notification-bell-container">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 cursor-pointer text-white transition hover:text-[#d8c495]">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/>
-                </svg>
-                <span id="notification-badge" class="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white hidden">
-                        0
-                    </span>
-
-                <div id="notification-dropdown" class="absolute right-0 z-10 mt-2 hidden w-80 rounded-md bg-white shadow-lg">
-                    <div class="py-1" role="menu">
-                        <div class="border-b border-gray-200 px-4 py-2 text-sm text-gray-700">Notificaciones</div>
-                        <div id="notification-list" class="max-h-60 overflow-y-auto">
-                            <p class="p-4 text-sm text-gray-500">Cargando notificaciones...</p>
-                        </div>
-                        <a href="{{ route('notificaciones.index') }}" class="block border-t border-gray-200 px-4 py-2 text-center text-sm text-blue-600 hover:bg-gray-100">
-                            Ver todas
-                        </a>
-                    </div>
+            <div class="relative ml-2" id="notification-bell-container">
+                <button class="relative p-1 hover:text-[#d8c495] transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/>
+                    </svg>
+                    <span id="notification-badge" class="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white hidden">0</span>
+                </button>
+                <div id="notification-dropdown" class="absolute left-0 md:right-0 md:left-auto z-50 mt-3 hidden w-72 md:w-80 rounded-xl bg-white shadow-2xl text-gray-800 border border-gray-200">
                 </div>
             </div>
         </div>
 
-        <div class="flex items-center">
-            <input type="month" id="start" name="start" min="2018-03" value="{{ request('month', date('Y-m')) }}"
-                   class="relative inline-flex items-center rounded-md border border-[#d8c495]/35 bg-white/10 px-2 text-lg font-bold text-white outline-none">
-            <a href="#">
-                <img src="/uploads/Logo-Png.png" alt="Logo" class="ml-4 h-8">
+        <div class="flex items-center gap-4">
+            <input type="month" id="start" name="start" value="{{ request('month', date('Y-m')) }}"
+                   class="hidden md:block rounded-md border border-[#d8c495]/40 bg-white/5 px-2 py-1 text-sm font-semibold text-white">
+            <a href="/" class="shrink-0">
+                <img src="/uploads/Logo-Png.png" alt="Logo" class="h-7 md:h-9">
             </a>
         </div>
     </header>
 
     <div class="flex-1 flex overflow-hidden">
-        <div id="sidebar" class="sidebar" style="background-color: rgba(17,33,52,0.95) !important;">
-            <div id="sidebar-content" class="flex flex-col h-full p-4">
 
-                <div class="dropdown">
-                    <button class="dropdown-toggle mb-4 flex w-full cursor-pointer items-center justify-between py-3 text-left text-base text-white hover:bg-white/10">
-                        <span>Finanzas y Contabilidad</span>
-                        <span class="arrow">&#9660;</span>
-                    </button>
-                    <div class="accordion-content hidden rounded-md bg-black/20">
-                        <a href="/cuentas-por-pagar" class="block py-2 pl-8 font-medium text-gray-200 no-underline transition-all duration-200 hover:border-l-4 hover:border-[#d8c495] hover:bg-white/10 hover:text-white">Cuentas por pagar</a>
-                        <a href="/facturas" class="block py-2 pl-8 font-medium text-gray-200 no-underline transition-all duration-200 hover:border-l-4 hover:border-[#d8c495] hover:bg-white/10 hover:text-white">Facturas</a>
-                        <a href="/inpuestos" class="block py-2 pl-8 font-medium text-gray-200 no-underline transition-all duration-200 hover:border-l-4 hover:border-[#d8c495] hover:bg-white/10 hover:text-white">Inpuestos</a>
+        <aside id="sidebar">
+            <div id="sidebar-content" class="flex flex-col h-full p-4 overflow-y-auto custom-scrollbar">
+
+                <nav class="space-y-2">
+                    <div class="dropdown">
+                        <button class="dropdown-toggle flex w-full items-center justify-between p-3 rounded-lg hover:bg-white/10 transition-all text-sm font-medium text-white">
+                            <span>Finanzas y Contabilidad</span>
+                            <span class="arrow text-[10px]">&#9660;</span>
+                        </button>
+                        <div class="accordion-content hidden space-y-1 mt-1 bg-black/20 rounded-lg">
+                            <a href="/cuentas-por-pagar" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Cuentas por pagar</a>
+                            <a href="/facturas" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Facturas</a>
+                            <a href="/inpuestos" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Impuestos</a>
+                        </div>
                     </div>
-                </div>
 
-                <div class="dropdown">
-                    <button class="dropdown-toggle mb-4 flex w-full cursor-pointer items-center justify-between py-3 text-left text-base text-white hover:bg-white/10">
-                        <span>Gestión Empresarial y Legal</span>
-                        <span class="arrow">&#9660;</span>
-                    </button>
-                    <div class="accordion-content hidden rounded-md bg-black/20">
-                        <a href="/lista-de-inversionistas" class="block py-2 pl-8 font-medium text-gray-200 no-underline transition-all duration-200 hover:border-l-4 hover:border-[#d8c495] hover:bg-white/10 hover:text-white">Lista de inversionistas</a>
-                        <a href="/subir-archivo" class="block py-2 pl-8 font-medium text-gray-200 no-underline transition-all duration-200 hover:border-l-4 hover:border-[#d8c495] hover:bg-white/10 hover:text-white">Administración de contratos</a>
-                        <a href="/incrementos" class="block py-2 pl-8 font-medium text-gray-200 no-underline transition-all duration-200 hover:border-l-4 hover:border-[#d8c495] hover:bg-white/10 hover:text-white">Incrementos de Importe</a>
+                    <div class="dropdown">
+                        <button class="dropdown-toggle flex w-full items-center justify-between p-3 rounded-lg hover:bg-white/10 transition-all text-sm font-medium text-white">
+                            <span>Gestión Empresarial y Legal</span>
+                            <span class="arrow text-[10px]">&#9660;</span>
+                        </button>
+                        <div class="accordion-content hidden space-y-1 mt-1 bg-black/20 rounded-lg">
+                            <a href="/lista-de-inversionistas" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Lista de inversionistas</a>
+                            <a href="/subir-archivo" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Administración de contratos</a>
+                            <a href="/incrementos" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Incrementos de Importe</a>
+                        </div>
                     </div>
-                </div>
 
-                <div class="dropdown">
-                    <button class="dropdown-toggle mb-4 flex w-full cursor-pointer items-center justify-between py-3 text-left text-base text-white hover:bg-white/10">
-                        <span>Operaciones y Atención al Cliente</span>
-                        <span class="arrow">&#9660;</span>
-                    </button>
-                    <div class="accordion-content hidden rounded-md bg-black/20">
-                        <a href="/registro_user" class="block py-2 pl-8 font-medium text-gray-200 no-underline transition-all duration-200 hover:border-l-4 hover:border-[#d8c495] hover:bg-white/10 hover:text-white">Registro de Usuarios</a>
-                        <a href="/admi_user" class="block py-2 pl-8 font-medium text-gray-200 no-underline transition-all duration-200 hover:border-l-4 hover:border-[#d8c495] hover:bg-white/10 hover:text-white">Administrador de Usuarios</a>
-                        <a href="/enviar-avisos" class="block py-2 pl-8 font-medium text-gray-200 no-underline transition-all duration-200 hover:border-l-4 hover:border-[#d8c495] hover:bg-white/10 hover:text-white">Avisos</a>
-                        <a href="{{ route('admin.users.chat-directory') }}" class="block py-2 pl-8 font-medium text-gray-200 no-underline transition-all duration-200 hover:border-l-4 hover:border-[#d8c495] hover:bg-white/10 hover:text-white">Directorio de Usuarios (Chat)</a>
-                        <a href="{{ route('admin.logos.index') }}" class="block py-2 pl-8 font-medium text-[#d8c495] no-underline transition-all duration-200 hover:border-l-4 hover:border-[#d8c495] hover:bg-white/10 hover:text-white"> Gestión de Logos (Carrusel)</a>
-                        <a href="{{ route('admin.anuncios.index') }}" class="block py-2 pl-8 font-medium text-[#d8c495] no-underline transition-all duration-200 hover:border-l-4 hover:border-[#d8c495] hover:bg-white/10 hover:text-white"> Gestión de Anuncios</a>
+                    <div class="dropdown">
+                        <button class="dropdown-toggle flex w-full items-center justify-between p-3 rounded-lg hover:bg-white/10 transition-all text-sm font-medium text-white">
+                            <span>Operaciones y Atención al Cliente</span>
+                            <span class="arrow text-[10px]">&#9660;</span>
+                        </button>
+                        <div class="accordion-content hidden space-y-1 mt-1 bg-black/20 rounded-lg">
+                            <a href="/registro_user" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Registro de Usuarios</a>
+                            <a href="/admi_user" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Administrador de Usuarios</a>
+                            <a href="/enviar-avisos" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Avisos</a>
+                            <a href="{{ route('admin.users.chat-directory') }}" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Directorio de Usuarios (Chat)</a>
+                            <a href="{{ route('admin.logos.index') }}" class="block py-2.5 pl-8 text-xs text-[#d8c495] font-semibold hover:bg-white/5 transition-colors">Gestión de Logos (Carrusel)</a>
+                            <a href="{{ route('admin.anuncios.index') }}" class="block py-2.5 pl-8 text-xs text-[#d8c495] font-semibold hover:bg-white/5 transition-colors">Gestión de Anuncios</a>
+                        </div>
                     </div>
+                </nav>
+                
+                <div class="p-4 border-t border-white/10 bg-[#112134]">
+                    <a href="{{ route('logout') }}"
+                       class="flex items-center justify-center w-full gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white transition-all hover:bg-red-700 active:scale-95 shadow-lg shadow-red-900/40">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        CERRAR SESIÓN
+                    </a>
                 </div>
-
-                <a href="{{ route('logout') }}" class="mt-auto w-full rounded-lg bg-red-600 px-4 py-2 text-white transition duration-300 ease-in-out hover:-translate-y-1 hover:scale-105 hover:bg-red-700 text-center">
-                    Cerrar sesión
-                </a>
             </div>
-        </div>
+        </aside>
 
-        <main id="main-content" class="flex-1 overflow-y-auto p-8" style="background-color: rgba(17,33,52,0.85) !important;">
-            @yield('content')
+        <main id="main-content" class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+            <div class="max-w-7xl mx-auto fade-in-content">
+                @yield('content')
+            </div>
         </main>
+
     </div>
 </div>
 
 <script>
+    // Sidebar toggle handler mejorado
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+
+    sidebarToggle.addEventListener('click', function() {
+        if (window.innerWidth < 1024) {
+            // Lógica Móvil
+            sidebar.classList.toggle('sidebar-active');
+            sidebarOverlay.classList.toggle('active');
+        } else {
+            // Lógica Desktop (colapso lateral)
+            sidebar.classList.toggle('sidebar-collapsed');
+        }
+    });
+
+    // Cerrar sidebar al hacer clic en el overlay (solo móvil)
+    sidebarOverlay.addEventListener('click', function() {
+        sidebar.classList.remove('sidebar-active');
+        sidebarOverlay.classList.remove('active');
+    });
     document.addEventListener('DOMContentLoaded', function () {
         // Month change handler
         document.getElementById('start').addEventListener('change', function() {
