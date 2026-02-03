@@ -3,7 +3,7 @@
 @section('content')
         <h1 class="text-center text-black text-3xl p-2"> CUENTAS POR PAGAR</h1>
 <div class="max-w-6xl mx-auto p-6">
-  
+
     <!-- Encabezado con título y barra de búsqueda -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
         <form method="GET" action="{{ route('viewAdministrador') }}" class="relative mx-12 flex items-center gap-2">
@@ -11,12 +11,12 @@
             <label for="searchInput" class="text-black mx-2">Buscar por:</label>
 
             <!-- Input de búsqueda -->
-            <input 
-                type="text" 
+            <input
+                type="text"
                 id="searchInput"
-                name="search" 
+                name="search"
                value="{{ request('search') }}"
-                placeholder="Buscar..." 
+                placeholder="Buscar..."
                 class="w-full sm:w-64 px-4 py-2 rounded-lg border border-gray-400 bg-[#eee]"
             >
 
@@ -41,7 +41,7 @@
 
         </form>
             <!-- Botón descargar -->
-            <button type="submit" onClick="openModalDescarga()" 
+            <button type="submit" onClick="openModalDescarga()"
             class="bg-[#d8c495] hover:bg-[#c9a143] text-black px-4 py-2 mx-8 rounded">
             Descargar
             </button>
@@ -55,8 +55,8 @@
                     <th class="px-6 py-3 border-b">ID</th>
                     <th class="px-6 py-3 border-b">Inversionista</th>
                     <th class="px-6 py-3 border-b">Proyecto</th>
-                    <th class="px-6 py-3 border-b">Estado</th> 
-                    <th class="px-6 py-3 border-b">Mes</th> 
+                    <th class="px-6 py-3 border-b">Estado</th>
+                    <th class="px-6 py-3 border-b">Mes</th>
                     <th class="px-6 py-3 border-b">Importe Base</th>
                     <th class="px-6 py-3 border-b">Importe ISR</th>
                     <th class="px-6 py-3 border-b">Saldo neto</th>
@@ -72,7 +72,7 @@
                     <td class="px-6 py-4">{{$cuenta->proyecto}}</td>
                     <td class="px-6 py-4">
                         @if($cuenta->estado === 'parcial')
-                            <select 
+                            <select
                                 class="estado-select bg-yellow-100 border border-yellow-400 rounded px-2 py-1 text-sm text-yellow-900"
                                 data-id="{{ $cuenta->id_cuentas_por_pagar }}"
                             >
@@ -80,7 +80,7 @@
                                 <option value="pagado" {{ $cuenta->estado === 'pagado' ? 'selected' : '' }}>Pagado</option>
                             </select>
                         @else
-                            <span class="px-2 py-1 text-xs font-semibold rounded 
+                            <span class="px-2 py-1 text-xs font-semibold rounded
                                 {{ $cuenta->estado === 'pendiente' ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800' }}">
                                 {{ ucfirst($cuenta->estado) }}
                             </span>
@@ -181,12 +181,12 @@
                     <label class="text-black">
                         Desde
                     </label>
-                    <input 
-                        type="date" 
+                    <input
+                        type="date"
                         name="desde"
                         id="desde"
                         placeholder="dd/mm/aaaa"
-                        class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200" 
+                        class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200"
                         >
                 </div>
                 <!--fecha de terminacion-->
@@ -194,12 +194,12 @@
                     <label class="text-black">
                         Hasta
                     </label>
-                    <input 
-                        type="date" 
+                    <input
+                        type="date"
                         name="hasta"
                         id="hasta"
                         placeholder="dd/mm/aaaa"
-                        class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200" 
+                        class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200"
                         >
                 </div>
                 <!--selccion de estado-->
@@ -329,7 +329,7 @@
         });
 
 
-        
+
     }
 
 
@@ -393,7 +393,7 @@
                     }
                 }
             }
-            
+
         });
     }
 </script>

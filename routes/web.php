@@ -22,6 +22,7 @@ use App\Http\Controllers\EstadoController;
 use App\Http\Controllers\AdminChatController; // Added for admin chat directory
 use App\Http\Controllers\UserChatController; // Added for user chat functionality
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Controllers\Admin\LogoController;
 
 // Rutas públicas
 Route::get('/', function () {
@@ -42,17 +43,18 @@ Route::middleware([AuthUser::class.':usuario'])->group(function () {
     Route::post('/upload-pdf', [CfdiValidatorController::class, 'uploadPdf'])->name('upload-pdf');
     Route::post('/reset-batch', [CfdiValidatorController::class, 'resetBatch'])->name('reset-batch');
     Route::post('/validar-xml', [CfdiValidatorController::class, 'store'])->name('validar-xml');
-    
+
     //ruta de notificaciones
     Route::get('/notificaciones', [AvisoController::class, 'index'])->name('notificaciones.index');
     Route::post('/notificaciones/{id}/leer', [AvisoController::class, 'markAsRead'])->name('notifications.read');
     Route::delete('/notificaciones/delete/{id}', [AvisoController::class, 'delete'])->name('notifications.delete');
     Route::get('/api/notifications/unread-count', [AvisoController::class, 'unreadCount'])->name('notifications.unreadCount'); // New API endpoint
+
    //rutas de cuentas por cobrar
     Route::get('/cuentas-por-cobrar',[CuentasPorCobrar::class,'index'])->name('cuentasCobrar');
     Route::get('/cuentas-por-cobrar/limpiar',[CuentasPorCobrar::class,'limpiar'])->name('cuentasCobrar.limpiar');
     Route::get('/cuentas-por-cobrar/grafica-anual/{year}', [CuentasPorCobrar::class, 'graficaAnualNoPagados']);
-    
+
     //ruta de estados de cuenta
     Route::get('/estados-de-cuenta', [EstadoController::class, 'index'])->name('estadosDeCuenta');
     Route::get('/estados-de-cuenta/limpiar', [EstadoController::class, 'limpiar'])->name('estadosDeCuenta.limpiar');
@@ -76,9 +78,16 @@ Route::middleware([AuthUser::class.':usuario'])->group(function () {
 
 // Rutas para administradores
 Route::middleware([AuthUser::class.':administrador'])->group(function () {
+    // Gestión de Logos para el Carrusel
+    Route::get('/admin/logos', [LogoController::class, 'index'])->name('admin.logos.index');
+    Route::post('/admin/logos', [LogoController::class, 'store'])->name('admin.logos.store');
+    Route::post('/admin/logos/{logo}/toggle', [LogoController::class, 'toggle'])->name('admin.logos.toggle');
+    Route::delete('/admin/logos/{logo}', [LogoController::class, 'destroy'])->name('admin.logos.destroy');
+
     //ruta de registro de usuarios
     Route::get('/registro_user', [GenerateController::class, 'index'])->name('registroUsuarios.index');
     Route::post('/registro_user', [GenerateController::class, 'datos'])->name('registroUsuarios.datos');
+
     //ruta de administracion de usuarios
     Route::get('/admi_user', [crudUser::class, 'index'])->name('admiUsers');
     Route::post('/users/confirm-password', [crudUser::class, 'confirmPassword'])->name('users.confirmPassword');
@@ -87,16 +96,18 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::post('/users/delete', [crudUser::class, 'eliminar'])->name('users.eliminar');
     Route::post('/users/buscar', [crudUser::class, 'buscar'])->name('users.buscar');
     Route::get('/users/limpiar', [crudUser::class, 'limpiar'])->name('users.limpiar');
+
     //cuentas por pagar
     Route::get('/cuentas-por-pagar', [CuentasPorPagar::class,'index'])->name('viewAdministrador');
     Route::post('/cuentasporpagar/{id}/estado', [App\Http\Controllers\CuentasPorPagar::class, 'actualizarEstado']);
     Route::get('/cuentas-por-pagar/limpiar',[CuentasPorPagar::class,'limpiar'])->name('viewAdministrador.limpiar');
     Route::post('/cuentas-por-pagar/export', [CuentasPorPagar::class, 'export'])->name('viewAdministrador.export');
+
     // Gráfica anual
     Route::get('/cuentas/grafica-anual/{year}', [CuentasPorPagar::class, 'graficaAnual']);
     Route::get('/cuentas/grafica-anual-proyecto/{year}/{proyecto}', [CuentasPorPagar::class, 'graficaAnualProyecto']);
-    //rutas de administracion de contratos
 
+    //rutas de administracion de contratos
     Route::post('/subir-archivo', [ContractController::class, 'subir']);
     Route::get('/subir-archivo', [ContractController::class, 'show'])->name('contratos.show');
     Route::post('/subir-archivo/confirm-password', [ContractController::class, 'confirmPassword'])->name('contratos.confirmPassword');
@@ -107,13 +118,15 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::put('/subir-archivo/{id}/actualizar', [ContractController::class, 'actualizar'])->name('contratos.actualizar');
     Route::get('/subir-archivo/clean', [ContractController::class, 'clean'])->name('contratos.clean');
     Route::post('/subir-archivo/search', [ContractController::class, 'search'])->name('contratos.search');
+
     //rutas de envio de avisos
     Route::get('/enviar-avisos', fn() => view('enviarAvisos'));
-    //Route::post('/enviar-aviso', [AvisoController::class, 'store'])->name('avisos.store');
+
     Route::post('/avisos', [AvisoController::class, 'store'])->name('avisos.store');
     //lista de inversionistas
     Route::get('/lista-de-inversionistas', [ListController::class,'index'])->name('listInver');
     Route::get('/lista-de-inversionistas/limpiar', [ListController::class, 'limpiar'])->name('listInver.limpiar');
+
     //ruta de generar facturas
     Route::get('/facturas', [UploadFactura::class, 'index'])->name('facturas');
     Route::get('/facturas/descargar/{id}', [UploadFactura::class, 'descargar'])->name('facturas.descargar');
@@ -128,13 +141,13 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
 
         Route::resource('incrementos', IncrementoImporteController::class);
 
-    
+
 
         // Admin User Chat Directory
 
         Route::get('/admin/users/chat-directory', [AdminChatController::class, 'showUserChatDirectory'])->name('admin.users.chat-directory');
 
-    
+
 
         // Chat routes for admin
 
@@ -148,4 +161,3 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
 Route::post('/password-check', [PasswordCheckController::class, 'check'])
     ->name('password.check');
 
-    

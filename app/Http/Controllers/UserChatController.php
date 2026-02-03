@@ -13,48 +13,50 @@ class UserChatController extends Controller
     public function getMessages()
     {
         $userId = Session::get('user')->id;
-        $adminIds = User::where('rol', 'administrador')->pluck('id');
+        $adminIds = \App\Models\User::where('rol', 'administrador')->pluck('id')->toArray();
 
-        $messages = Message::where(function ($query) use ($userId, $adminIds) {
+        $messages = \App\Models\Message::where(function ($query) use ($userId, $adminIds) {
+            // Mensajes del usuario a cualquier administrador
             $query->where('sender_id', $userId)
-                  ->whereIn('receiver_id', $adminIds);
+                ->whereIn('receiver_id', $adminIds);
         })->orWhere(function ($query) use ($userId, $adminIds) {
+            // Respuestas de cualquier administrador al usuario
             $query->whereIn('sender_id', $adminIds)
-                  ->where('receiver_id', $userId);
+                ->where('receiver_id', $userId);
         })
-        ->orderBy('created_at', 'asc')
-        ->get();
-
-        // Mark messages from admins as read by the user
-        Message::whereIn('sender_id', $adminIds)
-               ->where('receiver_id', $userId)
-               ->whereNull('read_at')
-               ->update(['read_at' => now()]);
+            ->orderBy('created_at', 'asc')
+            ->get();
 
         return response()->json($messages);
     }
 
     public function sendMessage(Request $request)
     {
-        $request->validate([
-            'message' => 'required|string|max:2000',
-        ]);
+        try {
+            $request->validate(['message' => 'required|string|max:2000']);
 
-        $userId = Session::get('user')->id;
-        $adminUsers = User::where('rol', 'administrador')->get();
+            $userId = Session::has('user') ? Session::get('user')->id : auth()->id();
 
-        if ($adminUsers->isEmpty()) {
-            return response()->json(['error' => 'No administrators found to send the message to.'], 404);
-        }
+            // Buscamos al primer administrador para satisfacer la llave foránea
+            $firstAdmin = \App\Models\User::where('rol', 'administrador')->first();
 
-        foreach ($adminUsers as $admin) {
-            Message::create([
-                'sender_id' => $userId,
-                'receiver_id' => $admin->id,
-                'message' => $request->input('message'),
+            if (!$firstAdmin) {
+                return response()->json(['error' => 'No hay administradores en el sistema'], 404);
+            }
+
+            $message = \App\Models\Message::create([
+                'sender_id'   => $userId,
+                'receiver_id' => $firstAdmin->id, // Usamos un ID real que existe en la tabla users
+                'message'     => $request->input('message'),
             ]);
-        }
 
-        return response()->json(['status' => 'Message sent to all administrators.']);
+            return response()->json(['status' => 'Mensaje enviado', 'data' => $message]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error de base de datos',
+                'detalle' => $e->getMessage()
+            ], 500);
+        }
     }
 }
