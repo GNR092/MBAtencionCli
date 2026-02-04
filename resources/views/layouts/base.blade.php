@@ -106,37 +106,45 @@
         float lightDist = max(length(lightV), 0.001);
         lightV /= lightDist;
 
-        vec3 lightColour = vec3(.8, .8, 1.);
-        float shininess = 0.5;
-        float falloff = 0.1;
+        // LUZ DORADA CÁLIDA
+        vec3 lightColour = vec3(1.0, 0.8, 0.4);
+        float shininess = 0.7;
+        float falloff = 0.15;
         float attenuation = 1./(1.0 + lightDist*lightDist*falloff);
 
         float diffuse = max(dot(normal, lightV), 0.);
         float specular = pow(max(dot( reflect(-lightV, normal), -ray), 0.), 52.) * shininess;
 
-        // COLORES CORPORATIVOS MB SIGNATURE
-        vec3 plasma = mix(vec3(0.07, 0.13, 0.20), vec3(0.85, 0.77, 0.58), smoothstep(80., 100., freq));
+        // --- DOMINANCIA NEGRA ---
+        // Ampliamos el rango de negro (0.0) y cerramos el dorado (0.8, 0.6, 0.2)
+        // El smoothstep en (150.0, 200.0) asegura que el negro ocupe la mayor parte del espacio
+        vec3 plasma = mix(vec3(0.0, 0.0, 0.0), vec3(0.8, 0.6, 0.2), smoothstep(150.0, 200.0, freq));
 
         vec2 n = hash2(uv * 200. + u_time * 5000.);
-        plasma += hash2(n).x * 0.02;
+        plasma += hash2(n).x * 0.01;
 
         vec3 reflect_ray = reflect(vec3(uv - movement, 1.), normal * 1.);
         vec3 tex = envMap(reflect_ray, normal);
 
-        vec3 texCol = (vec3(.5, .4, .2) + tex * 1.0) * .5;
-        vec3 colour = (texCol * (diffuse*vec3(1, .97, .92)*2. + 0.5) + lightColour*specular * f * 2.)*attenuation*1.5;
-        colour *= 2.;
-        colour = mix(colour, plasma, 1. - smoothstep(80., 110., freq));
+        // Reflejos muy oscuros para mantener el dominio del negro
+        vec3 texCol = (vec3(0.05, 0.04, 0.02) + tex * 0.3) * 0.5;
+
+        vec3 colour = (texCol * (diffuse * vec3(1.0, 0.85, 0.5) * 2.0 + 0.5) + lightColour * specular * f * 2.0) * attenuation * 1.5;
+        colour *= 2.0;
+
+        // El mix final también prioriza el negro
+        colour = mix(colour, plasma, 1. - smoothstep(150.0, 200.0, freq));
 
         return vec4(colour, 1.);
     }
 
     void main() {
         vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / min(u_resolution.y, u_resolution.x);
-        float dynamicScale = 4. + sin(u_time * .2) * 3.;
+        // Escala dinámica sutil
+        float dynamicScale = 5.0 + sin(u_time * .1) * 2.0;
         uv *= dynamicScale;
         vec4 render = renderPass(uv, vec2(0.));
-        render += render * render * .5;
+        render += render * render * .4;
         gl_FragColor = render;
     }
 </script>
