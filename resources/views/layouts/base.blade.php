@@ -59,14 +59,18 @@
     const int octaves = 5;
 
     float sinnoise(vec3 p){
-        float s = (sin(u_time) * .5 + .5);
+        // RAPIDEZ: Multiplicador u_time * 2.0 para un movimiento de base constante
+        float s = (sin(u_time * 2.0) * .5 + .5);
         float _c = cos(float(p.x * .1));
         float _s = sin(float(p.x) * .1);
         mat2 mat = mat2(_c, -_s, _s, _c);
+
         for (int i=0; i<octaves; i++){
-            p += cos( p.yxz * 3. + vec3(0., u_time, 10.6)) * (.25 + s * .2);
-            p += sin( p.yxz + vec3(u_time, .1, 0.)) * (.5 - s * .1) ;
-            p *= 1. + s * .1;
+            // ONDAS MÁS LARGAS: Se cambió 1.5 por 1.2 para dar fluidez
+            // MOVIMIENTO RÁPIDO: Se aumentó el factor de tiempo a 2.5
+            p += cos( p.yxz * 1.2 + vec3(0., u_time * 2.5, 2.0)) * (.4 + s * .1);
+            p += sin( p.yxz + vec3(u_time * 2.5, .1, 0.)) * (.5 - s * .05) ;
+            p *= 1.05;
             p.xy *= mat;
         }
         return length(p);
@@ -140,11 +144,16 @@
 
     void main() {
         vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / min(u_resolution.y, u_resolution.x);
-        // Escala dinámica sutil
-        float dynamicScale = 5.0 + sin(u_time * .1) * 2.0;
+
+        // VISIBILIDAD: Escala reducida a 5.0 para que las ondas doradas se vean más grandes y presentes
+        float dynamicScale = 10.0 + sin(u_time * .1) * 1.0;
         uv *= dynamicScale;
+
         vec4 render = renderPass(uv, vec2(0.));
-        render += render * render * .4;
+
+        // Refuerzo de brillo sutil
+        render += render * render * .35;
+
         gl_FragColor = render;
     }
 </script>
