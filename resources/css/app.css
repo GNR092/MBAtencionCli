@@ -11,6 +11,20 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
     'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* --- REINCORPORAR ANIMACIONES --- */
+    @keyframes zoom-out-logo {
+        0% { transform: scale(2.5) translateY(40%); filter: blur(4px); }
+        100% { transform: scale(1) translateY(0); filter: blur(0); }
+    }
+
+    @keyframes slide-up-form {
+        0% { opacity: 0; transform: translateY(100px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+
+    --animate-logo-entrance: zoom-out-logo 10s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    --animate-form-entrance: slide-up-form 5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s backwards;
 }
 
 /* REGLA DE ORO: No uses !important en etiquetas globales como 'body', 'input' o 'table'

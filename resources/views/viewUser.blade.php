@@ -1,11 +1,14 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Panel - MB Signature</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+@extends('layouts.base')
+
+@section('layout-content')
+    {{-- Mantenemos tus estilos específicos pero forzamos transparencias --}}
     <style>
+        /* PERFORACIÓN PARA VER EL FONDO ANIMADO */
+        html, body, #app-layout {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+
         /* Scrollbar personalizada */
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
@@ -23,9 +26,9 @@
         @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .marquee-viewport:hover .marquee-wrapper { animation-play-state: paused; }
 
-        /* Imagen de logo adaptable */
+        /* Imagen de logo Adaptable */
         .logo-img {
-            height: 100px !important; /* Altura base más pequeña para pantallas pequeñas */
+            height: 100px !important;
             width: auto !important;
             object-fit: contain !important;
             filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
@@ -34,138 +37,155 @@
         @media (min-width: 768px) { .logo-img { height: 150px !important; } }
         .logo-img:hover { transform: scale(1.1); }
 
-        #chatModal #chatInput { color: #000000 !important; background-color: #ffffff !important; }
+        .btn-original-style {
+            background-color: rgba(255, 255, 255, 0.9) !important; /* Blanco casi opaco */
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+            /* Aquí restauramos tu animación original de elevarse */
+        }
+
+        .btn-original-style:hover {
+            transform: translateY(-0.25rem); /* Equivalente a hover:-translate-y-1 */
+            background-color: rgba(255, 255, 255, 1) !important;
+        }
     </style>
-</head>
 
-<body class="bg-gray-100 overflow-x-hidden">
-<meta name="csrf-token" content="{{ csrf_token() }}">
-
-{{-- VIDEO FLOTANTE - Responsivo --}}
-<div id="miniVideoContainer" class="fixed bottom-6 left-6 md:bottom-24 md:left-8 z-[50] w-[200px] h-[120px] md:w-[300px] md:h-[180px] bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden shadow-2xl group animate-fadeInUp">
-    <button onclick="closeMiniVideo(event)" class="absolute top-2 right-2 z-[60] bg-black/50 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg">&times;</button>
-    <a href="https://www.youtube.com/watch?v=Xsct6_37qW8" target="_blank" class="block w-full h-full relative cursor-pointer">
-        <iframe id="miniYT" class="w-full h-full pointer-events-none" src="https://www.youtube.com/embed/Xsct6_37qW8?controls=0&rel=0&autoplay=1&mute=1&loop=1&playlist=Xsct6_37qW8" frameborder="0" allow="autoplay; encrypted-media"></iframe>
-        <div class="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-all flex flex-col items-center justify-center">
-            <div class="bg-[#d8c495]/90 p-2 md:p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-xl transform scale-75 group-hover:scale-100">
-                <svg class="w-6 h-6 text-[#3c3c3c]" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 2.688l11.022 6.312a1 1 0 010 1.734L4.5 17.047a1 1 0 01-1.5-.867V3.555a1 1 0 011.5-.867z"/></svg>
-            </div>
-        </div>
-    </a>
-</div>
-
-<main class="min-h-screen">
-    <div class="w-full min-h-screen p-4 md:p-8 space-y-6 md:space-y-10 font-[system-ui]" style="background:#7d7d7d !important;">
-
-        {{-- Header --}}
-        <header class="flex flex-col md:flex-row items-center justify-between w-full animate-fadeInUp py-4 px-6 gap-4 rounded-2xl shadow-2xl" style="background-color: #3c3c3c !important;">
-            <div class="flex items-center gap-4">
-                <div class="relative">
-                    @php $avatarSize = "w-12 h-12 md:w-20 md:h-20"; @endphp
-                    @if($user->foto)
-                        <img src="{{ asset('storage/' . $user->foto) . '?v=' . $user->updated_at->timestamp }}" class="{{ $avatarSize }} rounded-full object-cover border-2 border-[#d8c495]">
-                    @else
-                        <div class="{{ $avatarSize }} flex items-center justify-center rounded-full bg-[#112134] text-white font-bold text-xl md:text-2xl border-2 border-[#d8c495]">
-                            {{ strtoupper(substr($user->name, 0, 1)) }}
-                        </div>
-                    @endif
-                </div>
-                <div class="flex flex-col">
-                    <h1 class="text-lg md:text-2xl font-bold text-white tracking-tight">Bienvenido, <span style="color: #d8c495 !important;">{{ $user->name ?? 'Usuario' }}</span></h1>
-                    <p class="text-xs md:text-sm text-gray-300 italic">Panel de Cliente</p>
+    <div id="miniVideoContainer" class="fixed bottom-6 left-6 md:bottom-24 md:left-8 z-[50] w-[200px] h-[120px] md:w-[300px] md:h-[180px] bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden shadow-2xl group animate-fadeInUp">
+        <button onclick="closeMiniVideo(event)" class="absolute top-2 right-2 z-[60] bg-black/50 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg">&times;</button>
+        <a href="https://www.youtube.com/watch?v=Xsct6_37qW8" target="_blank" class="block w-full h-full relative cursor-pointer">
+            <iframe id="miniYT" class="w-full h-full pointer-events-none" src="https://www.youtube.com/embed/Xsct6_37qW8?controls=0&rel=0&autoplay=1&mute=1&loop=1&playlist=Xsct6_37qW8" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+            <div class="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-all flex flex-col items-center justify-center">
+                <div class="bg-[#d8c495]/90 p-2 md:p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-xl transform scale-75 group-hover:scale-100">
+                    <svg class="w-6 h-6 text-[#3c3c3c]" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 2.688l11.022 6.312a1 1 0 010 1.734L4.5 17.047a1 1 0 01-1.5-.867V3.555a1 1 0 011.5-.867z"/></svg>
                 </div>
             </div>
-            <form method="get" action="{{ route('logout') }}" class="m-0">
-                @csrf
-                <button type="submit" class="w-full md:w-auto px-4 py-2 text-sm border border-[#d8c495] text-[#d8c495] rounded-xl hover:bg-[#d8c495] hover:text-[#3c3c3c] transition-all font-bold">Cerrar sesión</button>
-            </form>
-        </header>
+        </a>
+    </div>
 
-        {{-- Grid Principal Adaptable --}}
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
-            @php
-                $opciones = [
-                    ['route' => 'facturacion', 'label' => 'Facturación'],
-                    ['route' => 'notificaciones.index', 'label' => 'Notificaciones'],
-                    ['route' => 'cuentasCobrar', 'label' => 'Cuentas Cobrar'],
-                    ['route' => 'estadosDeCuenta', 'label' => 'Estados Cuenta'],
-                    ['route' => 'contratos.index', 'label' => 'Contratos'],
-                ];
-            @endphp
+    <main class="min-h-screen relative z-10 bg-transparent">
+        <div class="w-full min-h-screen p-4 md:p-8 space-y-6 md:space-y-10 font-[system-ui] bg-transparent">
 
-            @foreach($opciones as $opt)
-                <a href="{{ route($opt['route']) }}" class="bg-white/90 rounded-2xl p-4 md:p-6 text-center shadow-lg border-b-4 border-transparent hover:border-[#d8c495] transition-all transform hover:-translate-y-1 flex flex-col items-center justify-center h-24 md:h-32">
-                    <span class="font-black text-sm md:text-lg uppercase text-[#3c3c3c]">{{$opt['label']}}</span>
-                </a>
-            @endforeach
-
-            {{-- CARRUSEL LOGOS --}}
-            <div class="col-span-1 sm:col-span-2 lg:col-span-3 h-[300px] md:h-[480px] flex flex-col justify-center overflow-hidden">
-                <div class="marquee-viewport">
-                    <div class="marquee-wrapper" id="marquee">
-                        @foreach(\App\Models\Logo::where('activo', true)->get() as $logo)
-                            <div class="flex-none px-6 md:px-12">
-                                <img src="{{ asset('storage/' . $logo->imagen_ruta) }}" class="logo-img">
+            {{-- Header traslúcido --}}
+            <header class="flex flex-col md:flex-row items-center justify-between w-full animate-fadeInUp py-4 px-6 gap-4 rounded-2xl shadow-2xl" style="background-color: rgba(60, 60, 60, 0.8) !important; backdrop-filter: blur(10px);">
+                <div class="flex items-center gap-4">
+                    <div class="relative">
+                        @php $avatarSize = "w-12 h-12 md:w-20 md:h-20"; @endphp
+                        @if($user->foto)
+                            <img src="{{ asset('storage/' . $user->foto) . '?v=' . $user->updated_at->timestamp }}" class="{{ $avatarSize }} rounded-full object-cover border-2 border-[#d8c495]">
+                        @else
+                            <div class="{{ $avatarSize }} flex items-center justify-center rounded-full bg-[#112134] text-white font-bold text-xl md:text-2xl border-2 border-[#d8c495]">
+                                {{ strtoupper(substr($user->name, 0, 1)) }}
                             </div>
-                        @endforeach
+                        @endif
+                    </div>
+                    <div class="flex flex-col">
+                        <h1 class="text-lg md:text-2xl font-bold text-white tracking-tight">Bienvenido, <span style="color: #d8c495 !important;">{{ $user->name ?? 'Usuario' }}</span></h1>
+                        <p class="text-xs md:text-sm text-gray-300 italic">Panel de Cliente</p>
                     </div>
                 </div>
-            </div>
+                <form method="get" action="{{ route('logout') }}" class="m-0">
+                    <button type="submit" class="w-full md:w-auto px-4 py-2 text-sm border border-[#d8c495] text-[#d8c495] rounded-xl hover:bg-[#d8c495] hover:text-[#3c3c3c] transition-all font-bold">Cerrar sesión</button>
+                </form>
+            </header>
 
-            {{-- RECUADRO ANUNCIOS --}}
-            <div class="col-span-1 sm:col-span-2 lg:col-span-2 h-[450px] md:h-[500px] bg-white/5 backdrop-blur-sm rounded-2xl border-2 border-dashed border-white/20 flex flex-col relative overflow-hidden group shadow-xl">
-                @if($anuncios->count() > 0)
-                    <div id="anuncio-container" class="relative flex-1 flex flex-col h-full">
-                        @foreach($anuncios as $index => $anuncio)
-                            <div class="anuncio-slide absolute inset-0 p-4 md:p-6 flex flex-col items-center transition-all duration-500 opacity-0 {{ $index === 0 ? 'opacity-100 z-10' : 'z-0' }}"
-                                 data-titulo="{{ $anuncio->titulo }}" data-desc="{{ $anuncio->descripcion }}" data-path="{{ asset('storage/' . $anuncio->adjunto_ruta) }}" data-type="{{ str_ends_with($anuncio->adjunto_ruta, '.pdf') ? 'pdf' : 'img' }}">
-                                <h2 class="text-base md:text-lg font-bold text-[#d8c495] uppercase mb-2 md:mb-3 text-center tracking-wider">{{ $anuncio->titulo }}</h2>
-                                <div class="flex-1 w-full overflow-hidden rounded-lg bg-black/20 relative shadow-inner">
-                                    @if(str_ends_with($anuncio->adjunto_ruta, '.pdf'))
-                                        <div class="w-full h-full overflow-y-auto bg-white custom-scroll">
-                                            <iframe src="{{ asset('storage/' . $anuncio->adjunto_ruta) }}#toolbar=0&navpanes=0&view=FitH" class="w-full h-[800px] md:h-[1200px] border-none"></iframe>
-                                        </div>
-                                    @else
-                                        <div class="w-full h-full flex items-center justify-center">
-                                            <img src="{{ asset('storage/' . $anuncio->adjunto_ruta) }}" class="max-h-full max-w-full object-contain">
-                                        </div>
-                                    @endif
-                                    <div class="absolute top-2 right-2 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onclick="expandirAnuncio()" class="bg-[#d8c495] text-black p-2 rounded-full shadow-lg hover:scale-110 transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/></svg></button>
-                                    </div>
+            {{-- Grid de botones transparentes --}}
+            <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
+                @php
+                    $opciones = [
+                        ['route' => 'facturacion', 'label' => 'Facturación'],
+                        ['route' => 'notificaciones.index', 'label' => 'Notificaciones'],
+                        ['route' => 'cuentasCobrar', 'label' => 'Cuentas Cobrar'],
+                        ['route' => 'estadosDeCuenta', 'label' => 'Estados Cuenta'],
+                        ['route' => 'contratos.index', 'label' => 'Contratos'],
+                    ];
+                @endphp
+
+                @foreach($opciones as $opt)
+                    <a href="{{ route($opt['route']) }}"
+                       class="bg-white/90 rounded-2xl p-4 md:p-6 text-center shadow-lg border-b-4 border-transparent hover:border-[#d8c495] transition-all transform hover:-translate-y-1 flex flex-col items-center justify-center h-24 md:h-32">
+                        <span class="font-black text-sm md:text-lg uppercase text-[#3c3c3c]">{{$opt['label']}}</span>
+                    </a>
+                @endforeach
+
+                {{-- CARRUSEL LOGOS --}}
+                <div class="col-span-1 sm:col-span-2 lg:col-span-3 h-[300px] md:h-[480px] flex flex-col justify-center overflow-hidden">
+                    <div class="marquee-viewport">
+                        <div class="marquee-wrapper" id="marquee">
+                            @foreach(\App\Models\Logo::where('activo', true)->get() as $logo)
+                                <div class="flex-none px-6 md:px-12">
+                                    <img src="{{ asset('storage/' . $logo->imagen_ruta) }}" class="logo-img">
                                 </div>
-                                <p class="text-[10px] text-gray-300 italic text-center px-4 mt-2 line-clamp-1">{{ $anuncio->descripcion }}</p>
-                            </div>
-                        @endforeach
-                    </div>
-                    @if($anuncios->count() > 1)
-                        <div class="w-full flex justify-center items-center py-3 bg-black/10">
-                            <div class="flex gap-2">
-                                @foreach($anuncios as $index => $anuncio)
-                                    <div onclick="event.stopPropagation(); jumpToAnuncio({{ $index }});" class="anuncio-dot w-2 h-2 rounded-full bg-white/30 cursor-pointer transition-all {{ $index === 0 ? 'bg-[#d8c495] w-6' : '' }}"></div>
-                                @endforeach
-                            </div>
+                            @endforeach
                         </div>
-                        <button onclick="event.stopPropagation(); changeAnuncio(-1);" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full z-40 opacity-0 group-hover:opacity-100 transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M15 19l-7-7 7-7"/></svg></button>
-                        <button onclick="event.stopPropagation(); changeAnuncio(1);" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full z-40 opacity-0 group-hover:opacity-100 transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M9 5l7 7-7 7"/></svg></button>
+                    </div>
+                </div>
+
+                {{-- RECUADRO ANUNCIOS --}}
+                <div class="col-span-1 sm:col-span-2 lg:col-span-2 h-[450px] md:h-[500px] bg-white/5 backdrop-blur-sm rounded-2xl border-2 border-dashed border-white/20 flex flex-col relative overflow-hidden group shadow-xl">
+                    @if($anuncios->count() > 0)
+                        <div id="anuncio-container" class="relative flex-1 flex flex-col h-full">
+                            @foreach($anuncios as $index => $anuncio)
+                                <div class="anuncio-slide absolute inset-0 p-4 md:p-6 flex flex-col items-center transition-all duration-500 opacity-0 {{ $index === 0 ? 'opacity-100 z-10' : 'z-0' }}"
+                                     data-titulo="{{ $anuncio->titulo }}" data-desc="{{ $anuncio->descripcion }}" data-path="{{ asset('storage/' . $anuncio->adjunto_ruta) }}" data-type="{{ str_ends_with($anuncio->adjunto_ruta, '.pdf') ? 'pdf' : 'img' }}">
+                                    <h2 class="text-base md:text-lg font-bold text-[#d8c495] uppercase mb-2 md:mb-3 text-center tracking-wider">{{ $anuncio->titulo }}</h2>
+                                    <div class="flex-1 w-full overflow-hidden rounded-lg bg-black/20 relative shadow-inner">
+                                        @if(str_ends_with($anuncio->adjunto_ruta, '.pdf'))
+                                            <div class="w-full h-full overflow-y-auto bg-white custom-scroll">
+                                                <iframe src="{{ asset('storage/' . $anuncio->adjunto_ruta) }}#toolbar=0&navpanes=0&view=FitH" class="w-full h-[800px] md:h-[1200px] border-none"></iframe>
+                                            </div>
+                                        @else
+                                            <div class="w-full h-full flex items-center justify-center">
+                                                <img src="{{ asset('storage/' . $anuncio->adjunto_ruta) }}" class="max-h-full max-w-full object-contain">
+                                            </div>
+                                        @endif
+                                        <div class="absolute top-2 right-2 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onclick="expandirAnuncio()" class="bg-[#d8c495] text-black p-2 rounded-full shadow-lg hover:scale-110 transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/></svg></button>
+                                        </div>
+                                    </div>
+                                    <p class="text-[10px] text-gray-300 italic text-center px-4 mt-2 line-clamp-1">{{ $anuncio->descripcion }}</p>
+                                </div>
+                            @endforeach
+                        </div>
+                        @if($anuncios->count() > 1)
+                            <div class="w-full flex justify-center items-center py-3 bg-black/10">
+                                <div class="flex gap-2">
+                                    @foreach($anuncios as $index => $anuncio)
+                                        <div onclick="event.stopPropagation(); jumpToAnuncio({{ $index }});" class="anuncio-dot w-2 h-2 rounded-full bg-white/30 cursor-pointer transition-all {{ $index === 0 ? 'bg-[#d8c495] w-6' : '' }}"></div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            <button onclick="event.stopPropagation(); changeAnuncio(-1);" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full z-40 opacity-0 group-hover:opacity-100 transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M15 19l-7-7 7-7"/></svg></button>
+                            <button onclick="event.stopPropagation(); changeAnuncio(1);" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full z-40 opacity-0 group-hover:opacity-100 transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M9 5l7 7-7 7"/></svg></button>
+                        @endif
                     @endif
-                @endif
-            </div>
-        </section>
-    </div>
-</main>
+                </div>
+            </section>
+        </div>
+    </main>
 
-{{-- MODAL FULLSCREEN --}}
-<div id="fullScreenAnuncio" class="fixed inset-0 bg-black/95 z-[999999] hidden flex-col p-4 md:p-6 items-center justify-center">
-    <button onclick="cerrarFullScreen()" class="absolute top-4 right-4 md:top-6 md:right-6 text-white text-3xl md:text-4xl hover:text-[#d8c495] transition">&times;</button>
-    <div id="fs-content" class="w-full h-full flex flex-col items-center">
-        <h2 id="fs-titulo" class="text-xl md:text-2xl font-bold text-[#d8c495] mb-4 uppercase text-center"></h2>
-        <div id="fs-media" class="flex-1 w-full flex items-center justify-center overflow-hidden"></div>
-        <p id="fs-desc" class="text-gray-200 mt-4 max-w-4xl text-center text-sm"></p>
+    {{-- MODAL FULLSCREEN --}}
+    <div id="fullScreenAnuncio" class="fixed inset-0 bg-black/95 z-[999999] hidden flex-col p-4 md:p-6 items-center justify-center">
+        <button onclick="cerrarFullScreen()" class="absolute top-4 right-4 md:top-6 md:right-6 text-white text-3xl md:text-4xl hover:text-[#d8c495] transition">&times;</button>
+        <div id="fs-content" class="w-full h-full flex flex-col items-center">
+            <h2 id="fs-titulo" class="text-xl md:text-2xl font-bold text-[#d8c495] mb-4 uppercase text-center"></h2>
+            <div id="fs-media" class="flex-1 w-full flex items-center justify-center overflow-hidden"></div>
+            <p id="fs-desc" class="text-gray-200 mt-4 max-w-4xl text-center text-sm"></p>
+        </div>
     </div>
-</div>
 
-<script>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Lógica Marquee
+                const marquee = document.getElementById('marquee');
+                if (marquee && marquee.children.length > 0) {
+                    const content = marquee.innerHTML;
+                    marquee.innerHTML = content + content + content;
+                }
+                // ... resto de tu lógica de anuncios y video que ya tienes ...
+            });
+
     document.addEventListener('DOMContentLoaded', function () {
         // --- LÓGICA MARQUEE ---
         const marquee = document.getElementById('marquee');
@@ -352,5 +372,5 @@
 
 
 </script>
-</body>
-</html>
+    @endpush
+@endsection
