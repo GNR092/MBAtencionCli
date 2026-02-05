@@ -1,8 +1,15 @@
 @extends('layouts.admin')
 
 @section('content')
-        <h1 class="text-center text-black text-3xl p-2">IMPUESTOS</h1>
         <div class="p-6">
+            <header class="mb-10 px-2">
+                <div class="flex items-baseline gap-4">
+                    <span class="text-[#D4A017] text-sm font-serif italic">|</span>
+                    <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
+                        Impuestos<span class="font-light text-[#D4A017]"></span><span class="text-[#D4A017] animate-pulse">_</span>
+                    </h1>
+                </div>
+            </header>
     <!-- Encabezado con título y barra de búsqueda -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
         <form method="GET" action="{{ route('inpuestos') }}" class="relative mx-12 flex items-center gap-2">
@@ -10,12 +17,12 @@
             <label for="searchInput" class="text-black mx-2">Buscar por:</label>
 
             <!-- Input de búsqueda -->
-            <input 
-                type="text" 
+            <input
+                type="text"
                 id="searchInput"
-                name="search" 
+                name="search"
                value="{{ request('search') }}"
-                placeholder="Buscar..." 
+                placeholder="Buscar..."
                 class="w-full sm:w-64 px-4 py-2 rounded-lg border border-gray-400 bg-[#eee]"
             >
 
@@ -32,7 +39,7 @@
             </button>
 
                         <!-- Botón limpiar filtros -->
-            <a href="{{ route('inpuestos.limpiar') }}" 
+            <a href="{{ route('inpuestos.limpiar') }}"
             class="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded mx-2">
                 LIMPIAR
             </a>
@@ -59,7 +66,7 @@
                     <th class="px-6 py-3 border-b">Regimen fiscal</th>
                     <th class="px-6 py-3 border-b">Importe base</th>
                     <th class="px-6 py-3 border-b">Importe ISR</th>
-                    
+
                 </tr>
             </thead>
             <tbody id="tableBody" class="divide-y divide-[#eee]">
@@ -84,14 +91,14 @@
                     <td class="px-6 py-4">${{number_format($file->importeBase,2) }}</td>
                    <td class="px-6 py-4">${{number_format($file->isr,2) }}</td>
 
-                    
+
                 </tr>
                                      @empty
                 <tr>
                     <td colspan="5">No se encontraron facturas</td>
                 </tr>
                 @endforelse
-                
+
                 <tr class="bg-gray-300 font-bold">
                     <td colspan="9" class="text-right px-6 py-3">TOTAL BASE:</td>
                     <td class="px-6 py-3 text-[#20157e]">
@@ -127,12 +134,12 @@
                         <label class="text-black">
                             Desde
                         </label>
-                        <input 
-                            type="date" 
+                        <input
+                            type="date"
                             name="desde"
                             id="desde"
                             placeholder="dd/mm/aaaa"
-                            class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200" 
+                            class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200"
                             >
                     </div>
                     <!--fecha de terminacion-->
@@ -140,12 +147,12 @@
                         <label class="text-black">
                             Hasta
                         </label>
-                        <input 
-                            type="date" 
+                        <input
+                            type="date"
                             name="hasta"
                             id="hasta"
                             placeholder="dd/mm/aaaa"
-                            class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200" 
+                            class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200"
                             >
                     </div>
                     <div class="flex justify-end gap-2 mt-4">

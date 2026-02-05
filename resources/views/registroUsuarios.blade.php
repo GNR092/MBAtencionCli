@@ -1,27 +1,14 @@
 @extends('layouts.admin')
 @section('content')
-<h1 class="text-center text-black text-3xl p-2">Registro de Inversionistas</h1>
+    <header class="mb-10 px-2">
+        <div class="flex items-baseline gap-4">
+            <span class="text-[#D4A017] text-sm font-serif italic">|</span>
+            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
+                Registro de usuarios<span class="font-light text-[#D4A017]"></span><span class="text-[#D4A017] animate-pulse">_</span>
+            </h1>
+        </div>
+    </header>
 
-<style>
-    /* Force text color to white and background to a dark color for multiselect dropdown list items */
-    div.multiselect-dropdown-list > div,
-    div.multiselect-dropdown-list > div label {
-        color: white !important;
-        background-color: #333 !important; /* Dark background */
-    }
-
-    /* Ensure hover/focus states also have white text on a distinguishable background */
-    div.multiselect-dropdown-list > div:hover {
-        background-color: #555 !important; /* Slightly lighter on hover */
-        color: white !important;
-    }
-
-    /* Ensure selected items also have white text on a distinguishable background */
-    div.multiselect-dropdown-list > div.checked {
-        background-color: #444 !important; /* Different background for checked */
-        color: white !important;
-    }
-</style>
 
 @if(session('success'))
     <!-- Modal -->
@@ -29,8 +16,8 @@
         <div class="bg-white p-6 rounded-lg shadow-lg w-96 text-center">
             <span class="text-xl font-bold text-green-700 mb-2">¡Éxito!</span>
             <p class="text-gray-700">{{ session('success') }}</p>
-            
-            <button onclick="document.getElementById('successModal').remove()" 
+
+            <button onclick="document.getElementById('successModal').remove()"
                 class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                 Cerrar
             </button>
@@ -68,8 +55,8 @@
         <!-- contraseña -->
         <div class="mb-4">
             <label for="password" class="block text-white">Contraseña generada:</label>
-            <input type="text" id="password" name="password" 
-                class="p-1 w-full mt-1 border border-gray-300 rounded-md shadow-sm bg-gray-200" 
+            <input type="text" id="password" name="password"
+                class="p-1 w-full mt-1 border border-gray-300 rounded-md shadow-sm bg-gray-200"
                 value="{{ session('generated_password') }}" readonly>
             <small class="text-white">Se genera automáticamente al registrar.</small>
         </div>
@@ -114,7 +101,7 @@
                 <input type="tel" id="phone" name="phone"
                     class="p-1 shadow-sm rounded-r-md"
                     maxlength="10"
-                    pattern="[0-9]{10}"   
+                    pattern="[0-9]{10}"
                     oninput="this.value = this.value.replace(/[^0-9]/g, '');"
                     value="{{ old('phone') }}"
                     required>

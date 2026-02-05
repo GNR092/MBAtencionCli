@@ -1,7 +1,14 @@
 @extends('layouts.admin')
 
 @section('content')
-<h1 class="text-center text-black text-3xl p-4">CONTRATOS</h1>
+    <header class="mb-10 px-2">
+        <div class="flex items-baseline gap-4">
+            <span class="text-[#D4A017] text-sm font-serif italic">|</span>
+            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
+                Contratos<span class="font-light text-[#D4A017]"></span><span class="text-[#D4A017] animate-pulse">_</span>
+            </h1>
+        </div>
+    </header>
 @if(session('success'))
     <div id="alert-success" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
         {{ session('success') }}
@@ -20,11 +27,11 @@
             @csrf
             <label for="searchInput" class="text-white">Buscar por:</label>
 
-            <input 
-                type="text" 
+            <input
+                type="text"
                 id="searchInput"
-                name="search" 
-                placeholder="Buscar..." 
+                name="search"
+                placeholder="Buscar..."
                  value="{{ $search }}"
                 class="w-full sm:w-64 px-4 py-2 rounded-lg border border-gray-400 bg-[#eee]"
             >
@@ -72,7 +79,7 @@
                         <td class="px-6 py-4">{{ $contrato->proyecto }}</td>
                         <td class="px-6 py-4">{{ $contrato->importe_bruto_renta }}</td>
                         <td class="px-6 py-4">
-                            <span class="px-2 py-1 text-xs font-semibold rounded 
+                            <span class="px-2 py-1 text-xs font-semibold rounded
                                 {{ $contrato->estado === 'activo' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800' }}">
                                 {{ ucfirst($contrato->estado) }}
                             </span>
@@ -135,19 +142,19 @@
             @csrf
             <div class="mb-4">
                 <label for="password" class="block text-gray-700 mb-2">Contraseña del administrador:</label>
-                <input 
-                    type="password" 
-                    name="password" 
-                    id="password" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300" 
+                <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
                     required>
             </div>
             <div class="flex justify-end space-x-3">
-                <button type="button" id="closeModalBtn" 
+                <button type="button" id="closeModalBtn"
                         class="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded">
                     Cancelar
                 </button>
-                <button type="submit" 
+                <button type="submit"
                         class="bg-[#033a7c] hover:bg-[#022b5a] text-white px-4 py-2 rounded">
                     Confirmar
                 </button>
@@ -193,7 +200,7 @@
     function closeModalEditar() {
         document.getElementById("confirmModalEditar").classList.add("hidden");
     }
-    
+
     function openModalDelete(userId) {
         document.getElementById("confrimDeleteModal").classList.remove("hidden");
         document.getElementById("userIdInputDelete").value = userId;

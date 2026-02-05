@@ -1,7 +1,14 @@
 @extends('layouts.admin')
 
 @section('content')
-    <h1 class="text-center text-black text-3xl p-2 uppercase font-bold">Gestión de Anuncios</h1>
+    <header class="mb-10 px-2">
+        <div class="flex items-baseline gap-4">
+            <span class="text-[#D4A017] text-sm font-serif italic">|</span>
+            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
+                Emitir anuncios<span class="font-light text-[#D4A017]"></span><span class="text-[#D4A017] animate-pulse">_</span>
+            </h1>
+        </div>
+    </header>
 
     <div class="max-w-6xl mx-auto p-6">
         <div class="flex justify-end mb-4">

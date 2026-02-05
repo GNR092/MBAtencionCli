@@ -1,7 +1,14 @@
 @extends('layouts.admin')
 
 @section('content')
-    <h1 class="text-3xl font-bold text-white mb-6">Directorio de Usuarios para Chat</h1>
+    <header class="mb-10 ">
+        <div class="flex items-baseline gap-4">
+            <span class="text-[#D4A017] text-sm font-serif italic">|</span>
+            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
+                Directorio de usuarios<span class="font-light text-[#D4A017]"></span><span class="text-[#D4A017] animate-pulse">_</span>
+            </h1>
+        </div>
+    </header>
 
     <div class="bg-gray-800 shadow-md rounded-lg p-6">
         <!-- Search and Filter Form -->
@@ -85,12 +92,12 @@
             button.addEventListener('click', function() {
                 currentChatUserId = this.dataset.userId;
                 const userName = this.dataset.userName;
-                
+
                 chattingWithName.textContent = `Chat con: ${userName}`;
                 adminChatModal.style.display = 'flex';
                 adminChatInput.disabled = false;
                 sendAdminChatBtn.disabled = false;
-                
+
                 fetchAdminMessages(currentChatUserId);
 
                 if (messagePollingInterval) {
@@ -130,11 +137,11 @@
             }
 
             messages.forEach(message => {
-                if (!message.sender) return; 
+                if (!message.sender) return;
 
                 const messageWrapper = document.createElement('div');
                 const messageBubble = document.createElement('div');
-                
+
                 const isUserSender = message.sender.rol === 'usuario';
 
                 // Wrapper for alignment
@@ -142,7 +149,7 @@
 
                 // Bubble for styling
                 messageBubble.classList.add('p-2', 'rounded-lg', 'max-w-[70%]', 'break-words');
-                
+
                 if (isUserSender) {
                     messageWrapper.classList.add('justify-start');
                     messageBubble.classList.add('bg-gray-200', 'text-black');
@@ -168,7 +175,7 @@
                     }
                 });
                 if (!response.ok) throw new Error('Failed to fetch admin messages');
-                
+
                 const messages = await response.json();
                 displayAdminMessages(messages);
             } catch (error) {
@@ -181,7 +188,7 @@
 
         async function sendAdminMessage() {
             if (!adminChatInput || !currentChatUserId) return;
-            
+
             const messageText = adminChatInput.value.trim();
             if (messageText === '') return;
 

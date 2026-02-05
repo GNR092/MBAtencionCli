@@ -1,7 +1,14 @@
 @extends('layouts.admin')
 
 @section('content')
-        <h1 class="text-center text-black text-3xl p-2">Enviar aviso a usuario(s)</h1>
+    <header class="mb-10 px-2">
+        <div class="flex items-baseline gap-4">
+            <span class="text-[#D4A017] text-sm font-serif italic">|</span>
+            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
+                Emitir anuncios<span class="font-light text-[#D4A017]"></span><span class="text-[#D4A017] animate-pulse">_</span>
+            </h1>
+        </div>
+    </header>
 
         @if(session('success'))
         <div class="bg-green-800 text-white p-4 mb-6 rounded">
@@ -18,9 +25,9 @@
         <!-- Buscar usuario -->
         <div class="flex items-center justify-between gap-4 mb-6">
             <label class="text-white w-40 text-right">Buscar usuario:</label>
-            <input type="text" 
-                name="usuario" 
-                class="flex-1 bg-[#eee] text-black placeholder-gray-700 border border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-500" 
+            <input type="text"
+                name="usuario"
+                class="flex-1 bg-[#eee] text-black placeholder-gray-700 border border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
                 placeholder="nombre, correo, ID">
         </div>
             <!-- Enviar a todos -->
@@ -51,23 +58,23 @@
         <!-- Asunto -->
         <div class="flex items-center justify-between gap-4 mb-6 ">
             <label class="text-white w-40 text-right">Asunto:</label>
-            <input type="text" 
-                name="asunto" 
+            <input type="text"
+                name="asunto"
                 class="flex-1 bg-white text-black placeholder-gray-400 border border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-500">
         </div>
 
         <!-- Mensaje -->
         <div class="flex items-start justify-between gap-4 mb-6">
             <label class="text-white w-40 text-right mt-2">Mensaje:</label>
-            <textarea name="mensaje" rows="4" 
-                class="flex-1 bg-white text-black placeholder-gray-700 border border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-500"  
+            <textarea name="mensaje" rows="4"
+                class="flex-1 bg-white text-black placeholder-gray-700 border border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
                 placeholder="escribe aquí"></textarea>
         </div>
 
         <!-- Prioridad -->
         <div class="flex items-center justify-between gap-4 mb-6">
             <label class="text-white w-40 text-right">Prioridad:</label>
-            <select name="prioridad" 
+            <select name="prioridad"
                 class="flex-1 bg-white text-black border border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-gray-500">
                 <option value="alta">Alta</option>
                 <option value="media" selected>Media</option>
@@ -96,7 +103,7 @@
 
         <!-- Botón -->
         <div class="text-center">
-            <button type="submit" 
+            <button type="submit"
                 class="bg-[#d4a017] text-white px-8 py-2 rounded-lg font-bold hover:bg-[#b58714] transition">
                 ENVIAR AVISO
             </button>

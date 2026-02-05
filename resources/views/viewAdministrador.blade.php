@@ -2,9 +2,14 @@
 
 @section('content')
     <div class="w-full p-4 md:p-6 animate-fadeInUp">
-        <h1 class="text-center text-black text-2xl md:text-3xl font-bold mb-6 uppercase tracking-wider">
-            Cuentas por Pagar
-        </h1>
+        <header class="mb-10 px-2">
+            <div class="flex items-baseline gap-4">
+                <span class="text-[#D4A017] text-sm font-serif italic">|</span>
+                <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
+                    Cuentas por pagar<span class="font-light text-[#D4A017]"></span><span class="text-[#D4A017] animate-pulse">_</span>
+                </h1>
+            </div>
+        </header>
 
         <div class="max-w-7xl mx-auto space-y-6">
 

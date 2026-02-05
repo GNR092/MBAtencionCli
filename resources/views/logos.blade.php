@@ -2,7 +2,14 @@
 
 @section('content')
     <div class="max-w-6xl mx-auto p-6">
-        <h1 class="text-center text-black text-3xl p-4 uppercase font-bold">Gestión de Logos Carrusel</h1>
+        <header class="mb-10 px-2">
+            <div class="flex items-baseline gap-4">
+                <span class="text-[#D4A017] text-sm font-serif italic">|</span>
+                <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
+                    Carrusel de logos<span class="font-light text-[#D4A017]"></span><span class="text-[#D4A017] animate-pulse">_</span>
+                </h1>
+            </div>
+        </header>
 
         <div class="bg-white rounded-lg shadow-md p-8 mb-8 border-t-4 border-[#d8c495]">
             <h2 class="text-lg font-bold mb-4 text-gray-800">Cargar Nuevo Logo</h2>

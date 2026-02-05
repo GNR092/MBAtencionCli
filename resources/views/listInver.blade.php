@@ -1,20 +1,28 @@
 @extends('layouts.admin')
 
 @section('content')
-        <h1 class="text-center text-black text-3xl p-2">LISTA DE INVERSIONISTAS</h1>
 <div class="max-w-6xl mx-auto p-6">
+    <header class="mb-10 px-2">
+        <div class="flex items-baseline gap-4">
+            <span class="text-[#D4A017] text-sm font-serif italic">|</span>
+            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
+                Inversionistas<span class="font-light text-[#D4A017]"></span><span class="text-[#D4A017] animate-pulse">_</span>
+            </h1>
+        </div>
+    </header>
+
     <!-- Encabezado con título y barra de búsqueda -->
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
     <form method="GET" action="{{ route('listInver') }}" class="relative mx-12 flex items-center gap-2">
         <label for="searchInput" class="text-black mx-2">Buscar por:</label>
 
         <!-- Input de búsqueda -->
-        <input 
-            type="text" 
+        <input
+            type="text"
             id="searchInput"
-            name="search" 
+            name="search"
             value="{{ request('search') }}"
-            placeholder="Buscar..." 
+            placeholder="Buscar..."
             class="w-full sm:w-64 px-4 py-2 rounded-lg border border-gray-400 bg-[#eee]"
         >
 

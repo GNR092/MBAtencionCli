@@ -21,14 +21,14 @@
                     <input type="file" name="archivo" multiple required  accept=".pdf"
                         class="w-full text-sm text-gray-900 bg-gray-200 border border-gray-300 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400">
                 </div>
-               
+
                 <div class="mb-6">
                 <!-- Select solo para admin -->
                 @if($user && $user->rol === 'administrador')
                     <label for="myInput" class="text-white">Asignar a usuario:</label>
 
                     <!-- Input de búsqueda -->
-                    <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Buscar usuario..." 
+                    <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Buscar usuario..."
                         class="bg-white rounded-lg px-4 py-2 w-full">
 
                     <!-- Lista de usuarios -->
@@ -36,8 +36,8 @@
                         class="absolute w-64 bg-white rounded-lg mt-1 shadow-md max-h-60 overflow-y-auto hidden z-50">
                         @foreach ($users as $u)
                             <li>
-                                <a href="#" 
-                                onclick="selectUser('{{ $u->id }}', '{{ $u->name }}')" 
+                                <a href="#"
+                                onclick="selectUser('{{ $u->id }}', '{{ $u->name }}')"
                                 class="block px-4 py-2 hover:bg-gray-200 ">
                                 {{ $u->name }}
                                 </a>
@@ -71,18 +71,18 @@
                     </select>
                 </div>
 
-                
+
                 <!--importe-->
                 <div class="mb-6 mt-2">
                     <label class="text-white">
                         Importe Bruto *
                     </label>
-                    <input 
-                        type="text" 
-                        name="importe_bruto_renta" 
+                    <input
+                        type="text"
+                        name="importe_bruto_renta"
                         id="importe_bruto_renta"
                         placeholder="$0.00"
-                        class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200" 
+                        class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200"
                         value="{{ old('importe_bruto_renta') }}"
                         required
                         onblur="formatearImporte(this)"
@@ -94,12 +94,12 @@
                     <label class="text-white">
                         Fecha de inicio*
                     </label>
-                    <input 
-                        type="date" 
-                        name="fecha_inicio" 
+                    <input
+                        type="date"
+                        name="fecha_inicio"
                         id="fecha_inicio"
                         placeholder="dd/mm/aaaa"
-                        class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200" 
+                        class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200"
                         value="{{ old('fecha_inicio') }}"
                         required
                         >
@@ -109,12 +109,12 @@
                     <label class="text-white">
                         Fecha de terminacion*
                     </label>
-                    <input 
-                        type="date" 
+                    <input
+                        type="date"
                         name="fecha_terminacion"
                         id="fecha_terminacion"
                         placeholder="dd/mm/aaaa"
-                        class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200" 
+                        class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200"
                         value="{{ old('fecha_terminacion') }}"
                         required
                         >
@@ -132,9 +132,9 @@
                         <span>Inactivo</span>
                     </label>
                 </div>
-                   
-                <div id="estado-error" class="hidden bg-red-500 text-white px-4 py-2 rounded-md mt-2"></div>                     
-                
+
+                <div id="estado-error" class="hidden bg-red-500 text-white px-4 py-2 rounded-md mt-2"></div>
+
                 <!-- Botón con ping -->
                 <div class="relative inline-flex items-center mb-6">
                     <!-- Ping animado -->
@@ -144,18 +144,18 @@
                     </span>
 
                     <!-- Botón -->
-                    <button type="submit" 
+                    <button type="submit"
                         class="bg-[#d4a017] text-white px-6 py-2 rounded-lg font-semibold shadow-md transition duration-300 ease-in-out hover:scale-105 hover:bg-[#b58714]">
                         SUBIR
                     </button>
                 </div>
-            
+
             </form>
         </div>
 
         <!-- Alerta de éxito -->
         @if(session('success'))
-            <div id="alert" 
+            <div id="alert"
                 class="fixed top-5 right-5 flex items-center justify-between px-4 py-3 bg-green-500 text-white rounded-lg shadow-lg animate-fade-in-down">
                 <span>{{ session('success') }}</span>
                 <button onclick="document.getElementById('alert').remove()" class="ml-3 font-bold">✖</button>
@@ -176,9 +176,9 @@ function formatearImporte(input) {
     // Validar que sea número
     if (!isNaN(numero)) {
         // Formatear con separador de miles y dos decimales
-        input.value = '$' + numero.toLocaleString('en-US', { 
-            minimumFractionDigits: 2, 
-            maximumFractionDigits: 2 
+        input.value = '$' + numero.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
         });
     } else {
         input.value = '';
