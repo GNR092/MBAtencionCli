@@ -11,7 +11,7 @@
             </a>
             <div class="h-[1px] flex-1 mx-10 bg-gradient-to-r from-[#8B6B23]/40 to-transparent"></div>
             <span class="text-[9px] text-[#D4A017] tracking-[0.5em] uppercase opacity-70">
-                MB Signature Properties • ERP System
+                MB Signature Properties •
             </span>
         </nav>
 

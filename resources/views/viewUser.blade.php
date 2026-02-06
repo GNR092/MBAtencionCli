@@ -41,7 +41,6 @@
             background-color: rgba(255, 255, 255, 0.9) !important; /* Blanco casi opaco */
             border-radius: 1rem;
             transition: all 0.3s ease;
-            /* Aquí restauramos tu animación original de elevarse */
         }
 
         .btn-original-style:hover {
@@ -50,6 +49,7 @@
         }
     </style>
 
+    {{-- MINI VIDEO (Izquierda) --}}
     <div id="miniVideoContainer" class="fixed bottom-6 left-6 md:bottom-24 md:left-8 z-[50] w-[200px] h-[120px] md:w-[300px] md:h-[180px] bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden shadow-2xl group animate-fadeInUp">
         <button onclick="closeMiniVideo(event)" class="absolute top-2 right-2 z-[60] bg-black/50 text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg">&times;</button>
         <a href="https://www.youtube.com/watch?v=Xsct6_37qW8" target="_blank" class="block w-full h-full relative cursor-pointer">
@@ -62,6 +62,7 @@
         </a>
     </div>
 
+    {{-- CONTENIDO PRINCIPAL --}}
     <main class="min-h-screen relative z-10 bg-transparent">
         <div class="w-full min-h-screen p-4 md:p-8 space-y-6 md:space-y-10 font-[system-ui] bg-transparent">
 
@@ -163,7 +164,7 @@
         </div>
     </main>
 
-    {{-- MODAL FULLSCREEN --}}
+    {{-- MODAL FULLSCREEN ANUNCIO --}}
     <div id="fullScreenAnuncio" class="fixed inset-0 bg-black/95 z-[999999] hidden flex-col p-4 md:p-6 items-center justify-center">
         <button onclick="cerrarFullScreen()" class="absolute top-4 right-4 md:top-6 md:right-6 text-white text-3xl md:text-4xl hover:text-[#d8c495] transition">&times;</button>
         <div id="fs-content" class="w-full h-full flex flex-col items-center">
@@ -173,6 +174,44 @@
         </div>
     </div>
 
+    {{-- ========================================================== --}}
+    {{-- MODULO CHAT REINTEGRADO Y CORREGIDO (FIXED Z-INDEX)        --}}
+    {{-- ========================================================== --}}
+
+    <button id="openChatBtn" class="fixed bottom-6 right-6 z-[9999] cursor-pointer bg-[#d8c495] text-[#3c3c3c] w-14 h-14 rounded-full shadow-2xl hover:scale-110 transition-transform hover:bg-white flex items-center justify-center animate-fadeInUp">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+        </svg>
+    </button>
+
+    <div id="chatModal" class="fixed inset-0 z-[10000] hidden items-end sm:items-center justify-center bg-black/50 backdrop-blur-[2px]">
+        <div class="bg-white w-full sm:w-[400px] h-[80vh] sm:h-[600px] sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-fadeInUp">
+            <div class="bg-[#3c3c3c] p-4 flex justify-between items-center shadow-md">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    <h3 class="text-[#d8c495] font-bold text-lg">Soporte en línea</h3>
+                </div>
+                <button id="closeChatBtn" class="text-gray-400 hover:text-white transition-colors text-2xl leading-none">&times;</button>
+            </div>
+
+            <div id="chatMessages" class="flex-1 p-4 overflow-y-auto bg-gray-50 custom-scroll flex flex-col gap-2">
+                <div class="text-center text-gray-400 text-sm mt-4">Iniciando conversación...</div>
+            </div>
+
+            <div class="p-3 bg-white border-t border-gray-200">
+                <div class="flex gap-2">
+                    <input type="text" id="chatInput"
+                           class="flex-1 bg-gray-100 border-0 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#d8c495] focus:outline-none text-gray-700"
+                           placeholder="Escribe tu mensaje..." autocomplete="off">
+                    <button id="sendChatBtn" class="bg-[#d8c495] text-[#3c3c3c] p-3 rounded-xl hover:bg-[#c5b386] transition-colors shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     @push('scripts')
         <script>
@@ -183,194 +222,178 @@
                     const content = marquee.innerHTML;
                     marquee.innerHTML = content + content + content;
                 }
-                // ... resto de tu lógica de anuncios y video que ya tienes ...
             });
 
-    document.addEventListener('DOMContentLoaded', function () {
-        // --- LÓGICA MARQUEE ---
-        const marquee = document.getElementById('marquee');
-        if (marquee && marquee.children.length > 0) {
-            const content = marquee.innerHTML;
-            marquee.innerHTML = content + content + content;
-        }
+            document.addEventListener('DOMContentLoaded', function () {
+                // --- LÓGICA CHAT CORREGIDA ---
+                const openBtn = document.getElementById('openChatBtn');
+                const closeBtn = document.getElementById('closeChatBtn');
+                const modal = document.getElementById('chatModal');
+                const messagesDiv = document.getElementById('chatMessages');
+                const input = document.getElementById('chatInput');
+                const sendBtn = document.getElementById('sendChatBtn');
 
-        // --- LÓGICA CHAT ---
-        const openBtn = document.getElementById('openChatBtn');
-        const closeBtn = document.getElementById('closeChatBtn');
-        const modal = document.getElementById('chatModal');
-        const messagesDiv = document.getElementById('chatMessages');
-        const input = document.getElementById('chatInput');
-        const sendBtn = document.getElementById('sendChatBtn');
-        const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                // Protección para CSRF: Si no existe, devuelve string vacío para evitar crash
+                const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+                const csrf = csrfMeta ? csrfMeta.getAttribute('content') : '';
 
-        if (openBtn && modal) {
-            openBtn.onclick = (e) => {
-                e.preventDefault();
-                modal.style.display = 'flex';
-                fetchMessages();
-                setTimeout(() => input.focus(), 100);
-            };
-            closeBtn.onclick = () => { modal.style.display = 'none'; };
+                if (openBtn && modal) {
+                    openBtn.onclick = (e) => {
+                        e.preventDefault();
 
-            async function fetchMessages() {
-                const res = await fetch('{{ route('chat.getMessages') }}', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                if (res.ok) displayMessages(await res.json());
+                        // CORRECCIÓN PRINCIPAL:
+                        // Remover explícitamente la clase hidden Y aplicar display flex
+                        modal.classList.remove('hidden');
+                        modal.style.display = 'flex';
+
+                        fetchMessages();
+                        setTimeout(() => input.focus(), 100);
+                    };
+
+                    closeBtn.onclick = () => {
+                        // Al cerrar, volvemos a poner la clase hidden
+                        modal.classList.add('hidden');
+                        modal.style.display = 'none';
+                    };
+
+                    async function fetchMessages() {
+                        try {
+                            const res = await fetch('{{ route('chat.getMessages') }}', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                            if (res.ok) displayMessages(await res.json());
+                        } catch (error) {
+                            console.error('Error fetching messages:', error);
+                        }
+                    }
+
+                    function displayMessages(msgs) {
+                        messagesDiv.innerHTML = '';
+                        msgs.forEach(m => {
+                            const el = document.createElement('div');
+                            const isSender = m.sender_id === {{ Js::from($user->id) }};
+                            Object.assign(el.style, {
+                                marginBottom: '8px', padding: '10px', borderRadius: '12px', maxWidth: '75%',
+                                backgroundColor: isSender ? '#3c3c3c' : '#e5e7eb',
+                                color: isSender ? '#d8c495' : '#1f2937',
+                                marginLeft: isSender ? 'auto' : '0', fontSize: '14px',
+                                borderTopRightRadius: isSender ? '2px' : '12px',
+                                borderTopLeftRadius: isSender ? '12px' : '2px',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                            });
+                            el.textContent = m.message;
+                            messagesDiv.appendChild(el);
+                        });
+                        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                    }
+
+                    async function sendMessage() {
+                        const text = input.value.trim();
+                        if (!text || input.readOnly) return;
+                        input.readOnly = true;
+                        sendBtn.disabled = true;
+                        try {
+                            const res = await fetch('{{ route('chat.sendMessage') }}', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'X-Requested-With': 'XMLHttpRequest' },
+                                body: JSON.stringify({ message: text })
+                            });
+                            if (res.ok) { input.value = ''; await fetchMessages(); }
+                        } catch(e) {
+                            console.error("Error sending", e);
+                        } finally {
+                            input.readOnly = false; sendBtn.disabled = false; input.focus();
+                        }
+                    }
+
+                    sendBtn.onclick = (e) => { e.preventDefault(); sendMessage(); };
+                    input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } };
+                }
+            });
+
+            // --- LÓGICA DE ANUNCIOS (CARRUSEL INFINITO) ---
+            let currentAnuncio = 0;
+            const slides = document.querySelectorAll('.anuncio-slide');
+            const dots = document.querySelectorAll('.anuncio-dot');
+
+            function jumpToAnuncio(index) {
+                if (slides.length <= 1) return;
+
+                // 1. Limpiar slide y dot actual
+                slides[currentAnuncio].classList.replace('opacity-100', 'opacity-0');
+                slides[currentAnuncio].classList.replace('z-10', 'z-0');
+
+                const allDots = document.querySelectorAll('.anuncio-dot');
+                if (allDots.length > 0) {
+                    allDots[currentAnuncio].classList.remove('bg-[#d8c495]', 'w-6');
+                    allDots[currentAnuncio].classList.add('bg-white/30', 'w-2');
+                }
+
+                // 2. Calcular nuevo índice (Ciclo infinito)
+                currentAnuncio = (index + slides.length) % slides.length;
+
+                // 3. Activar nuevo slide y dot
+                slides[currentAnuncio].classList.replace('opacity-0', 'opacity-100');
+                slides[currentAnuncio].classList.replace('z-0', 'z-10');
+
+                if (allDots.length > 0) {
+                    allDots[currentAnuncio].classList.remove('bg-white/30', 'w-2');
+                    allDots[currentAnuncio].classList.add('bg-[#d8c495]', 'w-6');
+                }
+
+                // 4. Reiniciar el scroll del PDF al cambiar de anuncio
+                const activeScroll = slides[currentAnuncio].querySelector('.overflow-y-auto');
+                if (activeScroll) activeScroll.scrollTop = 0;
             }
 
-            function displayMessages(msgs) {
-                messagesDiv.innerHTML = '';
-                msgs.forEach(m => {
-                    const el = document.createElement('div');
-                    const isSender = m.sender_id === {{ Js::from($user->id) }};
-                    Object.assign(el.style, {
-                        marginBottom: '8px', padding: '8px', borderRadius: '8px', maxWidth: '75%',
-                        backgroundColor: isSender ? '#3c3c3c' : '#d1d5db',
-                        color: isSender ? 'white' : '#1f2937', marginLeft: isSender ? 'auto' : '0', fontSize: '14px'
-                    });
-                    el.textContent = m.message;
-                    messagesDiv.appendChild(el);
-                });
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            function changeAnuncio(direction) {
+                jumpToAnuncio(currentAnuncio + direction);
             }
 
-            async function sendMessage() {
-                const text = input.value.trim();
-                if (!text || input.readOnly) return;
-                input.readOnly = true;
-                sendBtn.disabled = true;
-                try {
-                    const res = await fetch('{{ route('chat.sendMessage') }}', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'X-Requested-With': 'XMLHttpRequest' },
-                        body: JSON.stringify({ message: text })
-                    });
-                    if (res.ok) { input.value = ''; await fetchMessages(); }
-                } finally { input.readOnly = false; sendBtn.disabled = false; input.focus(); }
+            // Auto-play cada 8 segundos
+            let autoPlayInterval = setInterval(() => changeAnuncio(1), 8000);
+
+            function expandirAnuncio() {
+                const slide = slides[currentAnuncio];
+                if (!slide || !slide.dataset.path || slide.dataset.path.endsWith('/storage/')) {
+                    console.error("Error: La ruta del archivo está vacía o es inválida.");
+                    return;
+                }
+
+                const titulo = slide.dataset.titulo;
+                const desc = slide.dataset.desc;
+                const path = slide.dataset.path;
+                const type = slide.dataset.type;
+
+                document.getElementById('fs-titulo').textContent = titulo;
+                document.getElementById('fs-desc').textContent = desc;
+                const mediaDiv = document.getElementById('fs-media');
+
+                if (type === 'pdf') {
+                    mediaDiv.innerHTML = `<iframe src="${path}#view=Fit" class="w-full h-full border-none" style="min-height: 80vh;"></iframe>`;
+                } else {
+                    mediaDiv.innerHTML = `<img src="${path}" class="max-h-[80vh] w-auto object-contain shadow-2xl">`;
+                }
+
+                document.getElementById('fullScreenAnuncio').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                clearInterval(autoPlayInterval); // Pausar carrusel al ampliar
             }
 
-            sendBtn.onclick = (e) => { e.preventDefault(); sendMessage(); };
-            input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } };
-        }
-    });
+            function cerrarFullScreen() {
+                document.getElementById('fullScreenAnuncio').classList.add('hidden');
+                document.getElementById('fs-media').innerHTML = '';
+                document.body.style.overflow = 'auto';
+                autoPlayInterval = setInterval(() => changeAnuncio(1), 8000); // Reanudar
+            }
 
-    // --- LÓGICA DE ANUNCIOS (CARRUSEL INFINITO CORREGIDO) ---
-    let currentAnuncio = 0;
-    const slides = document.querySelectorAll('.anuncio-slide');
-    const dots = document.querySelectorAll('.anuncio-dot');
-
-
-    function jumpToAnuncio(index) {
-        if (slides.length <= 1) return;
-
-        // 1. Limpiar slide y dot actual
-        slides[currentAnuncio].classList.replace('opacity-100', 'opacity-0');
-        slides[currentAnuncio].classList.replace('z-10', 'z-0');
-
-        const allDots = document.querySelectorAll('.anuncio-dot');
-        if (allDots.length > 0) {
-            allDots[currentAnuncio].classList.remove('bg-[#d8c495]', 'w-6');
-            allDots[currentAnuncio].classList.add('bg-white/30', 'w-2');
-        }
-
-        // 2. Calcular nuevo índice (Ciclo infinito)
-        currentAnuncio = (index + slides.length) % slides.length;
-
-        // 3. Activar nuevo slide y dot
-        slides[currentAnuncio].classList.replace('opacity-0', 'opacity-100');
-        slides[currentAnuncio].classList.replace('z-0', 'z-10');
-
-        if (allDots.length > 0) {
-            allDots[currentAnuncio].classList.remove('bg-white/30', 'w-2');
-            allDots[currentAnuncio].classList.add('bg-[#d8c495]', 'w-6');
-        }
-
-        // 4. Reiniciar el scroll del PDF al cambiar de anuncio
-        const activeScroll = slides[currentAnuncio].querySelector('.overflow-y-auto');
-        if (activeScroll) activeScroll.scrollTop = 0;
-    }
-
-    function changeAnuncio(direction) {
-        jumpToAnuncio(currentAnuncio + direction);
-    }
-
-    // Auto-play cada 8 segundos
-    let autoPlayInterval = setInterval(() => changeAnuncio(1), 8000);
-
-    function expandirAnuncio() {
-        const slide = slides[currentAnuncio];
-        if (!slide || !slide.dataset.path || slide.dataset.path.endsWith('/storage/')) {
-            console.error("Error: La ruta del archivo está vacía o es inválida.");
-            return;
-        }
-
-        const titulo = slide.dataset.titulo;
-        const desc = slide.dataset.desc;
-        const path = slide.dataset.path;
-        const type = slide.dataset.type;
-
-        document.getElementById('fs-titulo').textContent = titulo;
-        document.getElementById('fs-desc').textContent = desc;
-        const mediaDiv = document.getElementById('fs-media');
-
-        if (type === 'pdf') {
-            mediaDiv.innerHTML = `<iframe src="${path}#view=Fit" class="w-full h-full border-none" style="min-height: 80vh;"></iframe>`;
-        } else {
-            mediaDiv.innerHTML = `<img src="${path}" class="max-h-[80vh] w-auto object-contain shadow-2xl">`;
-        }
-
-        document.getElementById('fullScreenAnuncio').classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        clearInterval(autoPlayInterval); // Pausar carrusel al ampliar
-    }
-
-    function cerrarFullScreen() {
-        document.getElementById('fullScreenAnuncio').classList.add('hidden');
-        document.getElementById('fs-media').innerHTML = '';
-        document.body.style.overflow = 'auto';
-        autoPlayInterval = setInterval(() => changeAnuncio(1), 8000); // Reanudar
-    }
-
-    function openVideoModal() {
-        const videoId = "TU_ID_AQUI"; // Reemplaza con el ID real del video
-        const modal = document.getElementById('videoModal');
-        const iframe = document.getElementById('main-yt-video');
-
-        // Cargamos el video solo cuando se abre el modal para optimizar recursos
-        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // Bloquear scroll de fondo
-    }
-
-
-    function closeMiniVideo(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        const container = document.getElementById('miniVideoContainer');
-        if (container) {
-            container.style.display = 'none';
-            document.getElementById('miniYT').src = "";
-        }
-    }
-
-    function closeFloatingVideo(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        const videoElem = document.getElementById('miniVideoFloating');
-        if (videoElem) {
-            videoElem.style.display = 'none';
-            // Detenemos el iframe para que no siga consumiendo recursos
-            document.getElementById('floatingYT').src = "";
-        }
-    }
-
-    window.onclick = function(event) {
-        const modal = document.getElementById('videoModal');
-        if (event.target == modal) {
-            closeVideoModal();
-        }
-    }
-
-
-</script>
+            function closeMiniVideo(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                const container = document.getElementById('miniVideoContainer');
+                if (container) {
+                    container.style.display = 'none';
+                    document.getElementById('miniYT').src = "";
+                }
+            }
+        </script>
     @endpush
 @endsection

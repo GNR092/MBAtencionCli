@@ -93,7 +93,7 @@
                 {{-- Texto decorativo actualizado --}}
                 <div class="mt-20">
                     <div class="text-[32px] font-extralight text-black/20 leading-none tracking-tighter uppercase select-none">
-                        MB Signature<br>Properties<br>ERP System
+                        MB Signature<br>Properties<br>
                     </div>
                 </div>
             </div>

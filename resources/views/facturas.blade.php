@@ -16,7 +16,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
         <form method="post" action="{{ route('facturas.buscar') }}" class="relative mx-12 flex items-center gap-2">
             @csrf
-            <label for="searchInput" class="text-black mx-2">Buscar por:</label>
+            <label for="searchInput" class="text-white mx-2">Buscar por:</label>
 
             <!-- Input de búsqueda -->
             <input
