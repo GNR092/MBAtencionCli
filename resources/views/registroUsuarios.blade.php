@@ -37,81 +37,100 @@
     @endif
 
 
-<div class="flex justify-center py-2">
-    <form id="registroUsuarios" class="bg-[#2f2f2f] p-6 rounded-2xl shadow-lg w-full max-w-md" action="{{ route('registroUsuarios.datos') }}" method="POST">
-        @csrf
-        <h2 class="text-white text-2xl font-semibold mb-4">Registro de Inversionistas</h2>
-        <!--nombre-->
-        <div class="mb-4">
-            <label for="name" class="block text-white">Nombre:</label>
-            <input type="text" id="name" name="name" class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200" value="{{ old('name') }}" required>
+<div class="flex justify-center">
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-carbon w-full max-w-md mx-auto">
+
+        <div class="bg-gris-carbon px-6 py-4 border-b-2 border-dorado">
+            <h2 class="text-dorado text-xl font-bold uppercase tracking-widest text-center">
+                Registro de Inversionistas
+            </h2>
         </div>
 
-        <!--email-->
-        <div class="mb-4">
-            <label for="email" class="block text-white">Correo Electrónico:</label>
-            <input type="email" id="email" name="email" class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200" value="{{ old('email') }}" required>
-        </div>
-        <!-- contraseña -->
-        <div class="mb-4">
-            <label for="password" class="block text-white">Contraseña generada:</label>
-            <input type="text" id="password" name="password"
-                class="p-1 w-full mt-1 border border-gray-300 rounded-md shadow-sm bg-gray-200"
-                value="{{ session('generated_password') }}" readonly>
-            <small class="text-white">Se genera automáticamente al registrar.</small>
-        </div>
+        <form id="registroUsuarios" class="p-6 space-y-5" action="{{ route('registroUsuarios.datos') }}" method="POST">
+            @csrf
 
-                <!--proyectos-->
-        <div class="mb-4">
-            <label class="text-white">Proyectos</label>
-            <select name="proyect[]" id="proyect" multiple required multiselect-hide-x="true" class="text-black">
-            <option value="RESIDENT 1">RESIDENT 1</option>
-            <option value="RESIDENT 2">RESIDENT 2</option>
-            <option value="CAMPUS RECIDENCIA">CAMPUS RECIDENCIA</option>
-            <option value="TMZN 122">TMZN 122</option>
-            <option value="GRAND TEMOZON">GRAND TEMOZÓN</option>
-            <option value="Aldea Borboleta I">Aldea Borboleta I</option>
-            <option value="Aldea Borboleta II">Aldea Borboleta II </option>
-            <option value="Aldea Borboleta III">Aldea Borboleta III</option>
-            <option value="MB RESORT MERIDA">MB RESORT MÉRIDA</option>
-            <option value="Princess Village">Princess Village</option>
-            <option value="Royal Square Plaza">Royal Square Plaza</option>
-            <option value="RUM">RUM</option>
-            <option value="Avenue Temozon">Avenue Temozón</option>
-            <option value="MB Resort Orlando">MB Resort Orlando</option>
-            <option value="MB Wellness Resort">MB Wellness Resort</option>
-            </select>
-        </div>
-
-        <!-- Regimen fiscal -->
-        <div class="mb-4">
-            <label class="text-white">Regimen fiscal</label>
-            <select name="regimenFiscal" id="regimenFiscal" class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200 text-black">
-            <option value="resico">RESICO</option>
-            <option value="arrendamiento">ARRENDAMIENTO</option>
-            <option value="persona moral">PERSONA MORAL</option>
-            <option value="rif">RIF</option>
-            </select>
-        </div>
-        <!-- Teléfono -->
-        <div class="mb-4">
-            <label for="phone" class="block text-white">Número telefónico:</label>
-            <div class="flex items-center">
-                <span class="phone-prefix rounded-l-md px-2 py-1">+52</span>
-                <input type="tel" id="phone" name="phone"
-                    class="p-1 shadow-sm rounded-r-md"
-                    maxlength="10"
-                    pattern="[0-9]{10}"
-                    oninput="this.value = this.value.replace(/[^0-9]/g, '');"
-                    value="{{ old('phone') }}"
-                    required>
+            <div>
+                <label for="name" class="block text-sm font-bold text-gris-carbon mb-1">Nombre:</label>
+                <input type="text" id="name" name="name"
+                       class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors"
+                       value="{{ old('name') }}" required>
             </div>
-            <small class="text-white">Formato: 10 dígitos (ejemplo: 9999999999)</small>
-        </div>
 
+            <div>
+                <label for="email" class="block text-sm font-bold text-gris-carbon mb-1">Correo Electrónico:</label>
+                <input type="email" id="email" name="email"
+                       class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors"
+                       value="{{ old('email') }}" required>
+            </div>
 
-        <button type="submit" class="ml-25 mt-4 bg-[#d4a017] text-white px-4 font-semibold py-2 rounded-lg transition duration-300 ease-in-out hover:scale-105 hover:bg-[#b58714]">Registrar Usuario</button>
-    </form>
+            <div class="bg-gray-50 p-3 rounded-lg border border-carbon/30">
+                <label for="password" class="block text-xs font-bold text-gris-carbon uppercase tracking-wider mb-1">Contraseña generada:</label>
+                <div class="flex items-center gap-2">
+                    <input type="text" id="password" name="password"
+                           class="block w-full bg-transparent border-none text-dorado font-mono font-bold text-lg focus:ring-0 p-0"
+                           value="{{ session('generated_password') }}" readonly>
+                </div>
+                <small class="text-xs text-gray-500 mt-1 block">Se genera automáticamente al registrar.</small>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-gris-carbon mb-1">Proyectos</label>
+                <select name="proyect[]" id="proyect" multiple required multiselect-hide-x="true"
+                        class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors custom-scroll h-32">
+                    <option value="RESIDENT 1">RESIDENT 1</option>
+                    <option value="RESIDENT 2">RESIDENT 2</option>
+                    <option value="CAMPUS RECIDENCIA">CAMPUS RECIDENCIA</option>
+                    <option value="TMZN 122">TMZN 122</option>
+                    <option value="GRAND TEMOZON">GRAND TEMOZÓN</option>
+                    <option value="Aldea Borboleta I">Aldea Borboleta I</option>
+                    <option value="Aldea Borboleta II">Aldea Borboleta II</option>
+                    <option value="Aldea Borboleta III">Aldea Borboleta III</option>
+                    <option value="MB RESORT MERIDA">MB RESORT MÉRIDA</option>
+                    <option value="Princess Village">Princess Village</option>
+                    <option value="Royal Square Plaza">Royal Square Plaza</option>
+                    <option value="RUM">RUM</option>
+                    <option value="Avenue Temozon">Avenue Temozón</option>
+                    <option value="MB Resort Orlando">MB Resort Orlando</option>
+                    <option value="MB Wellness Resort">MB Wellness Resort</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-gris-carbon mb-1">Régimen Fiscal</label>
+                <select name="regimenFiscal" id="regimenFiscal"
+                        class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon bg-white focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors">
+                    <option value="resico">RESICO</option>
+                    <option value="arrendamiento">ARRENDAMIENTO</option>
+                    <option value="persona moral">PERSONA MORAL</option>
+                    <option value="rif">RIF</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="phone" class="block text-sm font-bold text-gris-carbon mb-1">Número telefónico:</label>
+                <div class="flex items-center">
+                <span class="inline-flex items-center px-3 py-2 rounded-l-lg border border-r-0 border-gray-300 bg-gray-100 text-gray-500 text-sm font-bold">
+                    +52
+                </span>
+                    <input type="tel" id="phone" name="phone"
+                           class="block w-full border border-gray-300 rounded-r-lg px-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors"
+                           maxlength="10"
+                           pattern="[0-9]{10}"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                           value="{{ old('phone') }}"
+                           required>
+                </div>
+                <small class="text-xs text-gray-400 mt-1">Formato: 10 dígitos (ejemplo: 9999999999)</small>
+            </div>
+
+            <div class="pt-2">
+                <button type="submit"
+                        class="w-full bg-dorado text-white font-bold uppercase tracking-widest py-3 rounded-lg shadow-md hover:bg-dorado/90 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
+                    Registrar Usuario
+                </button>
+            </div>
+        </form>
+    </div>
 
 </div>
 <script src="js/multiselect.js"></script>

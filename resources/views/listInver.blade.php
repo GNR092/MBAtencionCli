@@ -45,38 +45,41 @@
 </div>
 
     <!-- Tabla -->
-    <div class="overflow-x-auto bg-white rounded-lg shadow-md">
-        <table class="w-full text-sm text-center border-collapse">
-            <thead class="bg-[#2f2f2f] text-[#fff] uppercase text-xs tracking-wider">
+    <div class="tabla-dorada-container">
+        <div class="overflow-x-auto custom-scroll">
+            <table class="tabla-dorada">
+                <thead>
                 <tr>
-                    <th class="px-6 py-3 border-b">Factura</th>
-                    <th class="px-6 py-3 border-b">Proyecto</th>
-                    <th class="px-6 py-3 border-b">Fecha</th>
-                    <th class="px-6 py-3 border-b">Inversionista</th>
+                    <th>Factura</th>
+                    <th>Proyecto</th>
+                    <th>Fecha</th>
+                    <th>Inversionista</th>
                 </tr>
-            </thead>
-            <tbody id="tableBody" class="divide-y divide-[#eee]">
+                </thead>
+                <tbody id="tableBody">
                 @forelse($xmlFiles as $file)
-                <tr class="hover:bg-gray-100 transition">
-                    <td class="px-6 py-4">{{ $file->batch_id }}</td>
-                    <td class="px-6 py-4">{{ $file->proyectos }}</td>
-                    <td class="px-6 py-4">{{ $file->created_at}}</td>
-                    <td class="px-6 py-4">{{ $file->emisor_name }}</td>
-                </tr>
-                        @empty
-                <tr>
-                    <td colspan="5">No se encontraron facturas</td>
-                </tr>
+                    <tr>
+                        <td class="font-bold">{{ $file->batch_id }}</td>
+                        <td>{{ $file->proyectos }}</td>
+                        <td>{{ $file->created_at }}</td>
+                        <td>{{ $file->emisor_name }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="4" class="py-10 text-gris-carbon font-medium italic">
+                            No se encontraron facturas
+                        </td>
+                    </tr>
                 @endforelse
-            </tbody>
-        </table>
-                        <div class="mt-6 flex justify-center">
-            <div class="bg-white rounded-lg shadow p-2 ">
-                {{ $xmlFiles->links('pagination::tailwind') }}
-            </div>
+                </tbody>
+            </table>
         </div>
 
-
+        <div class="bg-gray-50 border-t border-carbon p-4 flex justify-center">
+            {{ $xmlFiles->links('pagination::tailwind') }}
+        </div>
     </div>
+
+
 </div>
 @endsection

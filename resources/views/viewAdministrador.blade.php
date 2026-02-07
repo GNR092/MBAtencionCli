@@ -49,63 +49,66 @@
                 </form>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+            <!-- Tabla -->
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-[#c4c4c4]">
                 <div class="overflow-x-auto custom-scroll">
                     <table class="w-full text-sm text-center border-collapse">
-                        <thead class="bg-[#3c3c3c] text-[#d8c495] uppercase text-xs tracking-widest">
+                        <thead class="bg-[#1a1a1a] text-[#d4a017] uppercase text-xs tracking-widest border-b-2 border-[#d4a017]">
                         <tr>
-                            <th class="px-4 py-4 border-b">ID</th>
-                            <th class="px-4 py-4 border-b">Inversionista</th>
-                            <th class="px-4 py-4 border-b">Proyecto</th>
-                            <th class="px-4 py-4 border-b">Estado</th>
-                            <th class="px-4 py-4 border-b">Mes</th>
-                            <th class="px-4 py-4 border-b">Base</th>
-                            <th class="px-4 py-4 border-b">ISR</th>
-                            <th class="px-4 py-4 border-b">Neto</th>
-                            <th class="px-4 py-4 border-b">Pagado</th>
-                            <th class="px-4 py-4 border-b">Pendiente</th>
+                            <th class="px-4 py-4">ID</th>
+                            <th class="px-4 py-4">Inversionista</th>
+                            <th class="px-4 py-4">Proyecto</th>
+                            <th class="px-4 py-4">Estado</th>
+                            <th class="px-4 py-4">Mes</th>
+                            <th class="px-4 py-4">Base</th>
+                            <th class="px-4 py-4">ISR</th>
+                            <th class="px-4 py-4">Neto</th>
+                            <th class="px-4 py-4">Pagado</th>
+                            <th class="px-4 py-4">Pendiente</th>
                         </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100">
+
+                        <tbody class="divide-y divide-[#c4c4c4]">
                         @forelse($cuentas as $cuenta)
-                            <tr class="hover:bg-gray-50 transition duration-200">
-                                <td class="px-4 py-4 font-bold text-gray-700">{{ $cuenta->id_cuentas_por_pagar }}</td>
-                                <td class="px-4 py-4 text-left">{{ $cuenta->name }}</td>
+                            <tr class="text-[#1a1a1a] hover:bg-gray-50 transition duration-200">
+                                <td class="px-4 py-4 font-bold">{{ $cuenta->id_cuentas_por_pagar }}</td>
+                                <td class="px-4 py-4 text-left font-medium">{{ $cuenta->name }}</td>
                                 <td class="px-4 py-4">{{ $cuenta->proyecto }}</td>
                                 <td class="px-4 py-4">
                                     @if($cuenta->estado === 'parcial')
-                                        <select class="estado-select bg-yellow-50 border border-yellow-300 rounded-lg px-2 py-1 text-xs text-yellow-800 outline-none" data-id="{{ $cuenta->id_cuentas_por_pagar }}">
+                                        <select class="estado-select bg-yellow-50 border border-yellow-300 rounded-lg px-2 py-1 text-xs text-yellow-800 outline-none focus:ring-2 focus:ring-[#d4a017]" data-id="{{ $cuenta->id_cuentas_por_pagar }}">
                                             <option value="parcial" selected>Parcial</option>
                                             <option value="pagado">Pagado</option>
                                         </select>
                                     @else
                                         <span class="px-3 py-1 text-[10px] font-black rounded-full uppercase
-                                        {{ $cuenta->estado === 'pendiente' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
-                                        {{ $cuenta->estado }}
-                                    </span>
+                            {{ $cuenta->estado === 'pendiente' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
+                            {{ $cuenta->estado }}
+                        </span>
                                     @endif
                                 </td>
                                 <td class="px-4 py-4 text-xs">{{ json_decode($cuenta->mesesdepago)->mes ?? 'N/A' }}</td>
                                 <td class="px-4 py-4 font-medium">${{ number_format($cuenta->importe_base_final,2) }}</td>
                                 <td class="px-4 py-4 text-red-600 font-medium">${{ number_format($cuenta->isr,2) }}</td>
-                                <td class="px-4 py-4 font-bold text-blue-700">${{ number_format($cuenta->saldo_neto,2) }}</td>
+                                <td class="px-4 py-4 font-bold text-[#1a1a1a]">${{ number_format($cuenta->saldo_neto,2) }}</td>
                                 <td class="px-4 py-4 text-green-700 font-medium">${{ number_format($cuenta->monto_pagado,2) }}</td>
-                                <td class="px-4 py-4 font-black text-gray-900">${{ number_format($cuenta->saldo_pendiente,2) }}</td>
+                                <td class="px-4 py-4 font-black text-[#1a1a1a]">${{ number_format($cuenta->saldo_pendiente,2) }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="py-10 text-gray-400 italic">No se encontraron registros activos.</td>
+                                <td colspan="10" class="py-10 text-[#c4c4c4] italic">No se encontraron registros activos.</td>
                             </tr>
                         @endforelse
                         </tbody>
-                        <tfoot class="bg-gray-100 border-t-2 border-gray-200">
-                        <tr class="font-bold text-gray-800">
-                            <td colspan="9" class="text-right px-6 py-3 uppercase text-xs">Total Pendiente:</td>
-                            <td class="px-4 py-3 text-red-600">${{ number_format($totalPendiente, 2) }}</td>
+
+                        <tfoot class="bg-[#c4c4c4] border-t-2 border-[#1a1a1a]">
+                        <tr class="font-bold text-[#1a1a1a]">
+                            <td colspan="9" class="text-right px-6 py-3 uppercase text-xs tracking-wider">Total Pendiente:</td>
+                            <td class="px-4 py-3 text-red-700">${{ number_format($totalPendiente, 2) }}</td>
                         </tr>
-                        <tr class="font-bold text-gray-800 border-t border-gray-200">
-                            <td colspan="9" class="text-right px-6 py-3 uppercase text-xs">Total Pagado:</td>
-                            <td class="px-4 py-3 text-green-600">${{ number_format($totalPagado, 2) }}</td>
+                        <tr class="font-bold text-[#1a1a1a] border-t border-[#1a1a1a]/20">
+                            <td colspan="9" class="text-right px-6 py-3 uppercase text-xs tracking-wider">Total Pagado:</td>
+                            <td class="px-4 py-3 text-green-800">${{ number_format($totalPagado, 2) }}</td>
                         </tr>
                         </tfoot>
                     </table>

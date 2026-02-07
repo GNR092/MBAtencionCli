@@ -3,7 +3,7 @@
 @section('content')
     <div class="w-full flex flex-col min-h-screen">
 
-        {{-- Header Minimalista --}}
+        {{-- Header Minimalista (INTACTO) --}}
         <nav class="flex justify-between items-center mb-16 px-2">
             <a href="/vista-usuario" class="group flex items-center gap-4 text-[10px] tracking-[0.4em] uppercase text-white/40 hover:text-[#D4A017] transition-all duration-700">
                 <span class="text-lg group-hover:-translate-x-2 transition-transform duration-500">←</span>
@@ -15,7 +15,7 @@
             </span>
         </nav>
 
-        {{-- Hero Section --}}
+        {{-- Hero Section (INTACTO) --}}
         <header class="mb-20 px-2">
             <div class="flex items-baseline gap-4">
                 <span class="text-[#D4A017] text-sm font-serif italic">01</span>
@@ -28,78 +28,114 @@
             </p>
         </header>
 
-        {{-- Dashboard de Carga --}}
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-1 px-2 mb-20">
+        {{-- Dashboard de Carga (ESTILO TABLA-DORADA RESTAURADO) --}}
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 px-2 mb-20">
 
-            {{-- Panel Izquierdo: Formulario --}}
-            <div class="lg:col-span-8 bg-[#1A1A1A]/80 backdrop-blur-3xl border border-white/5 p-12 md:p-20 shadow-2xl">
-                @if(!$batch || ($batch && $batch->total_files === 0))
-                    <form id="xmlForm" method="POST" action="{{ route('upload-xml') }}" enctype="multipart/form-data" class="space-y-20">
-                        @csrf
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-16">
-                            <div class="group relative">
-                                <label class="block text-[9px] uppercase tracking-[0.3em] text-[#D4A017] mb-4 opacity-60 group-focus-within:opacity-100 transition-opacity">Correo Institucional</label>
-                                <input type="email" name="user_email" required
-                                       class="w-full bg-transparent border-b border-white/10 py-4 text-xl text-white font-light focus:border-[#D4A017] outline-none transition-all duration-700"
-                                       placeholder="usuario@mbsignature.com">
-                            </div>
+            {{-- Panel Izquierdo: Formulario (Tarjeta Blanca Estilo Tabla) --}}
+            <div class="lg:col-span-8 bg-white rounded-2xl shadow-xl border border-[#c4c4c4] overflow-hidden">
 
-                            <div class="group relative">
-                                <label class="block text-[9px] uppercase tracking-[0.3em] text-[#D4A017] mb-4 opacity-60 group-focus-within:opacity-100 transition-opacity">Asignación de Proyecto</label>
-                                <select name="proyect" id="proyect" required
-                                        class="w-full bg-transparent border-b border-white/10 py-4 text-xl text-white font-light focus:border-[#D4A017] outline-none appearance-none cursor-pointer">
-                                    <option value="" disabled selected class="bg-[#1A1A1A]">Seleccionar Unidad...</option>
-                                    <option value="RESIDENT 1" class="bg-[#1A1A1A]">RESIDENT 1</option>
-                                    {{-- ... --}}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="relative group border border-white/5 bg-black/20 rounded-sm overflow-hidden transition-all duration-1000 hover:border-[#D4A017]/30">
-                            <input type="file" name="xml_files[]" accept=".xml" multiple required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30">
-                            <div class="py-24 flex flex-col items-center justify-center relative z-10">
-                                <div class="w-12 h-[1px] bg-[#D4A017] mb-8 group-hover:w-24 transition-all duration-700"></div>
-                                <p class="text-[11px] tracking-[0.6em] uppercase text-white/30 group-hover:text-white/80 transition-colors">
-                                    Cargar Archivos XML
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="flex justify-start">
-                            <button type="submit" class="group relative px-20 py-5 bg-white text-black text-[10px] tracking-[0.5em] uppercase font-bold hover:bg-[#D4A017] transition-all duration-700 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-                                Validar Documentación
-                            </button>
-                        </div>
-                    </form>
-                @endif
-            </div>
-
-            {{-- Panel Derecho: Información --}}
-            <div class="lg:col-span-4 bg-[#D4A017] p-12 md:p-16 flex flex-col justify-between shadow-2xl">
-                <div>
-                    <h3 class="text-black text-xs tracking-[0.4em] uppercase font-bold mb-10 border-b border-black/10 pb-4">Guía de Usuario</h3>
-                    <ul class="space-y-8">
-                        <li class="flex gap-4">
-                            <span class="text-black/40 font-serif italic text-sm">01</span>
-                            <p class="text-black/80 text-[11px] leading-relaxed tracking-wide uppercase">Verifique que el CFDI sea versión 4.0 para evitar rechazos del sistema.</p>
-                        </li>
-                        <li class="flex gap-4">
-                            <span class="text-black/40 font-serif italic text-sm">02</span>
-                            <p class="text-black/80 text-[11px] leading-relaxed tracking-wide uppercase">El sistema ERP validará el UUID contra la base de datos de MB Signature.</p>
-                        </li>
-                    </ul>
+                <div class="bg-[#1a1a1a] px-6 py-4 border-b-2 border-[#d4a017] flex justify-between items-center">
+                    <h2 class="text-[#d4a017] text-lg font-bold uppercase tracking-widest flex items-center gap-2">
+                        <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                        Carga de Documentación XML
+                    </h2>
                 </div>
 
-                {{-- Texto decorativo actualizado --}}
-                <div class="mt-20">
-                    <div class="text-[32px] font-extralight text-black/20 leading-none tracking-tighter uppercase select-none">
-                        MB Signature<br>Properties<br>
+                <div class="p-8"> @if(!$batch || ($batch && $batch->total_files === 0))
+                        <form id="xmlForm" method="POST" action="{{ route('upload-xml') }}" enctype="multipart/form-data" class="space-y-8">
+                            @csrf
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8"> <div>
+                                    <label class="block text-xs font-bold text-[#1a1a1a] uppercase mb-2">Correo Institucional</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                        </div>
+                                        <input type="email" name="user_email" required
+                                               class="block w-full border border-gray-300 rounded-lg pl-10 pr-3 py-3 text-[#1a1a1a] focus:outline-none focus:border-[#d4a017] focus:ring-1 focus:ring-[#d4a017] transition-colors bg-white shadow-sm"
+                                               placeholder="usuario@mbsignature.com">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-[#1a1a1a] uppercase mb-2">Asignación de Proyecto</label>
+                                    <div class="relative">
+                                        <select name="proyect" id="proyect" required
+                                                class="block w-full border border-gray-300 rounded-lg pl-3 pr-10 py-3 text-[#1a1a1a] bg-white focus:outline-none focus:border-[#d4a017] focus:ring-1 focus:ring-[#d4a017] transition-colors appearance-none cursor-pointer shadow-sm">
+                                            <option value="" disabled selected>Seleccionar Unidad...</option>
+                                            <option value="RESIDENT 1">RESIDENT 1</option>
+                                            {{-- Agrega aquí tus otras opciones --}}
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-500">
+                                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="relative group">
+                                <label class="block text-xs font-bold text-[#1a1a1a] uppercase mb-2">Archivos XML</label>
+                                <div class="w-full h-48 rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 flex flex-col justify-center items-center group-hover:border-[#d4a017] group-hover:bg-[#d4a017]/5 transition-all duration-300 cursor-pointer overflow-hidden relative">
+
+                                    <div class="mb-3 p-3 rounded-full bg-white shadow-sm group-hover:scale-110 transition-transform duration-300 relative z-10">
+                                        <svg style="width: 32px; height: 32px;" class="text-[#d4a017]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                                    </div>
+
+                                    <p class="text-sm font-bold text-[#1a1a1a] uppercase tracking-wider mb-1 relative z-10">Arrastra tus archivos aquí</p>
+                                    <p class="text-xs text-gray-500 relative z-10">Solo archivos .xml permitidos</p>
+
+                                    <input type="file" name="xml_files[]" accept=".xml" multiple required
+                                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end pt-4 border-t border-gray-100">
+                                <button type="submit"
+                                        class="bg-[#d4a017] text-white px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-[#d4a017]/90 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2">
+                                    <span>Validar Documentación</span>
+                                    <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </button>
+                            </div>
+                        </form>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Panel Derecho: Información (Tarjeta Oscura Elegante) --}}
+            <div class="lg:col-span-4 flex flex-col h-full">
+                <div class="bg-[#1a1a1a] rounded-2xl shadow-xl border border-[#c4c4c4] p-8 flex flex-col h-full relative overflow-hidden">
+
+                    <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-[#d4a017] rounded-full opacity-10 blur-3xl"></div>
+
+                    <h3 class="text-[#d4a017] text-sm tracking-[0.2em] uppercase font-bold mb-8 border-b border-[#d4a017]/30 pb-4">
+                        Guía de Usuario
+                    </h3>
+
+                    <ul class="space-y-8 relative z-10">
+                        <li class="flex gap-4 items-start group">
+                            <span class="text-[#d4a017] font-serif italic text-2xl leading-none opacity-50 group-hover:opacity-100 transition">01</span>
+                            <p class="text-gray-300 text-xs leading-relaxed tracking-wide uppercase group-hover:text-white transition">
+                                Verifique que el CFDI sea <strong class="text-white">versión 4.0</strong> para evitar rechazos del sistema.
+                            </p>
+                        </li>
+                        <li class="flex gap-4 items-start group">
+                            <span class="text-[#d4a017] font-serif italic text-2xl leading-none opacity-50 group-hover:opacity-100 transition">02</span>
+                            <p class="text-gray-300 text-xs leading-relaxed tracking-wide uppercase group-hover:text-white transition">
+                                El sistema validará el UUID contra la base de datos de <strong class="text-white">MB Signature</strong>.
+                            </p>
+                        </li>
+                    </ul>
+
+                    <div class="mt-auto pt-12 text-center opacity-10">
+                        <div class="text-4xl font-extralight text-white leading-none tracking-tighter uppercase select-none">
+                            MB Signature<br>Properties
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Footer Tutorial --}}
+        {{-- Footer Tutorial (INTACTO) --}}
         <footer class="grid grid-cols-1 lg:grid-cols-12 gap-20 px-2 py-20 border-t border-white/5">
             <div class="lg:col-span-4">
                 <h4 class="text-[#D4A017] text-[10px] tracking-[0.4em] uppercase mb-6">Mesa de Ayuda</h4>

@@ -60,48 +60,60 @@
                     </div>
                 </form>
 
-                {{-- Tabla con Letras Más Grandes --}}
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="border-b border-white/10">
-                        <tr class="text-[11px] tracking-[0.4em] uppercase text-[#D4A017] opacity-80 font-bold">
-                            <th class="px-6 py-10 text-center">ID</th>
-                            <th class="px-6 py-10">Folio</th>
-                            <th class="px-6 py-10">Proyecto</th>
-                            <th class="px-6 py-10">Fecha</th>
-                            <th class="px-6 py-10">Estado</th>
-                            <th class="px-6 py-10 text-right">Acción</th>
-                        </tr>
-                        </thead>
-                        <tbody class="divide-y divide-white/5 text-white">
-                        @forelse($contratos as $contrato)
-                            <tr class="group hover:bg-white/[0.02] transition-colors">
-                                <td class="px-6 py-10 text-xl text-white/20 font-light text-center">{{ $contrato->id }}</td>
-                                <td class="px-6 py-10 text-2xl text-white font-light tracking-tight uppercase">{{ $contrato->folio }}</td>
-                                <td class="px-6 py-10 text-sm tracking-[0.2em] text-white/40 uppercase">{{ $contrato->proyecto }}</td>
-                                <td class="px-6 py-10 text-xl font-serif italic text-white/60 tracking-widest">
-                                    {{ \Carbon\Carbon::parse($contrato->fecha)->format('d/m/Y') }}
-                                </td>
-                                <td class="px-6 py-10">
-                                    <span class="text-[10px] px-4 py-2 border tracking-[0.3em] uppercase font-bold {{ $contrato->estado === 'activo' ? 'border-[#D4A017] text-[#D4A017]' : 'border-red-900/40 text-red-500/60' }}">
-                                        {{ ucfirst($contrato->estado) }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-10 text-right">
-                                    <button
-                                        class="bg-white text-black text-[9px] tracking-[0.3em] uppercase font-bold px-6 py-3 hover:bg-[#D4A017] transition-all duration-700"
-                                        @click="show=true; docId={{ $contrato->id }}; password=''; error=''">
-                                        Descargar
-                                    </button>
-                                </td>
-                            </tr>
-                        @empty
+                {{-- Tabla --}}
+                <div class="tabla-dorada-container">
+                    <div class="overflow-x-auto custom-scroll">
+                        <table class="tabla-dorada">
+                            <thead>
                             <tr>
-                                <td colspan="6" class="px-6 py-32 text-center text-white/10 text-[11px] tracking-[0.6em] uppercase">No hay contratos asignados</td>
+                                <th>ID</th>
+                                <th>Folio</th>
+                                <th>Proyecto</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
                             </tr>
-                        @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody id="tableBody">
+                            @forelse($contratos as $contrato)
+                                <tr>
+                                    <td>{{ $contrato->id }}</td>
+
+                                    <td class="font-bold">{{ $contrato->folio }}</td>
+
+                                    <td class="uppercase text-xs">{{ $contrato->proyecto }}</td>
+
+                                    <td>
+                                        {{ \Carbon\Carbon::parse($contrato->fecha)->format('d/m/Y') }}
+                                    </td>
+
+                                    <td>
+                        <span class="text-[10px] px-3 py-1 border rounded-full uppercase font-bold tracking-wider
+                            {{ $contrato->estado === 'activo'
+                                ? 'border-dorado text-yellow-700 bg-yellow-50'
+                                : 'border-red-200 text-red-600 bg-red-50' }}">
+                            {{ ucfirst($contrato->estado) }}
+                        </span>
+                                    </td>
+
+                                    <td>
+                                        <button
+                                            class="inline-block bg-gris-carbon text-dorado px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-gris-carbon/90 transition shadow-sm border border-dorado/30"
+                                            @click="show=true; docId={{ $contrato->id }}; password=''; error=''">
+                                            Descargar
+                                        </button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="py-10 text-gris-carbon font-medium italic">
+                                        No hay contratos asignados
+                                    </td>
+                                </tr>
+                            @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 {{-- Paginación Estilizada --}}

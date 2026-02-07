@@ -48,70 +48,81 @@
             <a href="{{ route('contratos.clean') }}" class="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded mx-2">
                 LIMPIAR
             </a>
+
+            <!-- BOTÓN NUEVO CONTRATO -->
+            <button id="openModalBtn"
+                    class="bg-green-300 hover:bg-green-400 text-black px-4 py-2 rounded mx-2">
+                Agregar
+            </button>
         </form>
 
-        <!-- BOTÓN NUEVO CONTRATO -->
-        <button id="openModalBtn"
-            class="bg-gradient-to-r from-[#fec127] to-[#ff9900] rounded px-4 py-2 ml-10 shadow-lg text-white font-bold hover:scale-110 transition">
-            Nuevo contrato
-        </button>
+
     </div>
 
     <!-- Tabla de contratos -->
-    <div class="overflow-x-auto bg-white rounded-lg shadow-md">
-        <table class="w-full text-sm text-center border-collapse">
-            <thead class="bg-[#2f2f2f] text-[#fff] uppercase text-xs tracking-wider">
+    <div class="tabla-dorada-container">
+        <div class="overflow-x-auto custom-scroll">
+            <table class="tabla-dorada">
+                <thead>
                 <tr>
-                    <th class="px-6 py-3 border-b">Contrato</th>
-                    <th class="px-6 py-3 border-b">Usuario</th>
-                    <th class="px-6 py-3 border-b">Proyecto</th>
-                    <th class="px-6 py-3 border-b">Importe</th>
-                    <th class="px-6 py-3 border-b">Estado</th>
-                    <th class="px-6 py-3 border-b">Editar</th>
-                    <th class="px-6 py-3 border-b">Eliminar</th>
+                    <th>Contrato</th>
+                    <th>Usuario</th>
+                    <th>Proyecto</th>
+                    <th>Importe</th>
+                    <th>Estado</th>
+                    <th>Editar</th>
+                    <th>Eliminar</th>
                 </tr>
-            </thead>
-            <tbody class="divide-y divide-[#eee]">
+                </thead>
+                <tbody id="tableBody">
                 @forelse($contratos as $contrato)
-                    <tr class="hover:bg-gray-100 transition">
-                        <td class="px-6 py-4">{{ $contrato->id }}</td>
-                        <td class="px-6 py-4">{{ $contrato->user_name }}</td>
-                        <td class="px-6 py-4">{{ $contrato->proyecto }}</td>
-                        <td class="px-6 py-4">{{ $contrato->importe_bruto_renta }}</td>
-                        <td class="px-6 py-4">
-                            <span class="px-2 py-1 text-xs font-semibold rounded
-                                {{ $contrato->estado === 'activo' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800' }}">
-                                {{ ucfirst($contrato->estado) }}
-                            </span>
+                    <tr>
+                        <td class="font-bold">{{ $contrato->id }}</td>
+                        <td class="font-medium">{{ $contrato->user_name }}</td>
+                        <td>{{ $contrato->proyecto }}</td>
+
+                        <td class="font-mono text-xs">
+                            ${{ number_format($contrato->importe_bruto_renta, 2) }}
                         </td>
-                        <td class="px-6 py-4">
+
+                        <td>
+                        <span class="px-2 py-1 text-[10px] font-bold uppercase rounded-full tracking-wider
+                            {{ $contrato->estado === 'activo' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                            {{ ucfirst($contrato->estado) }}
+                        </span>
+                        </td>
+
+                        <td>
                             <button onclick="openModalEditar({{ $contrato->id }})"
-                            class="bg-[#d8c495] hover:bg-[#c9a143] text-black px-4 py-2 rounded-lg transition inline-block">
-                            <img src="/images/update.png" class="w-5 h-5" alt="editar">
+                                    class="inline-flex items-center justify-center bg-dorado hover:bg-dorado/80 text-white w-8 h-8 rounded-lg transition shadow-sm border border-dorado/50">
+                                <img src="/images/update.png" class="w-4 h-4 invert brightness-0" alt="editar">
                             </button>
                         </td>
-                        <td class="px-6 py-4">
-                            <button onclick="openModalDelete({{ $contrato->id }})" type="submit" class="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition">
-                                <img src="/images/delete.png" alt="eliminar" class="w-5 h-5">
+
+                        <td>
+                            <button onclick="openModalDelete({{ $contrato->id }})" type="submit"
+                                    class="inline-flex items-center justify-center bg-red-600 hover:bg-red-700 text-white w-8 h-8 rounded-lg transition shadow-sm border border-red-600/50">
+                                <img src="/images/delete.png" alt="eliminar" class="w-4 h-4 invert brightness-0">
                             </button>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-4 text-gray-500">
+                        <td colspan="7" class="py-10 text-gris-carbon font-medium italic">
                             No tienes contratos asignados.
                         </td>
                     </tr>
                 @endforelse
-            </tbody>
-        </table>
-                        <div class="mt-6 flex justify-center">
-            <div class="bg-white rounded-lg shadow p-2 ">
-                {{ $contratos->links('pagination::tailwind') }}
-            </div>
+                </tbody>
+            </table>
         </div>
 
+        <div class="bg-gray-50 border-t border-carbon p-4 flex justify-center">
+            {{ $contratos->links('pagination::tailwind') }}
+        </div>
     </div>
+
+
 </div>
 <!-- Modal editar  contrato -->
 <div id="confirmModalEditar" class=" bg-white/30 backdrop-blur-sm fixed inset-0 bg-opacity-50 flex items-center justify-center hidden">

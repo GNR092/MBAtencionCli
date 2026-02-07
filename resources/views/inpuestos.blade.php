@@ -43,82 +43,87 @@
             class="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded mx-2">
                 LIMPIAR
             </a>
-        </form>
-             <!-- Botón descargar -->
+
+            <!-- Botón descargar -->
             <button type="submit" onClick="openModalDescarga()"
-            class="bg-[#d8c495] hover:bg-[#c9a143] text-black px-4 py-2 mx-8 rounded">
-            Descargar
+                    class="bg-[#d8c495] hover:bg-[#c9a143] text-black px-4 py-2 mx-2 rounded">
+                Descargar
             </button>
+        </form>
+
     </div>
 
     <!-- Tabla -->
-    <div class="overflow-x-auto bg-white rounded-lg shadow-md">
-        <table class="w-full text-sm text-center border-collapse">
-            <thead class="bg-[#2f2f2f] text-[#fff] uppercase text-xs tracking-wider">
-                <tr>
-                    <th class="px-6 py-3 border-b">Factura</th>
-                    <th class="px-6 py-3 border-b">UIID</th>
-                    <th class="px-6 py-3 border-b">Fecha</th>
-                    <th class="px-6 py-3 border-b">Proyecto</th>
-                    <th class="px-6 py-3 border-b">Departamento</th>
-                    <th class="px-6 py-3 border-b">Inversionista</th>
-                    <th class="px-6 py-3 border-b">Tipo factor</th>
-                    <th class="px-6 py-3 border-b">Regimen fiscal</th>
-                    <th class="px-6 py-3 border-b">Importe base</th>
-                    <th class="px-6 py-3 border-b">Importe ISR</th>
+            <div class="tabla-dorada-container">
+                <div class="overflow-x-auto custom-scroll">
+                    <table class="tabla-dorada">
+                        <thead>
+                        <tr>
+                            <th>Factura</th>
+                            <th>UUID</th>
+                            <th>Fecha</th>
+                            <th>Proyecto</th>
+                            <th>Departamento</th>
+                            <th>Inversionista</th>
+                            <th>Tipo Factor</th>
+                            <th>Régimen Fiscal</th>
+                            <th>Importe Base</th>
+                            <th>Importe ISR</th>
+                        </tr>
+                        </thead>
 
-                </tr>
-            </thead>
-            <tbody id="tableBody" class="divide-y divide-[#eee]">
-                <tr class="hover:bg-gray-100 transition">
-                    @forelse($xmlFiles as $file)
-                    <td class="px-6 py-4">{{ $file->id }}</td>
-                    <td class="px-6 py-4">{{ $file->uuid }}</td>
-                    <td class="px-6 py-4">{{ $file->created_at }}</td>
-                    <td class="px-6 py-4">{{ $file->proyectos }}</td>
-                    <td class="px-6 py-4">{{ $file->departamento }}</td>
-                    <td class="px-6 py-4">{{ $file->emisor_name }}</td>
-                    <td class="px-6 py-4">{{ $file->tipoFactor }}</td>
-                    <td class="px-6 py-4">
-                            @if ($file->tasaCuota == '0.0125000000')
-                                RESICO
-                            @elseif ($file->tasaCuota == '0.0100000000')
-                                ARRENDAMIENTO
-                            @else
-                                PERSONA MORAL
-                            @endif
-                    </td>
-                    <td class="px-6 py-4">${{number_format($file->importeBase,2) }}</td>
-                   <td class="px-6 py-4">${{number_format($file->isr,2) }}</td>
+                        <tbody id="tableBody">
+                        @forelse($xmlFiles as $file)
+                            <tr>
+                                <td>{{ $file->id }}</td>
+                                <td class="text-xs font-mono">{{ Str::limit($file->uuid, 8) }}</td>
+                                <td>{{ $file->created_at }}</td>
+                                <td>{{ $file->proyectos }}</td>
+                                <td>{{ $file->departamento }}</td>
+                                <td>{{ $file->emisor_name }}</td>
+                                <td>{{ $file->tipoFactor }}</td>
+                                <td>
+                                    @if ($file->tasaCuota == '0.0125000000')
+                                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-bold">RESICO</span>
+                                    @elseif ($file->tasaCuota == '0.0100000000')
+                                        <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full font-bold">ARRENDAMIENTO</span>
+                                    @else
+                                        <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full font-bold">MORAL</span>
+                                    @endif
+                                </td>
+                                <td class="font-medium">${{ number_format($file->importeBase, 2) }}</td>
+                                <td class="font-medium text-red-600">${{ number_format($file->isr, 2) }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="10" class="py-10 text-gris-carbon font-medium italic">
+                                    No se encontraron facturas
+                                </td>
+                            </tr>
+                        @endforelse
+                        </tbody>
 
+                        <tfoot>
+                        <tr>
+                            <td colspan="9" class="text-right px-6 py-3 uppercase text-xs tracking-wider">TOTAL BASE:</td>
+                            <td class="px-4 py-3 font-black text-gris-carbon">
+                                ${{ number_format($totalBase, 2) }}
+                            </td>
+                        </tr>
+                        <tr class="border-t border-gris-carbon/20">
+                            <td colspan="9" class="text-right px-6 py-3 uppercase text-xs tracking-wider">TOTAL ISR RETENIDO:</td>
+                            <td class="px-4 py-3 font-black text-red-700">
+                                ${{ number_format($totalISR, 2) }}
+                            </td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
 
-                </tr>
-                                     @empty
-                <tr>
-                    <td colspan="5">No se encontraron facturas</td>
-                </tr>
-                @endforelse
-
-                <tr class="bg-gray-300 font-bold">
-                    <td colspan="9" class="text-right px-6 py-3">TOTAL BASE:</td>
-                    <td class="px-6 py-3 text-[#20157e]">
-                        ${{ number_format($totalBase, 2) }}
-                    </td>
-                </tr>
-                <tr class="bg-gray-300 font-bold">
-                    <td colspan="9" class="text-right px-6 py-3">TOTAL ISR RETENIDO:</td>
-                    <td class="px-6 py-3 text-[#20157e]">
-                        ${{ number_format($totalISR, 2) }}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <div class="mt-6 flex justify-center">
-            <div class="bg-white rounded-lg shadow p-2 ">
-                {{ $xmlFiles->links('pagination::tailwind') }}
+                <div class="bg-gray-50 border-t border-carbon p-4 flex justify-center">
+                    {{ $xmlFiles->links('pagination::tailwind') }}
+                </div>
             </div>
-        </div>
-    </div>
 
     <!--modal para la descarga-->
     <div id="descargaModal" class="bg-white/30 backdrop-blur-sm fixed inset-0 bg-opacity-50 flex items-center justify-center hidden">
