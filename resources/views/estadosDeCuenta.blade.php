@@ -30,95 +30,142 @@
 
         {{-- Dashboard de Estados de Cuenta --}}
         <div class="w-full px-2 mb-20">
-            <div class="bg-[#1A1A1A]/80 backdrop-blur-3xl border border-white/5 p-12 md:p-20 shadow-2xl">
+            <div class="flex flex-col gap-8 bg-transparent">
 
-                {{-- Buscador y Acciones Superiores --}}
-                <div class="flex flex-col lg:flex-row items-end justify-between gap-12 mb-16 border-b border-white/5 pb-12">
-                    <form method="GET" action="{{ route('estadosDeCuenta') }}" class="flex-1 flex flex-col md:flex-row items-end gap-8 w-full">
-                        @csrf
-                        <div class="flex-1 w-full">
-                            <label class="block text-[9px] uppercase tracking-[0.3em] text-[#D4A017] mb-4 opacity-60">Filtrar Documentos</label>
-                            <input type="text" name="search" value="{{ request('search') }}" placeholder="ESCRIBIR..."
-                                   class="w-full bg-transparent border-b border-white/10 py-4 text-2xl text-white font-light focus:border-[#D4A017] outline-none transition-all duration-700 uppercase tracking-tighter">
-                        </div>
+                {{-- ISLA 1: BUSCADOR Y ACCIONES --}}
+                <div class="bg-white rounded-2xl shadow-xl border border-[#c4c4c4] p-8 md:p-10">
 
-                        <div class="w-full md:w-48">
-                            <label class="block text-[9px] uppercase tracking-[0.3em] text-[#D4A017] mb-4 opacity-60">Categoría</label>
-                            <select name="categoria" class="w-full bg-transparent border-b border-white/10 py-4 text-xl text-white font-light focus:border-[#D4A017] outline-none appearance-none cursor-pointer">
-                                <option value="mes" {{ request('categoria') == 'mes' ? 'selected' : '' }} class="bg-[#1A1A1A]">MES</option>
-                                <option value="estado" {{ request('categoria') == 'estado' ? 'selected' : '' }} class="bg-[#1A1A1A]">ESTADO</option>
-                                <option value="id" {{ request('categoria') == 'id' ? 'selected' : '' }} class="bg-[#1A1A1A]">ID</option>
-                            </select>
-                        </div>
+                    <div class="flex flex-col xl:flex-row items-end justify-between gap-8">
 
-                        <div class="flex gap-4">
-                            <button type="submit" class="bg-white text-black text-[10px] tracking-[0.3em] uppercase font-bold px-10 py-4 hover:bg-[#D4A017] transition-all duration-700 shadow-xl">
-                                Buscar
+                        {{-- Formulario de Búsqueda --}}
+                        <form method="GET" action="{{ route('estadosDeCuenta') }}" class="flex-1 flex flex-col lg:flex-row items-end gap-6 w-full">
+                            @csrf
+
+                            <div class="flex-1 w-full">
+                                <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#1A1A1A] mb-3">
+                                    Filtrar Documentos
+                                </label>
+                                <div class="relative w-full">
+                                    <input type="text" name="search" value="{{ request('search') }}" placeholder="ESCRIBIR..."
+                                           class="w-full bg-gray-50 border border-gray-300 rounded-lg py-4 pl-4 pr-4 text-xl text-[#1A1A1A] font-light focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017] transition-all uppercase tracking-tight placeholder-gray-300">
+                                </div>
+                            </div>
+
+                            <div class="w-full lg:w-48">
+                                <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#1A1A1A] mb-3">
+                                    Categoría
+                                </label>
+                                <div class="relative">
+                                    <select name="categoria" class="w-full bg-gray-50 border border-gray-300 rounded-lg py-4 pl-4 pr-10 text-lg text-[#1A1A1A] font-light focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017] appearance-none cursor-pointer transition-all">
+                                        <option value="mes" {{ request('categoria') == 'mes' ? 'selected' : '' }}>MES</option>
+                                        <option value="estado" {{ request('categoria') == 'estado' ? 'selected' : '' }}>ESTADO</option>
+                                        <option value="id" {{ request('categoria') == 'id' ? 'selected' : '' }}>ID</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-4 w-full lg:w-auto">
+                                <button type="submit" class="bg-[#1A1A1A] text-white text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:bg-[#D4A017] hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
+                                    Buscar
+                                </button>
+                                <a href="{{ route('estadosDeCuenta.limpiar') }}" class="flex items-center justify-center border border-gray-300 text-gray-500 text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:border-[#1A1A1A] hover:text-[#1A1A1A] transition-all duration-300">
+                                    Limpiar
+                                </a>
+                            </div>
+                        </form>
+
+                        {{-- Botón Imprimir (BLINDADO CONTRA TAMAÑO GIGANTE) --}}
+                        <div class="w-full xl:w-auto border-t xl:border-t-0 xl:border-l border-gray-100 pt-6 xl:pt-0 xl:pl-8 flex items-end">
+                            <button onClick="openModalDescarga()" class="w-full xl:w-auto bg-[#D4A017] text-white text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:bg-[#b58714] transition-all duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-3">
+
+                                <div class="w-4 h-4 min-w-[16px] min-h-[16px] flex-none flex items-center justify-center">
+                                    <svg style="width: 16px; height: 16px;" class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                </div>
+
+                                <span>Imprimir</span>
                             </button>
-                            <a href="{{ route('estadosDeCuenta.limpiar') }}" class="flex items-center text-white/40 text-[10px] tracking-[0.3em] uppercase font-bold px-8 py-4 border border-white/10 hover:text-white transition-all">
-                                Limpiar
-                            </a>
                         </div>
-                    </form>
-
-                    <button onClick="openModalDescarga()" class="bg-[#D4A017] text-black text-[10px] tracking-[0.4em] uppercase font-bold px-12 py-5 hover:bg-white transition-all duration-700 shadow-2xl">
-                        Imprimir
-                    </button>
+                    </div>
                 </div>
 
-                {{-- Tabla con Letras Más Grandes --}}
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="border-b border-white/10">
-                        <tr class="text-[11px] tracking-[0.4em] uppercase text-[#D4A017] opacity-80 font-bold">
-                            <th class="px-6 py-10">ID</th>
-                            <th class="px-6 py-10">Proyecto</th>
-                            <th class="px-6 py-10">Estado</th>
-                            <th class="px-6 py-10">Fecha</th>
-                            <th class="px-6 py-10 text-right">Saldo Neto</th>
-                        </tr>
-                        </thead>
-                        <tbody class="divide-y divide-white/5 text-white">
-                        @forelse($cuentas as $cuenta)
-                            <tr class="group hover:bg-white/[0.02] transition-colors">
-                                <td class="px-6 py-10 text-xl text-white/20 font-light italic">{{$cuenta->id_cuentas_por_pagar }}</td>
-                                <td class="px-6 py-10 text-2xl font-light tracking-tight uppercase">{{$cuenta->proyectos}}</td>
-                                <td class="px-6 py-10">
-                                    @if($cuenta->estado === 'parcial')
-                                        <select class="estado-select bg-transparent border border-[#D4A017] text-[#D4A017] text-[10px] tracking-widest uppercase px-3 py-2 outline-none cursor-pointer" data-id="{{ $cuenta->id_cuentas_por_pagar }}">
-                                            <option value="parcial" class="bg-[#1A1A1A]" selected>Parcial</option>
-                                            <option value="pagado" class="bg-[#1A1A1A]">Pagado</option>
-                                        </select>
-                                    @else
-                                        <span class="text-[10px] px-4 py-2 border tracking-[0.3em] uppercase font-bold {{ $cuenta->estado === 'pendiente' ? 'border-red-900/40 text-red-500/60' : 'border-[#D4A017] text-[#D4A017]' }}">
-                                                {{ ucfirst($cuenta->estado) }}
-                                            </span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-10 text-xl font-serif italic text-white/40 tracking-widest">{{ json_decode($cuenta->mesesdepago)->mes ?? '-' }}</td>
-                                <td class="px-6 py-10 text-3xl font-bold text-right text-white tracking-tighter">${{number_format($cuenta->saldo_neto,2)}}</td>
-                            </tr>
-                        @empty
+                {{-- ISLA 2: TABLA --}}
+                <div class="tabla-dorada-container bg-white rounded-2xl shadow-xl border border-[#c4c4c4] overflow-hidden">
+                    <div class="overflow-x-auto custom-scroll">
+                        <table class="tabla-dorada">
+                            <thead>
                             <tr>
-                                <td colspan="5" class="px-6 py-32 text-center text-white/10 text-[11px] tracking-[0.6em] uppercase">No hay facturas registradas</td>
+                                <th class="text-left pl-6">ID</th>
+                                <th class="text-left">Proyecto</th>
+                                <th class="text-center">Estado</th>
+                                <th class="text-center">Fecha</th>
+                                <th class="text-right pr-6">Saldo Neto</th>
                             </tr>
-                        @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                            @forelse($cuentas as $cuenta)
+                                <tr>
+                                    <td class="text-left pl-6 font-bold text-gray-400">
+                                        #{{ $cuenta->id_cuentas_por_pagar }}
+                                    </td>
+
+                                    <td class="font-bold text-gris-carbon uppercase">
+                                        {{ $cuenta->proyectos }}
+                                    </td>
+
+                                    <td class="text-center">
+                                        @if($cuenta->estado === 'parcial')
+                                            <div class="relative inline-block">
+                                                <select class="estado-select appearance-none bg-white border border-dorado text-dorado text-[10px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-full outline-none cursor-pointer focus:ring-2 focus:ring-dorado/20 hover:bg-dorado/5 transition-colors pr-8" data-id="{{ $cuenta->id_cuentas_por_pagar }}">
+                                                    <option value="parcial" selected>Parcial</option>
+                                                    <option value="pagado">Pagado</option>
+                                                </select>
+                                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-dorado">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <span class="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border
+                                        {{ $cuenta->estado === 'pendiente'
+                                            ? 'bg-red-100 text-red-700 border-red-200'
+                                            : 'bg-dorado/10 text-dorado border-dorado/20' }}">
+                                        {{ ucfirst($cuenta->estado) }}
+                                    </span>
+                                        @endif
+                                    </td>
+
+                                    <td class="text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                        {{ json_decode($cuenta->mesesdepago)->mes ?? '-' }}
+                                    </td>
+
+                                    <td class="text-right pr-6 font-bold text-dorado font-mono text-lg">
+                                        ${{ number_format($cuenta->saldo_neto, 2) }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="py-16 text-center text-gray-400 text-xs uppercase tracking-widest font-bold">
+                                        No hay facturas registradas
+                                    </td>
+                                </tr>
+                            @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                {{-- Botón de Gráficas --}}
-                <div class="mt-20">
-                    <button type="submit" class="bg-white/5 border border-white/10 text-white text-[10px] tracking-[0.4em] uppercase font-bold px-12 py-6 hover:bg-[#D4A017] hover:text-black transition-all duration-700 shadow-2xl" onClick="openModal()">
-                        Mostrar gráficas
+                {{-- ISLA 3: FOOTER (Gráficas) --}}
+                <div class=" rounded-2xl shadow-xl p-8 md:p-10 flex justify-center md:justify-start">
+                    <button onClick="openModal()" class="w-full md:w-auto bg-[#D4A017] text-white text-sm tracking-[0.2em] uppercase font-bold px-20 py-10 rounded-lg hover:bg-[#b58714] transition-all duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-0.5">
+                        Visualizar gráficas
                     </button>
                 </div>
+
             </div>
         </div>
-
         {{-- Modales (Gráficas e Impresión) --}}
-        {{-- ... Estructura de modales integrada con el estilo de la referencia ... --}}
-
         <div id="chartsmModal" class="fixed inset-0 z-50 flex items-center justify-center hidden p-6">
             <div class="absolute inset-0 bg-black/95 backdrop-blur-xl" onclick="closeModal()"></div>
             <div class="bg-[#1A1A1A] border border-white/5 w-full max-w-4xl max-h-[90vh] overflow-y-auto relative z-10 shadow-3xl">
