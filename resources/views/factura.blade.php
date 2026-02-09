@@ -48,9 +48,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8"> <div>
                                     <label class="block text-xs font-bold text-[#1a1a1a] uppercase mb-2">Correo Institucional</label>
                                     <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                                            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                                        </div>
+
                                         <input type="email" name="user_email" required
                                                class="block w-full border border-gray-300 rounded-lg pl-10 pr-3 py-3 text-[#1a1a1a] focus:outline-none focus:border-[#d4a017] focus:ring-1 focus:ring-[#d4a017] transition-colors bg-white shadow-sm"
                                                placeholder="usuario@mbsignature.com">
