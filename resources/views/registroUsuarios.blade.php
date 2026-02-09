@@ -77,21 +77,9 @@
                 <label class="block text-sm font-bold text-gris-carbon mb-1">Proyectos</label>
                 <select name="proyect[]" id="proyect" multiple required multiselect-hide-x="true"
                         class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors custom-scroll h-32">
-                    <option value="RESIDENT 1">RESIDENT 1</option>
-                    <option value="RESIDENT 2">RESIDENT 2</option>
-                    <option value="CAMPUS RECIDENCIA">CAMPUS RECIDENCIA</option>
-                    <option value="TMZN 122">TMZN 122</option>
-                    <option value="GRAND TEMOZON">GRAND TEMOZÓN</option>
-                    <option value="Aldea Borboleta I">Aldea Borboleta I</option>
-                    <option value="Aldea Borboleta II">Aldea Borboleta II</option>
-                    <option value="Aldea Borboleta III">Aldea Borboleta III</option>
-                    <option value="MB RESORT MERIDA">MB RESORT MÉRIDA</option>
-                    <option value="Princess Village">Princess Village</option>
-                    <option value="Royal Square Plaza">Royal Square Plaza</option>
-                    <option value="RUM">RUM</option>
-                    <option value="Avenue Temozon">Avenue Temozón</option>
-                    <option value="MB Resort Orlando">MB Resort Orlando</option>
-                    <option value="MB Wellness Resort">MB Wellness Resort</option>
+                    @foreach($proyectos as $proyecto)
+                        <option value="{{ $proyecto->id_proyecto }}">{{ $proyecto->nombre_proyecto }}</option>
+                    @endforeach
                 </select>
             </div>
 
@@ -99,10 +87,9 @@
                 <label class="block text-sm font-bold text-gris-carbon mb-1">Régimen Fiscal</label>
                 <select name="regimenFiscal" id="regimenFiscal"
                         class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon bg-white focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors">
-                    <option value="resico">RESICO</option>
-                    <option value="arrendamiento">ARRENDAMIENTO</option>
-                    <option value="persona moral">PERSONA MORAL</option>
-                    <option value="rif">RIF</option>
+                    @foreach($regimenesFiscales as $regimen)
+                        <option value="{{ $regimen->id_regimen }}">{{ $regimen->nombre_regimen }}</option>
+                    @endforeach
                 </select>
             </div>
 

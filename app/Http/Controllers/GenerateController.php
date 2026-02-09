@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
+use App\Models\RegimenFiscal; // Agregado
+use App\Models\Proyecto; // Agregado
 
 class GenerateController extends Controller
 {
@@ -18,7 +20,10 @@ class GenerateController extends Controller
         }
 
         
-        return view('registroUsuarios');
+        $regimenesFiscales = RegimenFiscal::all(); // Obtener todos los regímenes fiscales
+        $proyectos = Proyecto::all(); // Obtener todos los proyectos
+
+        return view('registroUsuarios', compact('regimenesFiscales', 'proyectos'));
     }
 
 public function datos(Request $request)
@@ -39,13 +44,18 @@ public function datos(Request $request)
     // 🔹 Generar contraseña
     $passwordPlain = $this->generarContrasenia();
 
+    // Convertir array de IDs de proyectos a un array de cadenas de texto
+    $proyectosIds = collect($request->proyect)->map(function ($proyectoId) {
+        return (string) $proyectoId;
+    })->toArray();
+
     DB::table('users')->insert([
         'name'              => $request->name,
         'email'             => $request->email,
         'password'          => Hash::make($passwordPlain), // guardamos encriptada
         'rol'               => 'usuario',
         'phone'             => $phone,
-        'proyect'           => json_encode($request->proyect), // como es multiple
+        'proyect'           => json_encode($proyectosIds), // Guardar como JSON de IDs
         'regimenFiscal'     => $request->regimenFiscal,
         'created_at'        => now(),
         'updated_at'        => now(),

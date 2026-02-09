@@ -40,16 +40,18 @@ class CfdiValidatorController extends BaseController
         // Decodificar JSON como array
         $proyectos = json_decode($usuario->proyect, true);
 
-        // Asegurar que siempre sea array
+        // Si $proyectos no es un array (p. ej. es un objeto, string o null), conviértelo a un array.
         if (!is_array($proyectos)) {
-            $proyectos = [$proyectos];
+            // Si es un objeto, toma sus valores. Si no, envuélvelo en un array.
+            $proyectos = is_object($proyectos) ? array_values((array)$proyectos) : [$proyectos];
         }
 
         return $proyectos;
     }
 
     //funcion para validar el email
-    private function getMail(){
+    private function getMail()
+    {
         $user = Session::get('user');
 
         // Buscar al usuario
@@ -59,7 +61,6 @@ class CfdiValidatorController extends BaseController
             return null; // No tiene email
         } else {
             return $usuario->email;
-            
         }
     }
 
@@ -123,63 +124,69 @@ class CfdiValidatorController extends BaseController
     //Sube y valida archivos XML, Los inválidos no se guardan,Los válidos se guardan en disco y BD.
     public function uploadXmlFiles(Request $request)
     {
-        
-        
+
+
+
+
         $request->validate([
-            'xml_files'   => 'required|array|max:' . $this->maxBatchSize,
+            'xml_files' => 'required|array|max:' . $this->maxBatchSize,
             'xml_files.*' => 'required|file|mimes:xml|max:10240',
-            'user_email'  => 'required|email',
-            'proyect'     => 'required|string'
+            'user_email' => 'required|email',
+            'proyect' => 'required|string'
         ]);
 
         $sessionId = $request->session()->getId();
-        $deadline  = $this->getNextQuincenaDeadline();
+        $deadline = $this->getNextQuincenaDeadline();
 
         //validar email
-        $compareMail= $this->getMail();
+        $compareMail = $this->getMail();
         if ($compareMail !== $request->input('user_email')) {
-            return redirect()->back()->withErrors(['user_email' => 'El correo electrónico no coincide con el registrado.']);
+            return response()->json(['errors' => ['user_email' => ['El correo electrónico no coincide con el registrado.']]], 422);
         }
 
         // Validar proyecto
         $compareProyect = $this->getProyectos();
 
+
         if ($compareProyect === null) {
-            return redirect()->back()->withErrors(['proyect' => 'El proyecto no existe']);
+            return response()->json(['errors' => ['proyect' => ['El proyecto no existe']]], 422);
         }
 
         $proyecto = $request->input('proyect'); // siempre será un solo valor
 
         if (!in_array($proyecto, $compareProyect)) {
-            return redirect()->back()->withErrors(['proyect' => 'El proyecto no es válido']);
+            return response()->json(['errors' => ['proyect' => ['El proyecto no es válido']]], 422);
         }
 
         // Verificar si la fecha límite ha pasado
         if ($deadline->isPast()) {
-            return redirect()->back()->withErrors(['deadline' => 'La fecha límite ha vencido.']);
+            return response()->json(['errors' => ['deadline' => ['La fecha límite ha vencido.']]], 422);
         }
 
         // Crear o recuperar el batch
         $batch = XmlBatch::firstOrCreate(
             ['session_id' => $sessionId],
             [
-                'total_files'   => 0,
-                'valid_files'   => 0,
+                'total_files' => 0,
+                'valid_files' => 0,
                 'uploaded_pdfs' => 0,
-                'uuid_mapping'  => [],
-                'user_email'    => $request->user_email,
-                'deadline'      => $deadline
+                'uuid_mapping' => [],
+                'user_email' => $request->user_email,
+                'deadline' => $deadline
             ]
         );
 
         $errors = [];
         $uuidMapping = $batch->uuid_mapping ?? [];
-        
+
         $user = Session::get('user');
 
+
+
         foreach ($request->file('xml_files') as $file) {
-            $filename  = $file->getClientOriginalName();
-            $tempPath  = $file->getPathname(); // archivo temporal
+            $filename = $file->getClientOriginalName();
+            $tempPath = $file->getPathname(); // archivo temporal
+
 
             // ✅ Validar primero
             $validationResult = $this->xmlValidationService->validateXml($tempPath, $filename);
@@ -204,34 +211,34 @@ class CfdiValidatorController extends BaseController
             $filePath = $file->store('xml_files', 'public');
 
             // ✅ Guardar en base de datos
-            
+
             $xmlFile = XmlFile::create([
-                'batch_id'       => $batch->id,
-                'filename'       => $filename,
-                'uuid'           => $validationResult['uuid'],
-                'is_valid'       => true,
-                'validation_errors' => [],
-                'emisor_name'    => $validationResult['emisor_name'],
-                'receptor_name'  => $validationResult['receptor_name'],
+                'batch_id' => $batch->id,
+                'filename' => $filename,
+                'uuid' => $validationResult['uuid'],
+                'is_valid' => true,
+                'validation_errors' => json_encode($validationResult['errors']),
+                'emisor_name' => $validationResult['emisor_name'],
+                'receptor_name' => $validationResult['receptor_name'],
                 //cambiar el valiudation resul por la comparativa de proyectos que se hizo arriba
-                'proyectos'       => $proyecto,
-                'file_path'      => $filePath,
-                'departamento'   => $validationResult['departamento'],
+                'proyectos' => $proyecto,
+                'file_path' => $filePath,
+                'departamento' => $validationResult['departamento'],
                 //verificar si el id del usuario existe en la dba de factura
-                'id_user'        => $user->id,
-                'mes'            => $validationResult['periodo_pago'],
+                'id_user' => $user->id,
+                'mes' => $validationResult['periodo_pago'],
             ]);
 
             // Guardar impuestos si existen en el XML validado
             Impuesto::create([
-            //tipo factor y regimen fiscal no aparecen en impuestos
-            //checar que el regimrn fiscal u el tipo de factor aparescan
-                'tipoFactor'   => $validationResult['tipoFactor'] ?? null,
-                'regimenFiscal'=> $validationResult['regimenFiscal'] ?? null,
-                'importeBase'  => $validationResult['valorUnitario'] ?? 0,
-                'tasaCuota'    => $validationResult['tasaCuota'] ?? 0,
-                'isr'          => $validationResult['isr'] ?? 0,
-                'xml_file_id'  => $xmlFile->id, // Llave foránea
+                //tipo factor y regimen fiscal no aparecen en impuestos
+                //checar que el regimrn fiscal u el tipo de factor aparescan
+                'tipoFactor' => $validationResult['tipoFactor'] ?? null,
+                'regimenFiscal' => $validationResult['regimenFiscal'] ?? null,
+                'importeBase' => $validationResult['valorUnitario'] ?? 0,
+                'tasaCuota' => $validationResult['tasaCuota'] ?? 0,
+                'isr' => $validationResult['isr'] ?? 0,
+                'xml_file_id' => $xmlFile->id, // Llave foránea
             ]);
 
             // Actualizar UUID mapping
@@ -242,120 +249,115 @@ class CfdiValidatorController extends BaseController
 
             // Log del archivo válido
             FileLog::create([
-                'filename'      => $filename,
-                'file_type'     => 'xml',
-                'uuid'          => $validationResult['uuid'],
-                'is_valid'      => true,
-                'emisor_name'   => $validationResult['emisor_name'],
+                'filename' => $filename,
+                'file_type' => 'xml',
+                'uuid' => $validationResult['uuid'],
+                'is_valid' => true,
+                'emisor_name' => $validationResult['emisor_name'],
                 'receptor_name' => $validationResult['receptor_name'],
-                'metadata'      => ['validation_errors' => []]
+                'metadata' => ['validation_errors' => []]
             ]);
         }
 
         // Actualizar lote
         $batch->update([
-            'total_files'  => $batch->xmlFiles()->count(),
+            'total_files' => $batch->xmlFiles()->count(),
             'uuid_mapping' => $uuidMapping
         ]);
 
         if (!empty($errors)) {
-            return redirect()->back()->withErrors($errors);
+            return response()->json(['errors' => ['xml_files' => $errors]], 422);
         }
 
-        return redirect()->back()->with('success', 'XMLs procesados correctamente');
-
-        
+        return response()->json(['success' => 'XMLs procesados correctamente'], 200);
     }
 
     //Reinicia el lote actual
-public function resetBatch(Request $request)
-{
-    $sessionId = $request->session()->getId();
+    public function resetBatch(Request $request)
+    {
+        $sessionId = $request->session()->getId();
 
-    $batch = XmlBatch::where('session_id', $sessionId)->first();
+        $batch = XmlBatch::where('session_id', $sessionId)->first();
 
-    if ($batch) {
-        // 👇 En vez de borrar los xmlFiles, solo marcamos el batch como "cerrado"
-       $batch->update(['session_id' => 'archived_' . $batch->id]);
+        if ($batch) {
+            // 👇 En vez de borrar los xmlFiles, solo marcamos el batch como "cerrado"
+            $batch->update(['session_id' => 'archived_' . $batch->id]);
+        }
+
+        return redirect()->back()->with('success', 'Lote reiniciado, puedes comenzar otro sin borrar el histórico.');
     }
 
-    return redirect()->back()->with('success', 'Lote reiniciado, puedes comenzar otro sin borrar el histórico.');
-}
+    // App\Models\XmlBatch.php
+    public function xmlFiles()
+    {
+        return $this->hasMany(XmlFile::class, 'batch_id');
+    }
 
-// App\Models\XmlBatch.php
-public function xmlFiles()
-{
-    return $this->hasMany(XmlFile::class, 'batch_id');
-}
-
-public function uploadPdf(Request $request)
-{
-    $request->validate([
-        'pdf_file' => 'required|file|mimes:pdf|max:20480',
-    ]);
-
-    $sessionId = $request->session()->getId();
-
-    // Obtener lote activo
-    $batch = XmlBatch::where('session_id', $sessionId)->first();
-
-    if (!$batch || $batch->valid_files === 0) {
-        return redirect()->back()->withErrors([
-            'pdf' => 'No existen XML válidos para asociar el PDF'
+    public function uploadPdf(Request $request)
+    {
+        $request->validate([
+            'pdf_file' => 'required|file|mimes:pdf|max:20480',
         ]);
-    }
 
-    // Guardar PDF
-    $pdfPath = $request->file('pdf_file')->store('pdf_files', 'public');
+        $sessionId = $request->session()->getId();
 
-    // 🔐 Extraer UUID REAL del PDF (texto visible)
-    $pdfUuid = $this->pdfUuidExtractionService
-        ->extractUuidFromPdf(storage_path('app/public/' . $pdfPath));
+        // Obtener lote activo
+        $batch = XmlBatch::where('session_id', $sessionId)->first();
 
-    if (!$pdfUuid) {
-        return redirect()->back()->withErrors([
-            'pdf' => 'No se pudo extraer un UUID válido del PDF'
+        if (!$batch || $batch->valid_files === 0) {
+            return redirect()->back()->withErrors([
+                'pdf' => 'No existen XML válidos para asociar el PDF'
+            ]);
+        }
+
+        // Guardar PDF
+        $pdfPath = $request->file('pdf_file')->store('pdf_files', 'public');
+
+        // 🔐 Extraer UUID REAL del PDF (texto visible)
+        $pdfUuid = $this->pdfUuidExtractionService
+            ->extractUuidFromPdf(storage_path('app/public/' . $pdfPath));
+
+        if (!$pdfUuid) {
+            return redirect()->back()->withErrors([
+                'pdf' => 'No se pudo extraer un UUID válido del PDF'
+            ]);
+        }
+
+        // Validar UUID contra XML del lote
+        if (!isset($batch->uuid_mapping[$pdfUuid])) {
+            return redirect()->back()->withErrors([
+                'pdf' => 'El UUID del PDF no coincide con ningún XML cargado'
+            ]);
+        }
+
+        // Obtener XML correspondiente
+        $xmlFile = XmlFile::where('batch_id', $batch->id)
+            ->where('uuid', $pdfUuid)
+            ->first();
+
+        if (!$xmlFile) {
+            return redirect()->back()->withErrors([
+                'pdf' => 'No se encontró el XML correspondiente al UUID'
+            ]);
+        }
+
+        // Asociar PDF al XML
+        $xmlFile->update([
+            'pdf_path' => $pdfPath,
         ]);
-    }
 
-    // Validar UUID contra XML del lote
-    if (!isset($batch->uuid_mapping[$pdfUuid])) {
-        return redirect()->back()->withErrors([
-            'pdf' => 'El UUID del PDF no coincide con ningún XML cargado'
+        // Actualizar contador
+        $batch->increment('uploaded_pdfs');
+
+        // Log de auditoría
+        FileLog::create([
+            'filename' => basename($pdfPath),
+            'file_type' => 'pdf',
+            'uuid' => $pdfUuid,
+            'is_valid' => true,
+            'metadata' => [],
         ]);
+
+        return redirect()->back()->with('success', 'PDF asociado correctamente al XML');
     }
-
-    // Obtener XML correspondiente
-    $xmlFile = XmlFile::where('batch_id', $batch->id)
-        ->where('uuid', $pdfUuid)
-        ->first();
-
-    if (!$xmlFile) {
-        return redirect()->back()->withErrors([
-            'pdf' => 'No se encontró el XML correspondiente al UUID'
-        ]);
-    }
-
-    // Asociar PDF al XML
-    $xmlFile->update([
-        'pdf_path' => $pdfPath,
-    ]);
-
-    // Actualizar contador
-    $batch->increment('uploaded_pdfs');
-
-    // Log de auditoría
-    FileLog::create([
-        'filename'  => basename($pdfPath),
-        'file_type' => 'pdf',
-        'uuid'      => $pdfUuid,
-        'is_valid'  => true,
-        'metadata'  => [],
-    ]);
-
-    return redirect()->back()->with('success', 'PDF asociado correctamente al XML');
-}
-
-
-
 }

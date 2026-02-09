@@ -91,6 +91,7 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
 
     //ruta de administracion de usuarios
     Route::get('/admi_user', [crudUser::class, 'index'])->name('admiUsers');
+    Route::post('/users', [crudUser::class, 'store'])->name('users.store');
     Route::post('/users/confirm-password', [crudUser::class, 'confirmPassword'])->name('users.confirmPassword');
     Route::get('/users/edit/{id}', [crudUser::class, 'showEditForm'])->name('users.edit');
     Route::post('/users/update', [crudUser::class, 'editar'])->name('users.update');

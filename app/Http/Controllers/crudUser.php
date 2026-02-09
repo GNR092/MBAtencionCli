@@ -42,7 +42,7 @@ class crudUser extends Controller{
                     ->whereMonth('users.created_at', $month);
             }
 
-            $users = $query->paginate(6);
+            $users = $query->paginate(10);
             $roles = ['admin', 'jefe', 'usuario'];
             $areas = [];
 
@@ -166,5 +166,36 @@ class crudUser extends Controller{
     return redirect()->route('admiUsers')
         ->with('success', 'Usuario editado correctamente.');
 }
+
+public function store(Request $request)
+{
+    // Verificar que sea admin
+    $admin = Session::get('user');
+    if (!$admin || $admin->rol !== 'administrador') {
+        return redirect('/inicio-de-sesion');
+    }
+
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'phone' => 'required|string|max:20',
+        'proyect' => 'required|array',
+        'regimenFiscal' => 'required|string|max:255',
+        'password' => 'required|string|min:8|confirmed',
+    ]);
+
+    User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'phone' => '52' . $request->phone,
+        'proyect' => json_encode($request->proyect),
+        'regimenFiscal' => $request->regimenFiscal,
+        'password' => Hash::make($request->password),
+        'rol' => 'usuario', // Asigna el rol por defecto de 'usuario'
+    ]);
+
+    return redirect()->route('admiUsers')->with('success', 'Usuario creado correctamente.');
+}
+
 
 }
