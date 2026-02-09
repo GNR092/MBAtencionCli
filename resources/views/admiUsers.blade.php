@@ -17,7 +17,7 @@
             Nuevo usuario
         </button>
 
-        <div class="overflow-y-auto max-h-[500px] bg-white/80 backdrop-blur-xl border border-[#eeeeee] shadow-lg rounded-2xl w-full">
+        <div class="overflow-y-auto max-h-125 bg-white/80 backdrop-blur-xl border border-[#eeeeee] shadow-lg rounded-2xl w-full">
             <table class="min-w-full table-auto text-sm text-[#112134]">
                 <!-- Header -->
                 <thead class="bg-[#f5f5f5] border-b border-[#eeeeee]">
@@ -40,7 +40,7 @@
                         <td class="px-4 py-3">
                             <div class="flex gap-3 items-center">
                                 <!-- Editar -->
-                                <button onclick="openModal({{ $user->id }})"
+                                <button onclick="openModal('{{ $user->id }}')"
                                         class="px-3 py-1.5 text-xs rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition"
                                         title="Editar">
                                     Editar
@@ -69,12 +69,15 @@
                 @endforelse
                 </tbody>
             </table>
+            <div class="p-4">
+                {{ $users->links() }}
+            </div>
         </div>
     </div>
 
     <!-- Modal: agregar nuevo usuario -->
     <div id="modalUsuario"
-         class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+         class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm items-center justify-center p-4"
          onclick="cerrarModalUsuario()">
 
         <div onclick="event.stopPropagation()"
@@ -119,7 +122,7 @@
 
     <!-- ================= MODAL EDITAR ================= -->
     <div id="confirmModal"
-         class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+         class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm items-center justify-center p-4"
          onclick="closeModal()">
 
         <div onclick="event.stopPropagation()"
@@ -169,18 +172,22 @@
 <script>
     window.abrirModalUsuario = function () {
         document.getElementById('modalUsuario').classList.remove('hidden');
+        document.getElementById('modalUsuario').classList.add('flex');
     }
 
     window.cerrarModalUsuario = function () {
         document.getElementById('modalUsuario').classList.add('hidden');
+        document.getElementById('modalUsuario').classList.remove('flex');
     }
 
     function openModal(userId) {
         document.getElementById("confirmModal").classList.remove("hidden");
+        document.getElementById("confirmModal").classList.add("flex");
         document.getElementById("userIdInput").value = userId;
     }
     function closeModal() {
         document.getElementById("confirmModal").classList.add("hidden");
+        document.getElementById("confirmModal").classList.remove("flex");
     }
 </script>
 @endpush
