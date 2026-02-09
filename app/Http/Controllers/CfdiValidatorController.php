@@ -202,7 +202,7 @@ class CfdiValidatorController extends BaseController
 
 
             // Revisar UUID duplicado
-            if ($validationResult['uuid'] && isset($uuidMapping[$validationResult['uuid']])) {
+            if (($uuid = $validationResult['uuid'] ?? null) && isset($uuidMapping[$uuid])) {
                 $errors[] = "Archivo {$filename}: UUID duplicado {$validationResult['uuid']}";
                 continue;
             }
@@ -215,7 +215,7 @@ class CfdiValidatorController extends BaseController
             $xmlFile = XmlFile::create([
                 'batch_id' => $batch->id,
                 'filename' => $filename,
-                'uuid' => $validationResult['uuid'],
+                'uuid' => $validationResult['uuid'] ?? null,
                 'is_valid' => true,
                 'validation_errors' => json_encode($validationResult['errors']),
                 'emisor_name' => $validationResult['emisor_name'],
