@@ -33,21 +33,33 @@ public function datos(Request $request)
         return redirect('/inicio-de-sesion');
     }
 
-    $phone = '52' . $request->input('phone');
-
     $request->validate([
         'name'     => 'required|string|max:255',
         'email'    => 'required|email|unique:users,email',
-        'phone'    => 'nullable|string|max:12',
+        'phone'    => 'required|string|max:10|min:10', // Changed to required and 10 digits
+        'project_details' => 'required|array',
+        'project_details.*.nombre_depto' => 'required|string|max:255',
+        'project_details.*.cuenta_predial' => 'nullable|boolean',
+        'project_details.*.cuenta_numero' => 'nullable|string|max:255',
+        'project_details.*.importe' => 'required|numeric|min:0',
+        'regimenFiscal'     => 'required|string|max:255', // Add validation for regimenFiscal
     ]);
+
+    $phone = '52' . $request->input('phone');
 
     // 🔹 Generar contraseña
     $passwordPlain = $this->generarContrasenia();
 
-    // Convertir array de IDs de proyectos a un array de cadenas de texto
-    $proyectosIds = collect($request->proyect)->map(function ($proyectoId) {
-        return (string) $proyectoId;
-    })->toArray();
+    $proyectData = [];
+    foreach ($request->input('project_details') as $projectId => $details) {
+        $proyectData[] = [
+            'id_proyecto' => (string) $projectId,
+            'nombre_depto' => $details['nombre_depto'],
+            'cuenta_predial' => isset($details['cuenta_predial']), // Checkbox sends value only if checked
+            'cuenta_numero' => $details['cuenta_numero'] ?? null,
+            'importe' => (float) $details['importe'],
+        ];
+    }
 
     DB::table('users')->insert([
         'name'              => $request->name,
@@ -55,7 +67,7 @@ public function datos(Request $request)
         'password'          => Hash::make($passwordPlain), // guardamos encriptada
         'rol'               => 'usuario',
         'phone'             => $phone,
-        'proyect'           => json_encode($proyectosIds), // Guardar como JSON de IDs
+        'proyect'           => json_encode($proyectData), // Guardar como JSON de objetos
         'regimenFiscal'     => $request->regimenFiscal,
         'created_at'        => now(),
         'updated_at'        => now(),

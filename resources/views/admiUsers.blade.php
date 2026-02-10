@@ -47,16 +47,11 @@
                                 </button>
 
                                 <!-- Eliminar -->
-                                <form action="{{ route('users.eliminar') }}" method="POST"
-                                      onsubmit="return confirm('¿Eliminar este usuario?')" class="inline-flex">
-                                    @csrf
-                                    <input type="hidden" name="user_id" value="{{ $user->id }}">
-                                    <button type="submit"
-                                            class="px-3 py-1.5 text-xs rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition"
-                                            title="Eliminar">
-                                        Eliminar
-                                    </button>
-                                </form>
+                                <button onclick="openDeleteModal('{{ $user->id }}')"
+                                        class="px-3 py-1.5 text-xs rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition"
+                                        title="Eliminar">
+                                    Eliminar
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -144,9 +139,9 @@
             </div>
 
             <div class="p-8 overflow-y-auto custom-scroll flex-1" style="min-height: 0 !important;">
-                <form id="formEditarUsuario" action="{{ route('users.confirmPassword') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                <form id="formEditarUsuario" action="{{ route('users.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                     @csrf
-                    <input type="hidden" name="user_id" id="userIdInput"/>
+                    <input type="hidden" name="id" id="userIdInput"/>
                     @include('usuarios._form', ['prefix' => 'editar', 'usuario' => null, 'roles' => $roles, 'areas' => $areas])
                     <label for="password" class="block text-sm mb-2 text-white">Contraseña de administrador:</label>
                     <input type="password" name="password" required
@@ -160,6 +155,55 @@
                         <button type="submit"
                                 class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-lg shadow-blue-500/20 transition transform active:scale-95">
                             Actualizar Datos
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL ELIMINAR ================= -->
+    <div id="deleteConfirmModal"
+         class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm items-center justify-center p-4"
+         onclick="closeDeleteModal()">
+
+        <div onclick="event.stopPropagation()"
+             class="bg-[#112134] rounded-3xl shadow-2xl w-full max-w-md relative border border-white/10">
+
+            <!-- Botón cerrar -->
+            <button onclick="closeDeleteModal()"
+                    class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-red-500 hover:text-white text-white/70 shadow transition z-10">
+                ✕
+            </button>
+
+            <!-- Header -->
+            <div class="px-8 py-6 border-b border-white/10">
+                <h2 class="text-xl font-bold text-red-400 text-center tracking-tight">
+                    Confirmar Eliminación
+                </h2>
+                <p class="text-gray-400 text-center text-sm mt-1">Esta acción es irreversible.</p>
+            </div>
+
+            <div class="p-8">
+                <form id="formEliminarUsuario" action="{{ route('users.eliminar') }}" method="POST" class="space-y-6">
+                    @csrf
+                    <input type="hidden" name="user_id" id="deleteUserIdInput"/>
+
+                    <div>
+                        <label for="delete_password" class="block text-sm mb-2 text-white">Ingresa tu contraseña de administrador para confirmar:</label>
+                        <input type="password" name="password" id="delete_password" required
+                               class="w-full px-3 py-2 bg-gray-900/50 border border-white/10 rounded text-white focus:ring-red-500 focus:border-red-500">
+                    </div>
+
+
+                    <div class="flex justify-end gap-3 pt-6 border-t border-white/10 mt-4">
+                        <button type="button" onclick="closeDeleteModal()"
+                                class="px-6 py-2.5 rounded-xl bg-white/5 text-white hover:bg-white/10 transition font-medium">
+                            Cancelar
+                        </button>
+                        <button type="submit"
+                                class="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold shadow-lg shadow-red-500/20 transition transform active:scale-95">
+                            Eliminar Usuario
                         </button>
                     </div>
                 </form>
@@ -185,9 +229,21 @@
         document.getElementById("confirmModal").classList.add("flex");
         document.getElementById("userIdInput").value = userId;
     }
+
     function closeModal() {
         document.getElementById("confirmModal").classList.add("hidden");
         document.getElementById("confirmModal").classList.remove("flex");
+    }
+
+    function openDeleteModal(userId) {
+        document.getElementById("deleteConfirmModal").classList.remove("hidden");
+        document.getElementById("deleteConfirmModal").classList.add("flex");
+        document.getElementById("deleteUserIdInput").value = userId;
+    }
+
+    function closeDeleteModal() {
+        document.getElementById("deleteConfirmModal").classList.add("hidden");
+        document.getElementById("deleteConfirmModal").classList.remove("flex");
     }
 </script>
 @endpush

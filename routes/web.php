@@ -143,8 +143,6 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
 
         Route::resource('incrementos', IncrementoImporteController::class);
 
-
-
         // Admin User Chat Directory
 
         Route::get('/admin/users/chat-directory', [AdminChatController::class, 'showUserChatDirectory'])->name('admin.users.chat-directory');

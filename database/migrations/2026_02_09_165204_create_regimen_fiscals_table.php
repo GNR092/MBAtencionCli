@@ -8,38 +8,47 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration
 {
     public function up(): void
-    {
-        Schema::create('regimen_fiscals', function (Blueprint $table) {
-            $table->id('id_regimen');
-            $table->string('nombre_regimen');
+{
+    Schema::create('regimen_fiscals', function (Blueprint $table) {
+        // Definimos el ID manualmente y sin autoincremento
+        $table->unsignedInteger('id_regimen')->primary(); 
+        $table->string('nombre_regimen');
+        $table->decimal('tasa_retencion', 8, 4); 
+        $table->timestamps();
+    });
 
-            $table->decimal('tasa_retencion', 8, 4); 
-            
-            $table->timestamps();
-        });
-
-        // Insertar los datos
-        DB::table('regimen_fiscals')->insert([
-            [
-                'nombre_regimen' => 'Arrendamiento',
-                'tasa_retencion'    => 0.1000, // 10% ISR
-                'created_at'     => now(),
-                'updated_at'     => now(),
-            ],
-            [
-                'nombre_regimen' => 'RIF', // Nota: RIF ya no suele tener retención en muchos casos, verificar regla actual
-                'tasa_retencion'    => 0.1000, 
-                'created_at'     => now(),
-                'updated_at'     => now(),
-            ],
-            [
-                'nombre_regimen' => 'RECICO',
-                'tasa_retencion'    => 0.0125, // 1.25% ISR (Ahora sí se guardará bien)
-                'created_at'     => now(),
-                'updated_at'     => now(),
-            ],
-        ]);
-    }
+    // Insertar los datos con sus códigos SAT
+    DB::table('regimen_fiscals')->insert([
+        [
+            'id_regimen'     => 606,
+            'nombre_regimen' => 'Arrendamiento',
+            'tasa_retencion' => 0.1000,
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ],
+        [
+            'id_regimen'     => 621,
+            'nombre_regimen' => 'RIF',
+            'tasa_retencion' => 0.1000, // Ajustado según sea el caso
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ],
+        [
+            'id_regimen'     => 626,
+            'nombre_regimen' => 'RESICO',
+            'tasa_retencion' => 0.0125,
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ],
+        [
+            'id_regimen'     => 601,
+            'nombre_regimen' => 'General de Ley Personas Morales',
+            'tasa_retencion' => 0.0000,
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ],
+    ]);
+}
 
     public function down(): void
     {

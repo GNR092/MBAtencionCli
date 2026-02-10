@@ -86,6 +86,9 @@
                 </select>
             </div>
 
+            {{-- Contenedor para campos dinámicos de proyectos --}}
+            <div id="dynamicProjectFields" class="space-y-4"></div>
+
             <div>
                 <label class="block text-sm font-bold text-gris-carbon mb-1">Régimen Fiscal</label>
                 <select name="regimenFiscal" id="regimenFiscal"
@@ -122,5 +125,87 @@
 
 </div>
 <script src="js/multiselect.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const proyectSelect = document.getElementById('proyect');
+        const dynamicProjectFields = document.getElementById('dynamicProjectFields');
+
+        // Initialize multiselect if not already done by multiselect.js
+        if (typeof multiselect === 'function') {
+            multiselect(proyectSelect);
+        }
+
+        const projectOptions = @json($proyectos->pluck('nombre_proyecto', 'id_proyecto'));
+        const oldProjectDetails = @json(old('project_details', []));
+
+        function renderDynamicProjectFields() {
+            dynamicProjectFields.innerHTML = ''; // Clear previous fields
+            const selectedProjectIds = Array.from(proyectSelect.selectedOptions).map(option => option.value);
+
+            selectedProjectIds.forEach(projectId => {
+                const projectName = projectOptions[projectId] || `Proyecto ${projectId}`;
+                const oldDetails = oldProjectDetails[projectId] || {};
+
+                const projectDiv = document.createElement('div');
+                projectDiv.className = 'bg-gray-50 p-4 rounded-lg border border-carbon/30 space-y-3';
+                projectDiv.innerHTML = `
+                    <h3 class="text-md font-bold text-gris-carbon border-b pb-2 mb-3">${projectName}</h3>
+
+                    <div>
+                        <label for="project_details_${projectId}_nombre_depto" class="block text-sm font-bold text-gris-carbon mb-1">Nombre Depto:</label>
+                        <input type="text" id="project_details_${projectId}_nombre_depto" name="project_details[${projectId}][nombre_depto]"
+                               class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors"
+                               value="${oldDetails.nombre_depto || ''}" required>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="project_details_${projectId}_cuenta_predial" name="project_details[${projectId}][cuenta_predial]"
+                               class="form-checkbox h-4 w-4 text-dorado rounded border-gray-300 focus:ring-dorado"
+                               ${oldDetails.cuenta_predial ? 'checked' : ''}>
+                        <label for="project_details_${projectId}_cuenta_predial" class="text-sm font-bold text-gris-carbon">¿Cuenta Predial?</label>
+                    </div>
+
+                    <div id="agregarCuentaDiv_${projectId}" class="${oldDetails.cuenta_predial ? '' : 'hidden'} space-y-3">
+                        <div>
+                            <label for="project_details_${projectId}_cuenta_numero" class="block text-sm font-bold text-gris-carbon mb-1">Número de Cuenta:</label>
+                            <input type="text" id="project_details_${projectId}_cuenta_numero" name="project_details[${projectId}][cuenta_numero]"
+                                   class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors"
+                                   value="${oldDetails.cuenta_numero || ''}">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="project_details_${projectId}_importe" class="block text-sm font-bold text-gris-carbon mb-1">Importe:</label>
+                        <input type="number" step="0.01" id="project_details_${projectId}_importe" name="project_details[${projectId}][importe]"
+                               class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors"
+                               value="${oldDetails.importe || ''}" required>
+                    </div>
+                `;
+
+                dynamicProjectFields.appendChild(projectDiv);
+
+                // Add event listener for Cuenta Predial checkbox
+                const cuentaPredialCheckbox = projectDiv.querySelector(`#project_details_${projectId}_cuenta_predial`);
+                const agregarCuentaDiv = projectDiv.querySelector(`#agregarCuentaDiv_${projectId}`);
+
+                cuentaPredialCheckbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        agregarCuentaDiv.classList.remove('hidden');
+                    } else {
+                        agregarCuentaDiv.classList.add('hidden');
+                        agregarCuentaDiv.querySelector('input').value = ''; // Clear input if hidden
+                    }
+                });
+            });
+        }
+
+        // Initial render
+        renderDynamicProjectFields();
+
+        // Attach event listener for multiselect changes
+        proyectSelect.addEventListener('change', renderDynamicProjectFields);
+    });
+</script>
 
 @endsection
