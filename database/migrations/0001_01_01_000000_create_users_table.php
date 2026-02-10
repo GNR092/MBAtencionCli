@@ -12,14 +12,24 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-        $table->id();
-        $table->string('name', 50);
-        $table->string('email', 100)->unique();
-        $table->enum('rol', ['usuario', 'administrador'])->default('usuario'); 
-        $table->timestamp('email_verified_at')->nullable();
-        $table->string('password');
-         $table->enum('regimenFiscal', ['resico', 'arrendamiento', 'persona moral'])->default('resico');
-        $table->timestamps();
+            $table->id();
+            $table->string('name', 50);
+            $table->string('email', 100)->unique();
+            $table->string('role')->default('usuario');
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->string('foto')->nullable();
+            $table->string('proyect')->nullable();
+            $table->string('phone')->nullable();
+
+            // --- INICIO DE CAMBIOS ---
+            
+            // 1. Crear la columna (Debe ser unsignedInteger para coincidir con el ID 601, 626...)
+            $table->unsignedInteger('id_regimen')->nullable(); 
+            
+            // --- FIN DE CAMBIOS ---
+            $table->rememberToken();
+            $table->timestamps();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

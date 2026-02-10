@@ -49,8 +49,7 @@ Route::middleware([AuthUser::class.':usuario'])->group(function () {
     Route::get('/notificaciones', [AvisoController::class, 'index'])->name('notificaciones.index');
     Route::post('/notificaciones/{id}/leer', [AvisoController::class, 'markAsRead'])->name('notifications.read');
     Route::delete('/notificaciones/delete/{id}', [AvisoController::class, 'delete'])->name('notifications.delete');
-    Route::get('/api/notifications/unread-count', [AvisoController::class, 'unreadCount'])->name('notifications.unreadCount'); // New API endpoint
-
+    
    //rutas de cuentas por cobrar
     Route::get('/cuentas-por-cobrar',[CuentasPorCobrar::class,'index'])->name('cuentasCobrar');
     Route::get('/cuentas-por-cobrar/limpiar',[CuentasPorCobrar::class,'limpiar'])->name('cuentasCobrar.limpiar');
@@ -164,6 +163,11 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::delete('/anuncios-admin/{id}', [AnuncioController::class, 'destroy'])->name('admin.anuncios.destroy');
 
     });
+
+// Rutas para usuarios autenticados (cualquier rol)
+Route::middleware([AuthUser::class])->group(function () {
+    Route::get('/api/notifications/unread-count', [AvisoController::class, 'unreadCount'])->name('notifications.unreadCount');
+});
 
 // Validación de contraseña AJAX
 Route::post('/password-check', [PasswordCheckController::class, 'check'])

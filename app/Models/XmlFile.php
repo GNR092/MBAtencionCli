@@ -9,7 +9,6 @@ class XmlFile extends Model
     use HasFactory;
 
     protected $fillable = [
-        'id',
         'batch_id',
         'filename',
         'uuid',

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->enum('estado', ['activo', 'inactivo'])->default('activo');
             $table->string('nombre');
             $table->string('tipo');
-            $table->LONGBLOB('contenido');
+            $table->longText('contenido');
             $table->string('proyecto');
             $table->decimal('importe_bruto_renta', 10, 2)->nullable();
             $table->date('fecha_creacion')->nullable();

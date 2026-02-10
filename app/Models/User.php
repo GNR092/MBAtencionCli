@@ -21,10 +21,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'rol',
+        'role',
         'proyect',
         'phone',
-        'regimenFiscal',
+        'id_regimen',
+        'foto',
     ];
 
     /**
@@ -51,8 +52,12 @@ class User extends Authenticatable
         ];
     }
 
-        public function contract()
+    public function contract()
     {
         return $this->hasMany(Contract::class);
+    }
+
+    public function regimenFiscal() {
+        return $this->belongsTo(RegimenFiscal::class, 'id_regimen', 'id_regimen');
     }
 }

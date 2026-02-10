@@ -70,19 +70,19 @@ public function calculodesaldos()
     $cuentas = DB::table('cuentasporpagar')
         ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
         ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
-        ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id') // 🔹 IMPUESTO
-        ->leftJoin('users', 'contract.user_id', '=', 'users.id')
-        ->select(
-            'cuentasporpagar.id_cuentas_por_pagar',
-            'cuentasporpagar.id_contract',
-            'cuentasporpagar.monto_pagado',
-            'cuentasporpagar.estado',
-            'contract.importe_bruto_renta as importeBaseContrato',
-            'impuesto.importeBase as importeBaseXML',       // 🔹 EL IMPORTE REAL
-            'users.regimenFiscal',
-            'cuentasporpagar.mesesdepago'
-        )
-        ->get();
+                    ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id') // 🔹 IMPUESTO
+                    ->leftJoin('users', 'contract.user_id', '=', 'users.id')
+                    ->leftJoin('regimen_fiscals', 'users.id_regimen', '=', 'regimen_fiscals.id_regimen') // Unir con regimen_fiscals
+                    ->select(
+                        'cuentasporpagar.id_cuentas_por_pagar',
+                        'cuentasporpagar.id_contract',
+                        'cuentasporpagar.monto_pagado',
+                        'cuentasporpagar.estado',
+                        'contract.importe_bruto_renta as importeBaseContrato',
+                        'impuesto.importeBase as importeBaseXML',       // 🔹 EL IMPORTE REAL
+                        'regimen_fiscals.nombre_regimen as regimenFiscal', // Seleccionar el nombre del régimen
+                        'cuentasporpagar.mesesdepago'
+                    )        ->get();
 
     foreach ($cuentas as $cuenta) {
 

@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('role')->default('usuario')->after('email'); // Add role column after email
+            $table->foreign('id_regimen')
+                  ->references('id_regimen') // Campo en la otra tabla
+                  ->on('regimen_fiscals')    // Nombre de la otra tabla
+                  ->onDelete('set null');    // Si borras el régimen, el usuario queda con NULL en vez de dar error
         });
     }
 
@@ -22,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('role'); // Drop role column
+            $table->dropForeign(['id_regimen']);
         });
     }
 };
