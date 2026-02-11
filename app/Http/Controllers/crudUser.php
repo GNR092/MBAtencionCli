@@ -14,7 +14,7 @@ class crudUser extends Controller{
             $currentUser = Session::get('user'); // usuario logueado
 
             $query = DB::table('users')
-                ->where('rol','usuario');
+                ->where('role','usuario');
 
             $search = $request->input('search');
             $categoria = $request->input('categoria');

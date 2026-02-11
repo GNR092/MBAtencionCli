@@ -107,8 +107,7 @@
 
                 <!-- Logout -->
                 <div class="mt-auto border-t border-white/10">
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
+                    <form method="GET" action="{{ route('logout') }}">
                         <button type="submit"
                                 class="relative group flex items-center justify-center md:justify-start gap-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-500/10 transition w-full">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
