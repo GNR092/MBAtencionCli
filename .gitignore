@@ -29,3 +29,5 @@ pie.phar
 *.zip
 campos_xml.txt
 /Notas
+composer-setup.php
+*.phar
