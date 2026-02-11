@@ -138,30 +138,30 @@ class CfdiValidatorController extends BaseController
         $sessionId = $request->session()->getId();
         $deadline = $this->getNextQuincenaDeadline();
 
-        //validar email
-        $compareMail = $this->getMail();
-        if ($compareMail !== $request->input('user_email')) {
-            return response()->json(['errors' => ['user_email' => ['El correo electrónico no coincide con el registrado.']]], 422);
-        }
+        // //validar email
+        // $compareMail = $this->getMail();
+        // if ($compareMail !== $request->input('user_email')) {
+        //     return response()->json(['errors' => ['user_email' => ['El correo electrónico no coincide con el registrado.']]], 422);
+        // }
 
-        // Validar proyecto
-        $compareProyect = $this->getProyectos();
+        // // Validar proyecto
+        // $compareProyect = $this->getProyectos();
 
 
-        if ($compareProyect === null) {
-            return response()->json(['errors' => ['proyect' => ['El proyecto no existe']]], 422);
-        }
+        // if ($compareProyect === null) {
+        //     return response()->json(['errors' => ['proyect' => ['El proyecto no existe']]], 422);
+        // }
 
-        $proyecto = $request->input('proyect'); // siempre será un solo valor
+        // $proyecto = $request->input('proyect'); // siempre será un solo valor
 
-        if (!in_array($proyecto, $compareProyect)) {
-            return response()->json(['errors' => ['proyect' => ['El proyecto no es válido']]], 422);
-        }
+        // if (!in_array($proyecto, $compareProyect)) {
+        //     return response()->json(['errors' => ['proyect' => ['El proyecto no es válido']]], 422);
+        // }
 
-        // Verificar si la fecha límite ha pasado
-        if ($deadline->isPast()) {
-            return response()->json(['errors' => ['deadline' => ['La fecha límite ha vencido.']]], 422);
-        }
+        // // Verificar si la fecha límite ha pasado
+        // if ($deadline->isPast()) {
+        //     return response()->json(['errors' => ['deadline' => ['La fecha límite ha vencido.']]], 422);
+        // }
 
         // Crear o recuperar el batch
         $batch = XmlBatch::firstOrCreate(
@@ -190,6 +190,9 @@ class CfdiValidatorController extends BaseController
 
             // ✅ Validar primero
             $validationResult = $this->xmlValidationService->validateXml($tempPath, $filename);
+
+            // Guardar el contenido de $validationResult en un archivo de texto
+            Storage::put('validation_results.txt', json_encode($validationResult, JSON_PRETTY_PRINT));
 
             // Si no es válido → no guardar en disco ni en BD
             if (!$validationResult['valid']) {
