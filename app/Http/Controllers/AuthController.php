@@ -31,8 +31,9 @@ class AuthController extends Controller
             ]);
         }
 
+        Session::put('user', $user);
         // Iniciar sesión del usuario usando el sistema de autenticación de Laravel
-        Auth::login($user);
+        //Auth::login($user);
 
         return response()->json([
             'success' => true,
