@@ -15,6 +15,7 @@ use App\Http\Controllers\GenerateController;
 use App\Http\Controllers\UploadFactura;
 use App\Http\Controllers\crudUser;
 use App\Http\Controllers\ImpuestoController;
+use App\Http\Controllers\IncrementoImporteController;
 use App\Http\Controllers\CuentasPorPagar;
 use App\Http\Controllers\CuentasPorCobrar;
 use App\Http\Controllers\UserViewController;
