@@ -198,7 +198,7 @@
 
                             {{-- NUEVOS BOTONES (Ajustados al diseño exacto de la captura) --}}
                             <a href="{{ route('regimen-fiscal.index') }}" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Gestión de régimen fiscal</a>
-                            <a href="#" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Altas de proyectos</a>
+                            <a href="{{ route('proyectos.index') }}" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Altas de proyectos</a>
                         </div>
                     </div>
 

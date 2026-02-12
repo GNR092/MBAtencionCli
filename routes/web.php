@@ -20,12 +20,14 @@ use App\Http\Controllers\CuentasPorPagar;
 use App\Http\Controllers\CuentasPorCobrar;
 use App\Http\Controllers\UserViewController;
 use App\Http\Controllers\EstadoController;
-use App\Http\Controllers\AdminChatController; // Added for admin chat directory
-use App\Http\Controllers\UserChatController; // Added for user chat functionality
+use App\Http\Controllers\AdminChatController;
+use App\Http\Controllers\UserChatController;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Admin\LogoController;
 use App\Http\Controllers\AnuncioController;
 use App\Http\Controllers\RegimenFiscalController;
+use App\Http\Controllers\ProyectoController;
+
 
 // Rutas públicas
 Route::get('/', function () {
@@ -166,6 +168,9 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
 
     //Rutas para crud de regimen fiscal
     Route::resource('regimen-fiscal', RegimenFiscalController::class);
+
+    //Rutas para crud de proyectos
+    Route::resource('proyectos', ProyectoController::class);
 
     });
 
