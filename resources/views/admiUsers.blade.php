@@ -1,249 +1,269 @@
-@extends('layouts.new_admin')
+@extends('layouts.admin')
 
 @section('content')
-    <div class="max-w-7xl mx-auto mt-10">
-        <h2 class="text-2xl font-bold text-white mb-6">Usuarios del sistema</h2>
-        @if (session('success'))
-            <div class="bg-green-600/20 text-green-200 p-4 rounded-lg shadow mb-4 border border-green-400/30">
-                {{ session('success') }}
-            </div>
-        @endif
-        <button onclick="abrirModalUsuario()"
-                class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#d8c495] text-[#112134] font-semibold shadow-md
-               hover:shadow-lg hover:scale-[1.03] active:scale-95 transition-transform duration-200 ease-in-out mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#112134]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-            </svg>
-            Nuevo usuario
-        </button>
+    <div class="w-full px-2 mb-20">
+        <div class="flex flex-col gap-8 bg-transparent">
 
-        <div class="overflow-y-auto max-h-125 bg-white/80 backdrop-blur-xl border border-[#eeeeee] shadow-lg rounded-2xl w-full">
-            <table class="min-w-full table-auto text-sm text-[#112134]">
-                <!-- Header -->
-                <thead class="bg-[#f5f5f5] border-b border-[#eeeeee]">
-                <tr>
-                    <th class="px-4 py-3 font-semibold text-left">Nombre</th>
-                    <th class="px-4 py-3 font-semibold text-left">Correo</th>
-                    <th class="px-4 py-3 font-semibold text-left">role</th>
-                    <th class="px-4 py-3 font-semibold text-left">Acciones</th>
-                </tr>
-                </thead>
+            {{-- ISLA 1: HEADER Y ACCIONES --}}
+            <div class="bg-white rounded-2xl shadow-xl border border-[#c4c4c4] p-8 md:p-10 flex flex-col md:flex-row justify-between items-center gap-6">
+                <div>
+                    <h1 class="text-2xl text-[#1A1A1A] font-bold uppercase tracking-widest">
+                        Usuarios del Sistema
+                    </h1>
+                    <p class="text-xs text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">
+                        Gestión de accesos y roles
+                    </p>
+                </div>
 
-                <tbody class="divide-y divide-[#eeeeee]">
-                @forelse($users as $user)
-                    <tr class="odd:bg-white even:bg-[#f9f9f9] hover:bg-[#d8c495]/10 transition">
-                        <td class="px-4 py-3 font-medium">{{ $user->name }}</td>
-                        <td class="px-4 py-3 text-gray-600">{{ $user->email }}</td>
-                        <td class="px-4 py-3 text-gray-600">Usuario</td>
-
-                        <!-- Acciones -->
-                        <td class="px-4 py-3">
-                            <div class="flex gap-3 items-center">
-                                <!-- Editar -->
-                                <button onclick="openModal('{{ $user->id }}')"
-                                        class="px-3 py-1.5 text-xs rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition"
-                                        title="Editar">
-                                    Editar
-                                </button>
-
-                                <!-- Eliminar -->
-                                <button onclick="openDeleteModal('{{ $user->id }}')"
-                                        class="px-3 py-1.5 text-xs rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition"
-                                        title="Eliminar">
-                                    Eliminar
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" class="text-center text-gray-500 py-6 italic">
-                            No hay usuarios registrados.
-                        </td>
-                    </tr>
-                @endforelse
-                </tbody>
-            </table>
-            <div class="p-4">
-                {{ $users->links() }}
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: agregar nuevo usuario -->
-    <div id="modalUsuario"
-         class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm items-center justify-center p-4"
-         onclick="cerrarModalUsuario()">
-
-        <div onclick="event.stopPropagation()"
-             class="bg-[#112134] rounded-3xl shadow-2xl w-full max-w-2xl relative border border-white/10"
-             style="height: 80vh !important; display: flex !important; flex-direction: column !important; overflow: hidden !important;">
-
-            <!-- Botón cerrar -->
-            <button onclick="cerrarModalUsuario()"
-                    class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-red-500 hover:text-white text-white/70 shadow transition z-10">
-                ✕
-            </button>
-
-            <!-- Header -->
-            <div class="px-8 py-6 border-b border-white/10 flex-none">
-                <h2 class="text-2xl font-bold text-[#d8c495] text-center tracking-tight">
-                    Registrar nuevo usuario
-                </h2>
-                <p class="text-gray-400 text-center text-sm mt-1">Completa la información para dar de alta al colaborador</p>
+                <button onclick="abrirModalUsuario()"
+                        class="bg-[#1A1A1A] text-white text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:bg-[#D4A017] hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 flex items-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-inherit" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Nuevo Usuario
+                </button>
             </div>
 
-            <!-- Formulario (Scrollable) -->
-            <div class="p-8 overflow-y-auto custom-scroll flex-1" style="min-height: 0 !important;">
-                <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-                    @include('usuarios._form', ['prefix' => 'crear', 'usuario' => null, 'roles' => $roles, 'areas' => $areas])
+            {{-- ALERTA DE ÉXITO (Si existe) --}}
+            @if (session('success'))
+                <div class="bg-green-50 border border-green-200 text-green-800 px-6 py-4 rounded-xl shadow-sm flex items-center gap-3">
+                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    <span class="font-medium text-sm">{{ session('success') }}</span>
+                </div>
+            @endif
 
-                    <div class="flex justify-end gap-3 pt-6 border-t border-white/10 mt-4">
-                        <button type="button"
-                                onclick="cerrarModalUsuario()"
-                                class="px-6 py-2.5 rounded-xl bg-white/5 text-white hover:bg-white/10 transition font-medium">
-                            Cancelar
-                        </button>
-                        <button type="submit"
-                                class="px-6 py-2.5 rounded-xl bg-[#d8c495] hover:bg-[#c9b37e] text-[#112134] font-bold shadow-lg shadow-[#d8c495]/20 transition transform active:scale-95">
-                            Registrar Usuario
-                        </button>
+            {{-- ISLA 2: TABLA DE USUARIOS --}}
+            <div class="tabla-dorada-container bg-white rounded-2xl shadow-xl border border-[#c4c4c4] overflow-hidden">
+                <div class="overflow-x-auto custom-scroll">
+                    <table class="tabla-dorada">
+                        <thead>
+                        <tr>
+                            <th class="text-left pl-8">Nombre</th>
+                            <th class="text-left">Correo Electrónico</th>
+                            <th class="text-center">Rol</th>
+                            <th class="text-center pr-8">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @forelse($users as $user)
+                            <tr>
+                                <td class="text-left pl-8">
+                                <span class="block font-bold text-[#1A1A1A] uppercase tracking-wide">
+                                    {{ $user->name }}
+                                </span>
+                                </td>
+
+                                <td class="text-left text-xs font-medium text-gray-500 tracking-wide">
+                                    {{ $user->email }}
+                                </td>
+
+                                <td class="text-center">
+                                <span class="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 border border-gray-200">
+                                    Usuario
+                                </span>
+                                </td>
+
+                                <td class="text-center pr-8">
+                                    <div class="flex justify-center gap-3">
+                                        <button onclick="openModal('{{ $user->id }}')"
+                                                class="text-[#D4A017] hover:text-[#b58714] transition-colors"
+                                                title="Editar">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                        </button>
+
+                                        <button onclick="openDeleteModal('{{ $user->id }}')"
+                                                class="text-red-400 hover:text-red-600 transition-colors"
+                                                title="Eliminar">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="py-16 text-center text-gray-400 text-xs uppercase tracking-widest font-bold">
+                                    No hay usuarios registrados
+                                </td>
+                            </tr>
+                        @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            {{-- ISLA 3: PAGINACIÓN (Solo visible si hay páginas) --}}
+            @if($users->hasPages())
+                <div class="bg-white rounded-2xl shadow-xl border border-[#c4c4c4] p-8 flex justify-center">
+                    <div class="pagination-custom text-gray-600">
+                        {{ $users->links() }}
                     </div>
-                </form>
-            </div>
+                </div>
+            @endif
+
         </div>
-    </div>
 
+        <div id="modalUsuario" class="hidden fixed inset-0 z-50 bg-[#1A1A1A]/90 backdrop-blur-sm items-center justify-center p-4" onclick="cerrarModalUsuario()">
 
-    <!-- ================= MODAL EDITAR ================= -->
-    <div id="confirmModal"
-         class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm items-center justify-center p-4"
-         onclick="closeModal()">
+            <div onclick="event.stopPropagation()" class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl relative border border-gray-200 overflow-hidden flex flex-col max-h-[90vh]">
 
-        <div onclick="event.stopPropagation()"
-             class="bg-[#112134] rounded-3xl shadow-2xl w-full max-w-2xl relative border border-white/10"
-             style="height: 80vh !important; display: flex !important; flex-direction: column !important; overflow: hidden !important;">
-
-            <!-- Botón cerrar -->
-            <button onclick="closeModal()"
-                    class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-red-500 hover:text-white text-white/70 shadow transition z-10">
-                ✕
-            </button>
-
-            <!-- Header -->
-            <div class="px-8 py-6 border-b border-white/10 flex-none">
-                <h2 class="text-2xl font-bold text-[#d8c495] text-center tracking-tight">
-                    Editar usuario
-                </h2>
-                <p class="text-gray-400 text-center text-sm mt-1">Actualiza la información del colaborador</p>
-            </div>
-
-            <div class="p-8 overflow-y-auto custom-scroll flex-1" style="min-height: 0 !important;">
-                <form id="formEditarUsuario" action="{{ route('users.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-                    @csrf
-                    <input type="hidden" name="id" id="userIdInput"/>
-                    @include('usuarios._form', ['prefix' => 'editar', 'usuario' => null, 'roles' => $roles, 'areas' => $areas])
-                    <label for="password" class="block text-sm mb-2 text-white">Contraseña de administrador:</label>
-                    <input type="password" name="password" required
-                           class="w-full px-3 py-2 border border-gray-400 rounded mb-4">
-
-                    <div class="flex justify-end gap-3 pt-6 border-t border-white/10 mt-4">
-                        <button type="button" onclick="closeModal()"
-                                class="px-6 py-2.5 rounded-xl bg-white/5 text-white hover:bg-white/10 transition font-medium">
-                            Cancelar
-                        </button>
-                        <button type="submit"
-                                class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-lg shadow-blue-500/20 transition transform active:scale-95">
-                            Actualizar Datos
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================= MODAL ELIMINAR ================= -->
-    <div id="deleteConfirmModal"
-         class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm items-center justify-center p-4"
-         onclick="closeDeleteModal()">
-
-        <div onclick="event.stopPropagation()"
-             class="bg-[#112134] rounded-3xl shadow-2xl w-full max-w-md relative border border-white/10">
-
-            <!-- Botón cerrar -->
-            <button onclick="closeDeleteModal()"
-                    class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-red-500 hover:text-white text-white/70 shadow transition z-10">
-                ✕
-            </button>
-
-            <!-- Header -->
-            <div class="px-8 py-6 border-b border-white/10">
-                <h2 class="text-xl font-bold text-red-400 text-center tracking-tight">
-                    Confirmar Eliminación
-                </h2>
-                <p class="text-gray-400 text-center text-sm mt-1">Esta acción es irreversible.</p>
-            </div>
-
-            <div class="p-8">
-                <form id="formEliminarUsuario" action="{{ route('users.eliminar') }}" method="POST" class="space-y-6">
-                    @csrf
-                    <input type="hidden" name="user_id" id="deleteUserIdInput"/>
-
+                <div class="px-8 py-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                     <div>
-                        <label for="delete_password" class="block text-sm mb-2 text-white">Ingresa tu contraseña de administrador para confirmar:</label>
-                        <input type="password" name="password" id="delete_password" required
-                               class="w-full px-3 py-2 bg-gray-900/50 border border-white/10 rounded text-white focus:ring-red-500 focus:border-red-500">
+                        <h2 class="text-xl font-bold text-[#1A1A1A] uppercase tracking-widest">
+                            Registrar Usuario
+                        </h2>
+                        <p class="text-[10px] text-[#D4A017] font-bold uppercase tracking-[0.2em] mt-1">
+                            Alta de colaborador
+                        </p>
+                    </div>
+                    <button onclick="cerrarModalUsuario()" class="text-gray-400 hover:text-red-500 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+
+                <div class="p-8 overflow-y-auto custom-scroll">
+                    <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                        {{-- Asumimos que _form se adapta o usamos estilos globales para inputs --}}
+                        @include('usuarios._form', ['prefix' => 'crear', 'usuario' => null, 'roles' => $roles, 'areas' => $areas])
+
+                        <div class="pt-6 border-t border-gray-100 flex justify-end gap-4 mt-4">
+                            <button type="button" onclick="cerrarModalUsuario()"
+                                    class="px-6 py-3 rounded-lg border border-gray-300 text-gray-500 text-xs font-bold uppercase tracking-widest hover:bg-gray-50 transition">
+                                Cancelar
+                            </button>
+                            <button type="submit"
+                                    class="px-8 py-3 rounded-lg bg-[#1A1A1A] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#D4A017] hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+                                Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="confirmModal" class="hidden fixed inset-0 z-50 bg-[#1A1A1A]/90 backdrop-blur-sm items-center justify-center p-4" onclick="closeModal()">
+
+            <div onclick="event.stopPropagation()" class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl relative border border-gray-200 overflow-hidden flex flex-col max-h-[90vh]">
+
+                <div class="px-8 py-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold text-[#1A1A1A] uppercase tracking-widest">
+                            Editar Usuario
+                        </h2>
+                        <p class="text-[10px] text-[#D4A017] font-bold uppercase tracking-[0.2em] mt-1">
+                            Actualizar información
+                        </p>
+                    </div>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-red-500 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+
+                <div class="p-8 overflow-y-auto custom-scroll">
+                    <form id="formEditarUsuario" action="{{ route('users.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                        @csrf
+                        <input type="hidden" name="id" id="userIdInput"/>
+
+                        @include('usuarios._form', ['prefix' => 'editar', 'usuario' => null, 'roles' => $roles, 'areas' => $areas])
+
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#1A1A1A] mb-3">
+                                Contraseña Admin
+                            </label>
+                            <input type="password" name="password" required
+                                   class="w-full bg-gray-50 border border-gray-300 rounded-lg py-3 px-4 text-[#1A1A1A] focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017] transition-all">
+                        </div>
+
+                        <div class="pt-6 border-t border-gray-100 flex justify-end gap-4 mt-4">
+                            <button type="button" onclick="closeModal()"
+                                    class="px-6 py-3 rounded-lg border border-gray-300 text-gray-500 text-xs font-bold uppercase tracking-widest hover:bg-gray-50 transition">
+                                Cancelar
+                            </button>
+                            <button type="submit"
+                                    class="px-8 py-3 rounded-lg bg-[#1A1A1A] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#D4A017] hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+                                Actualizar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="deleteConfirmModal" class="hidden fixed inset-0 z-50 bg-[#1A1A1A]/90 backdrop-blur-sm items-center justify-center p-4" onclick="closeDeleteModal()">
+
+            <div onclick="event.stopPropagation()" class="bg-white rounded-2xl shadow-2xl w-full max-w-md relative border border-gray-200 overflow-hidden">
+
+                <div class="p-8 text-center">
+                    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-6">
+                        <svg class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
                     </div>
 
+                    <h3 class="text-lg font-bold text-[#1A1A1A] uppercase tracking-wide mb-2">
+                        Confirmar Eliminación
+                    </h3>
+                    <p class="text-sm text-gray-500 mb-8">
+                        Esta acción es irreversible. Por favor ingresa tu contraseña para continuar.
+                    </p>
 
-                    <div class="flex justify-end gap-3 pt-6 border-t border-white/10 mt-4">
-                        <button type="button" onclick="closeDeleteModal()"
-                                class="px-6 py-2.5 rounded-xl bg-white/5 text-white hover:bg-white/10 transition font-medium">
-                            Cancelar
-                        </button>
-                        <button type="submit"
-                                class="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold shadow-lg shadow-red-500/20 transition transform active:scale-95">
-                            Eliminar Usuario
-                        </button>
-                    </div>
-                </form>
+                    <form id="formEliminarUsuario" action="{{ route('users.eliminar') }}" method="POST" class="text-left">
+                        @csrf
+                        <input type="hidden" name="user_id" id="deleteUserIdInput"/>
+
+                        <div class="mb-6">
+                            <input type="password" name="password" id="delete_password" required placeholder="CONTRASEÑA..."
+                                   class="w-full bg-gray-50 border border-gray-300 rounded-lg py-3 px-4 text-[#1A1A1A] text-center focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all">
+                        </div>
+
+                        <div class="flex justify-center gap-4">
+                            <button type="button" onclick="closeDeleteModal()"
+                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-500 text-xs font-bold uppercase tracking-widest hover:bg-gray-50 transition">
+                                Cancelar
+                            </button>
+                            <button type="submit"
+                                    class="w-full px-4 py-3 rounded-lg bg-red-600 text-white text-xs font-bold uppercase tracking-widest hover:bg-red-700 shadow-md hover:shadow-lg transition-all">
+                                Eliminar
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 @endsection
 
 @push('scripts')
-<script>
-    window.abrirModalUsuario = function () {
-        document.getElementById('modalUsuario').classList.remove('hidden');
-        document.getElementById('modalUsuario').classList.add('flex');
-    }
+    <script>
+        window.abrirModalUsuario = function () {
+            document.getElementById('modalUsuario').classList.remove('hidden');
+            document.getElementById('modalUsuario').classList.add('flex');
+        }
 
-    window.cerrarModalUsuario = function () {
-        document.getElementById('modalUsuario').classList.add('hidden');
-        document.getElementById('modalUsuario').classList.remove('flex');
-    }
+        window.cerrarModalUsuario = function () {
+            document.getElementById('modalUsuario').classList.add('hidden');
+            document.getElementById('modalUsuario').classList.remove('flex');
+        }
 
-    function openModal(userId) {
-        document.getElementById("confirmModal").classList.remove("hidden");
-        document.getElementById("confirmModal").classList.add("flex");
-        document.getElementById("userIdInput").value = userId;
-    }
+        function openModal(userId) {
+            document.getElementById("confirmModal").classList.remove("hidden");
+            document.getElementById("confirmModal").classList.add("flex");
+            document.getElementById("userIdInput").value = userId;
+        }
 
-    function closeModal() {
-        document.getElementById("confirmModal").classList.add("hidden");
-        document.getElementById("confirmModal").classList.remove("flex");
-    }
+        function closeModal() {
+            document.getElementById("confirmModal").classList.add("hidden");
+            document.getElementById("confirmModal").classList.remove("flex");
+        }
 
-    function openDeleteModal(userId) {
-        document.getElementById("deleteConfirmModal").classList.remove("hidden");
-        document.getElementById("deleteConfirmModal").classList.add("flex");
-        document.getElementById("deleteUserIdInput").value = userId;
-    }
+        function openDeleteModal(userId) {
+            document.getElementById("deleteConfirmModal").classList.remove("hidden");
+            document.getElementById("deleteConfirmModal").classList.add("flex");
+            document.getElementById("deleteUserIdInput").value = userId;
+        }
 
-    function closeDeleteModal() {
-        document.getElementById("deleteConfirmModal").classList.add("hidden");
-        document.getElementById("deleteConfirmModal").classList.remove("flex");
-    }
-</script>
+        function closeDeleteModal() {
+            document.getElementById("deleteConfirmModal").classList.add("hidden");
+            document.getElementById("deleteConfirmModal").classList.remove("flex");
+        }
+    </script>
 @endpush
