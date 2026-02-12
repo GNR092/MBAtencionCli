@@ -25,6 +25,7 @@ use App\Http\Controllers\UserChatController; // Added for user chat functionalit
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Admin\LogoController;
 use App\Http\Controllers\AnuncioController;
+use App\Http\Controllers\RegimenFiscalController;
 
 // Rutas públicas
 Route::get('/', function () {
@@ -50,7 +51,7 @@ Route::middleware([AuthUser::class.':usuario'])->group(function () {
     Route::get('/notificaciones', [AvisoController::class, 'index'])->name('notificaciones.index');
     Route::post('/notificaciones/{id}/leer', [AvisoController::class, 'markAsRead'])->name('notifications.read');
     Route::delete('/notificaciones/delete/{id}', [AvisoController::class, 'delete'])->name('notifications.delete');
-    
+
    //rutas de cuentas por cobrar
     Route::get('/cuentas-por-cobrar',[CuentasPorCobrar::class,'index'])->name('cuentasCobrar');
     Route::get('/cuentas-por-cobrar/limpiar',[CuentasPorCobrar::class,'limpiar'])->name('cuentasCobrar.limpiar');
@@ -162,6 +163,9 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::post('/anuncios-admin/{id}/toggle', [AnuncioController::class, 'toggleStatus'])->name('admin.anuncios.toggle');
     Route::put('/anuncios-admin/{id}', [AnuncioController::class, 'update'])->name('admin.anuncios.update');
     Route::delete('/anuncios-admin/{id}', [AnuncioController::class, 'destroy'])->name('admin.anuncios.destroy');
+
+    //Rutas para crud de regimen fiscal
+    Route::resource('regimen-fiscal', RegimenFiscalController::class);
 
     });
 

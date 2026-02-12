@@ -185,6 +185,7 @@
                         </div>
                     </div>
 
+                    {{-- Sección: Gestión Empresarial y Legal --}}
                     <div class="dropdown">
                         <button class="dropdown-toggle flex w-full items-center justify-between p-3 rounded-lg hover:bg-white/10 transition-all text-sm font-medium text-white">
                             <span>Gestión Empresarial y Legal</span>
@@ -194,6 +195,10 @@
                             <a href="/lista-de-inversionistas" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Lista de inversionistas</a>
                             <a href="/subir-archivo" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Administración de contratos</a>
                             <a href="/incrementos" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Incrementos de Importe</a>
+
+                            {{-- NUEVOS BOTONES (Ajustados al diseño exacto de la captura) --}}
+                            <a href="{{ route('regimen-fiscal.index') }}" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Gestión de régimen fiscal</a>
+                            <a href="#" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Altas de proyectos</a>
                         </div>
                     </div>
 
@@ -207,8 +212,8 @@
                             <a href="/admi_user" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Administrador de Usuarios</a>
                             <a href="/enviar-avisos" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Avisos</a>
                             <a href="{{ route('admin.users.chat-directory') }}" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Directorio (Chat)</a>
-                            <a href="{{ route('admin.logos.index') }}" class="block py-2.5 pl-8 text-xs text-[#d8c495] font-semibold hover:bg-white/5 transition-colors">Gestión Logos</a>
-                            <a href="{{ route('admin.anuncios.index') }}" class="block py-2.5 pl-8 text-xs text-[#d8c495] font-semibold hover:bg-white/5 transition-colors">Gestión Anuncios</a>
+                            <a href="{{ route('admin.logos.index') }}" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Gestión Logos</a>
+                            <a href="{{ route('admin.anuncios.index') }}" class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Gestión Anuncios</a>
                         </div>
                     </div>
                 </nav>
