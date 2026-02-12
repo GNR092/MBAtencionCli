@@ -82,12 +82,12 @@ private function aplicarFiltros(&$query, Request $request)
 public function calcularCuentasPorPagar($user_id)
 {
         $contracts = Contract::where('user_id', $user_id)
-            ->whereNotNull('fecha_inicio')
+            ->whereNotNull('fecha_creacion')
             ->whereNotNull('fecha_terminacion')
             ->get();
 
         foreach ($contracts as $contract) {
-            $inicio = Carbon::parse($contract->fecha_inicio)->startOfMonth();
+            $inicio = Carbon::parse($contract->fecha_creacion)->startOfMonth();
             $fin = Carbon::parse($contract->fecha_terminacion)->startOfMonth();
 
             $periodo = CarbonPeriod::create($inicio, '1 month', $fin);
