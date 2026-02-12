@@ -164,7 +164,7 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
 
     });
 
-// Rutas para usuarios autenticados (cualquier rol)
+// Rutas para usuarios autenticados (cualquier role)
 Route::middleware([AuthUser::class])->group(function () {
     Route::get('/api/notifications/unread-count', [AvisoController::class, 'unreadCount'])->name('notifications.unreadCount');
 });

@@ -25,7 +25,7 @@
 
         <div class="mb-6">
             <!-- Select solo para admin -->
-            @if($user && $user->rol === 'administrador')
+            @if($user && $user->role === 'administrador')
             <label for="myInput" class="text-white">Asignar a usuario:</label>
 
             <!-- Input de búsqueda -->

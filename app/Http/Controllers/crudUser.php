@@ -63,7 +63,7 @@ class crudUser extends Controller{
 
         // Verifica que sea admin desde sesión
         $admin = Session::get('user');
-        if (!$admin || $admin->rol !== 'administrador') {
+        if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
@@ -84,7 +84,7 @@ class crudUser extends Controller{
         $admin = Session::get('user');
 
         // Verificar que sea admin
-        if (!$admin || $admin->rol !== 'administrador') {
+        if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
@@ -105,7 +105,7 @@ class crudUser extends Controller{
         $admin = Session::get('user');
 
         // Verificar que sea admin
-        if (!$admin || $admin->rol !== 'administrador') {
+        if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
@@ -132,7 +132,7 @@ class crudUser extends Controller{
     $admin = Session::get('user');
 
     // Verificar que sea admin
-    if (!$admin || $admin->rol !== 'administrador') {
+    if (!$admin || $admin->role !== 'administrador') {
         return redirect('/inicio-de-sesion');
     }
 
@@ -171,7 +171,7 @@ public function store(Request $request)
 {
     // Verificar que sea admin
     $admin = Session::get('user');
-    if (!$admin || $admin->rol !== 'administrador') {
+    if (!$admin || $admin->role !== 'administrador') {
         return redirect('/inicio-de-sesion');
     }
 
@@ -191,7 +191,7 @@ public function store(Request $request)
         'proyect' => json_encode($request->proyect),
         'regimenFiscal' => $request->regimenFiscal,
         'password' => Hash::make($request->password),
-        'rol' => 'usuario', // Asigna el rol por defecto de 'usuario'
+        'role' => 'usuario', // Asigna el role por defecto de 'usuario'
     ]);
 
     return redirect()->route('admiUsers')->with('success', 'Usuario creado correctamente.');

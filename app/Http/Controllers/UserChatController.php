@@ -13,7 +13,7 @@ class UserChatController extends Controller
     public function getMessages()
     {
         $userId = Session::get('user')->id;
-        $adminIds = \App\Models\User::where('rol', 'administrador')->pluck('id')->toArray();
+        $adminIds = \App\Models\User::where('role', 'administrador')->pluck('id')->toArray();
 
         $messages = \App\Models\Message::where(function ($query) use ($userId, $adminIds) {
             // Mensajes del usuario a cualquier administrador
@@ -38,7 +38,7 @@ class UserChatController extends Controller
             $userId = Session::has('user') ? Session::get('user')->id : auth()->id();
 
             // Buscamos al primer administrador para satisfacer la llave foránea
-            $firstAdmin = \App\Models\User::where('rol', 'administrador')->first();
+            $firstAdmin = \App\Models\User::where('role', 'administrador')->first();
 
             if (!$firstAdmin) {
                 return response()->json(['error' => 'No hay administradores en el sistema'], 404);

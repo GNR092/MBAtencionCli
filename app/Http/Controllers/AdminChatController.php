@@ -11,7 +11,7 @@ class AdminChatController extends Controller
 {
     public function showUserChatDirectory(Request $request)
     {
-        $query = User::where('rol', 'usuario');
+        $query = User::where('role', 'usuario');
 
         // Manejo de búsqueda
         if ($request->has('search') && $request->input('search') != '') {
@@ -44,9 +44,9 @@ class AdminChatController extends Controller
     public function getMessages($userId)
     {
         $currentAdminId = Session::get('user')->id;
-        $allAdminIds = User::where('rol', 'administrador')->pluck('id')->toArray();
+        $allAdminIds = User::where('role', 'administrador')->pluck('id')->toArray();
 
-        $messages = Message::with('sender:id,name,rol')
+        $messages = Message::with('sender:id,name,role')
             ->where(function ($query) use ($userId, $allAdminIds) {
                 // CAMBIO CLAVE: Mensajes del usuario dirigidos a CUALQUIER admin (ID 0)
                 // o a un administrador específico.

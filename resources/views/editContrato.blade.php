@@ -25,7 +25,7 @@
         </div>
 
         <!-- Seleccionar usuario (solo admin) -->
-        @if($admin && $admin->rol === 'administrador')
+        @if($admin && $admin->role === 'administrador')
         <div class="mb-6">
             <label for="user_id" class="text-white">Asignar a usuario:</label>
             <select name="user_id" id="user_id" class="w-full p-2 rounded bg-gray-100 text-black">

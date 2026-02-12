@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const messageWrapper = document.createElement('div');
             const messageBubble = document.createElement('div');
 
-            const isUserSender = message.sender.rol === 'usuario';
+            const isUserSender = message.sender.role === 'usuario';
 
             // Wrapper general
             messageWrapper.classList.add('flex', 'w-full', 'mb-2');

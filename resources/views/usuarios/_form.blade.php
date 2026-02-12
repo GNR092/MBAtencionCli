@@ -36,19 +36,19 @@
                       focus:ring-2 focus:ring-[#d8c495] focus:border-transparent transition outline-none">
     </div>
 
-    {{-- Rol --}}
+    {{-- role --}}
     <div class="space-y-2">
-        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Rol de Sistema</label>
+        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">role de Sistema</label>
         <div class="relative">
             <select name="role"
                     id="{{ $prefix }}_rol"
                     required
                     class="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white appearance-none
                            focus:ring-2 focus:ring-[#d8c495] focus:border-transparent transition outline-none">
-                <option value="" class="bg-[#112134]">Selecciona un rol</option>
-                @foreach($roles as $rol)
-                    <option value="{{ $rol }}" @selected($selectedRole === $rol) class="bg-[#112134]">
-                        {{ ucfirst($rol) }}
+                <option value="" class="bg-[#112134]">Selecciona un role</option>
+                @foreach($roles as $role)
+                    <option value="{{ $role }}" @selected($selectedRole === $role) class="bg-[#112134]">
+                        {{ ucfirst($role) }}
                     </option>
                 @endforeach
             </select>

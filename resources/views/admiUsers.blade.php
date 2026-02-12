@@ -24,7 +24,7 @@
                 <tr>
                     <th class="px-4 py-3 font-semibold text-left">Nombre</th>
                     <th class="px-4 py-3 font-semibold text-left">Correo</th>
-                    <th class="px-4 py-3 font-semibold text-left">Rol</th>
+                    <th class="px-4 py-3 font-semibold text-left">role</th>
                     <th class="px-4 py-3 font-semibold text-left">Acciones</th>
                 </tr>
                 </thead>

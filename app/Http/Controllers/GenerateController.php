@@ -67,7 +67,7 @@ class GenerateController extends Controller
             'name'              => $request->name,
             'email'             => $request->email,
             'password'          => Hash::make($passwordPlain), // guardamos encriptada
-            'role'              => 'usuario', // Cambiado de 'rol' a 'role'
+            'role'              => 'usuario', // Cambiado de 'role' a 'role'
             'phone'             => $phone,
             'proyect'           => json_encode($proyectData), // Guardar como JSON de objetos
             'id_regimen'        => $request->regimenFiscal, // Cambiado de 'regimenFiscal' a 'id_regimen'

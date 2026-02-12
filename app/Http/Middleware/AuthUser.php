@@ -17,7 +17,7 @@ class AuthUser
 
         $user = Auth::user();
 
-        // El rol no coincide
+        // El role no coincide
         if ($role && $user->role !== $role) {
             return redirect('/inicio-de-sesion');
         }

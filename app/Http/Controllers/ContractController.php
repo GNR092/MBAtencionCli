@@ -101,7 +101,7 @@ class ContractController extends Controller
         $admin = Session::get('user');
 
         // Verifica que esté logueado y sea administrador
-        if (!$admin || $admin->rol !== 'administrador') {
+        if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
@@ -126,7 +126,7 @@ class ContractController extends Controller
 
         // Verifica que sea admin desde sesión
         $admin = Session::get('user');
-        if (!$admin || $admin->rol !== 'administrador') {
+        if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
@@ -147,7 +147,7 @@ class ContractController extends Controller
         $admin = Session::get('user');
 
         // Verificar que sea administrador
-        if (!$admin || $admin->rol !== 'administrador') {
+        if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
@@ -214,7 +214,7 @@ class ContractController extends Controller
             return redirect('/inicio-de-sesion');
         }
 
-        $userId = $user->rol === 'administrador' && $request->filled('user_id')
+        $userId = $user->role === 'administrador' && $request->filled('user_id')
             ? $request->user_id
             : $user->id;
 
@@ -242,7 +242,7 @@ class ContractController extends Controller
     {
         $admin = Session::get('user');
 
-        if (!$admin || $admin->rol !== 'administrador') {
+        if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
@@ -271,7 +271,7 @@ class ContractController extends Controller
         $admin = Session::get('user');
 
         // Si no está logueado o no es administrador, fuera
-        if (!$admin || $admin->rol !== 'administrador') {
+        if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 

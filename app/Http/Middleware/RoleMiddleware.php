@@ -15,7 +15,7 @@ class RoleMiddleware
             return redirect('/inicio-de-sesion');
         }
 
-        if ($role && $user->rol !== $role) {
+        if ($role && $user->role !== $role) {
             abort(403, 'No autorizado');
         }
 

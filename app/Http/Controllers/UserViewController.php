@@ -41,7 +41,7 @@ class UserViewController extends Controller
         $misResguardos = [];
 
         // Fetch administrators for the chat directory
-        $administradores = User::where('rol', 'administrador')->get();
+        $administradores = User::where('role', 'administrador')->get();
 
         return view('viewUser', compact(
             'user',
