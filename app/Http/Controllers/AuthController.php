@@ -30,8 +30,9 @@ class AuthController extends Controller
                 'message' => 'Correo electrónico o contraseña incorrectos'
             ]);
         }
-        
 
+
+        Session::put('user', $user);
         // Inicia la sesión oficial de Laravel
         Auth::login($user);
 
