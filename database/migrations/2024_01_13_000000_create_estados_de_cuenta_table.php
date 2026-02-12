@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->string('factura');
-            $table->unsignedBigInteger('user_id'); // FK al usuario
+            $table->unsignedBigInteger('user_id'); 
             $table->boolean('is_admin')->default(false);
             $table->enum('proyecto', ['CAMPUS RESIDENCIA', 'ALDEA BORBOLETA I', 
             'ALDEA BORBOLETA II','ALDEA BORBOLETA III', 'TMZN 122', 'AVENUE TEMOZÓN',
@@ -27,7 +27,7 @@ return new class extends Migration
             $table->decimal('importacion',15,2);
             $table->decimal('saldo_neto',15,2);
 
-             // Clave foránea
+             
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }

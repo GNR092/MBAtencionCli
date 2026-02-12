@@ -22,12 +22,12 @@ return new class extends Migration
             $table->string('proyect')->nullable();
             $table->string('phone')->nullable();
 
-            // --- INICIO DE CAMBIOS ---
             
-            // 1. Crear la columna (Debe ser unsignedInteger para coincidir con el ID 601, 626...)
+            
+            
             $table->unsignedInteger('id_regimen')->nullable(); 
             
-            // --- FIN DE CAMBIOS ---
+            
             $table->rememberToken();
             $table->timestamps();
         });

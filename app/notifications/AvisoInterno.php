@@ -19,7 +19,7 @@ class AvisoInterno extends Notification
         $this->mensaje = $mensaje;
     }
 
-    // Define los canales: interno (database) y opcionalmente correo
+    
     public function via($notifiable)
     {
         return property_exists($this, 'sendMail') && $this->sendMail

@@ -36,10 +36,10 @@ class Cuentas extends Model
     $mes = json_decode($this->mesesdepago)->mes ?? null;
 
     if (!$mes) {
-        return $this->importeBase; // devolver el que ya tiene si no hay mes
+        return $this->importeBase; 
     }
 
-    // Buscar incremento activo
+    
     $incremento = \DB::table('incrementos_importe')
         ->where('id_contract', $this->id_contract)
         ->whereRaw("DATE_FORMAT(fecha_inicio, '%Y-%m') <= ?", [$mes])

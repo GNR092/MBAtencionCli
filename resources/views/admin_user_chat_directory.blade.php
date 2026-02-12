@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentChatUserId = null;
     let messagePollingInterval = null;
 
-    // Abrir Modal
+    
     document.querySelectorAll('.start-chat-btn').forEach(button => {
         button.addEventListener('click', function() {
             currentChatUserId = this.dataset.userId;
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             chattingWithName.textContent = `Chat con: ${userName}`;
 
-            // Mostrar modal (ahora es fixed screen)
+            
             adminChatModal.classList.remove('hidden');
             adminChatModal.classList.add('flex');
 
@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Cerrar Modal
+    
     if (closeAdminChatBtn) {
         closeAdminChatBtn.addEventListener('click', function() {
             adminChatModal.classList.add('hidden');
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Cerrar al dar click fuera del modal (Overlay)
+    
     adminChatModal.addEventListener('click', function(e) {
         if (e.target === adminChatModal) {
             closeAdminChatBtn.click();
@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Renderizar Mensajes con NUEVO ESTILO
+    
     function displayAdminMessages(messages) {
         if (!adminChatMessagesDiv) return;
 
@@ -246,20 +246,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const isUserSender = message.sender.role === 'usuario';
 
-            // Wrapper general
+            
             messageWrapper.classList.add('flex', 'w-full', 'mb-2');
 
-            // Burbuja base
+            
             messageBubble.classList.add('px-4', 'py-2', 'max-w-[75%]', 'break-words', 'shadow-sm',
                 'text-sm');
 
             if (isUserSender) {
-                // Mensaje RECIBIDO (Usuario): Blanco con texto oscuro
+                
                 messageWrapper.classList.add('justify-start');
                 messageBubble.classList.add('bg-white', 'text-gris-carbon', 'rounded-2xl',
                     'rounded-bl-none', 'border', 'border-gray-200');
             } else {
-                // Mensaje ENVIADO (Admin): Gris Carbón con texto Dorado
+                
                 messageWrapper.classList.add('justify-end');
                 messageBubble.classList.add('bg-gris-carbon', 'text-dorado', 'rounded-2xl',
                     'rounded-br-none', 'font-medium');
@@ -272,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
         scrollAdminChatToBottom();
     }
 
-    // Fetch API Logic (Igual que antes)
+    
     async function fetchAdminMessages(userId) {
         if (!userId) return;
         try {

@@ -9,7 +9,7 @@ class Anuncio extends Model
 {
     use HasFactory;
 
-    // Forzamos el nombre de la tabla por si Laravel intenta buscar "anuncios" en plural de forma distinta
+    
     protected $table = 'anuncios';
 
     protected $fillable = [

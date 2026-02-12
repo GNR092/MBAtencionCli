@@ -6,13 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Proyecto extends Model
 {
-    protected $table = 'proyectos'; // Nombre de la tabla
-    protected $primaryKey = 'id_proyecto'; // Clave primaria
-    public $incrementing = false; // La clave primaria NO es autoincremental
-    protected $keyType = 'string'; // El tipo de la clave primaria es string
+    protected $table = 'proyectos';
+    protected $primaryKey = 'id_proyecto';
 
     protected $fillable = [
-        'id_proyecto',
         'nombre_proyecto',
     ];
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_proyectos', 'id_proyecto', 'id_user')
+            ->using(UserProyecto::class)
+            ->withPivot(['id_user_p']);
+    }
 }

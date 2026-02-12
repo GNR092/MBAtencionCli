@@ -101,7 +101,7 @@ public function calcularCuentasPorPagar($user_id)
                     ->exists();
 
                 if (!$exists) {
-                    // Buscar incremento vigente (si lo hay). Soportar fecha_fin NULL
+                    
                     $importeIncremento = DB::table('incrementos_importe')
                         ->where('id_contract', $contract->id)
                         ->whereDate('fecha_inicio', '<=', $mes . '-01')
@@ -117,7 +117,7 @@ public function calcularCuentasPorPagar($user_id)
                         'id_contract' => $contract->id,
                         'mesesdepago' => json_encode(['mes' => $mes]),
                         'estado' => 'pendiente',
-                        'saldo_neto' => $importe_base, // temporal; se ajustará en calcularMontos
+                        'saldo_neto' => $importe_base, 
                         'xml_file_id' => null,
                         'mesespagados' => json_encode([]),
                         'monto_pagado' => 0,
@@ -137,18 +137,18 @@ public function calcularCuentasPorPagar($user_id)
     -------------------------------------------------- */
 public function actualizarConXML(XmlFile $xml)
 {
-        // Normalizar mes del XML a YYYY-MM
+        
         try {
             $mesXml = Carbon::parse($xml->mes)->format('Y-m');
         } catch (\Exception $e) {
-            return; // mes inválido
+            return; 
         }
 
-        // Buscar contrato del emisor (user)
+        
         $contract = Contract::where('user_id', $xml->id_user)->first();
         if (!$contract) return;
 
-        // Buscar la cuenta correspondiente (si existe)
+        
         $cuenta = DB::table('cuentasporpagar')
             ->where('id_contract', $contract->id)
             ->whereRaw("JSON_EXTRACT(mesesdepago, '$.mes') = ?", [$mesXml])
@@ -157,7 +157,7 @@ public function actualizarConXML(XmlFile $xml)
         DB::beginTransaction();
         try {
             if (!$cuenta) {
-                // Crear la cuenta si no existe (respetando incrementos)
+                
                 $importeIncremento = DB::table('incrementos_importe')
                     ->where('id_contract', $contract->id)
                     ->whereDate('fecha_inicio', '<=', $mesXml . '-01')
@@ -184,19 +184,19 @@ public function actualizarConXML(XmlFile $xml)
                 $cuenta = DB::table('cuentasporpagar')->where('id_cuentas_por_pagar', $id)->first();
             }
 
-            // Obtener registro de impuesto vinculado al XML (fuente del importe real)
+            
             $impuesto = Impuesto::where('xml_file_id', $xml->id)->first();
             if (!$impuesto) {
-                // Si no hay impuesto asociado todavía, no podemos aplicar pago desde el XML
+                
                 DB::commit();
                 return;
             }
 
-            // Determinar importe base real del XML (viene de impuesto.importeBase)
+            
             $importeBaseXml = floatval($impuesto->importeBase ?? 0);
             $isrXml = floatval($impuesto->isr ?? 0);
 
-            // Buscar incremento aplicable para el mes
+            
             $importeIncremento = DB::table('incrementos_importe')
                 ->where('id_contract', $contract->id)
                 ->whereDate('fecha_inicio', '<=', $mesXml . '-01')
@@ -206,33 +206,33 @@ public function actualizarConXML(XmlFile $xml)
                 })
                 ->value('importe_base');
 
-            // Prioridad para importe del mes:
-            // 1) importe del XML (impuesto.importeBase)
-            // 2) importe por incremento
-            // 3) importe del contrato
+            
+            
+            
+            
             $importeBaseMes = $importeBaseXml ?: ($importeIncremento ?? $contract->importe_bruto_renta);
 
-            // Para evitar duplicados y mantener consistencia: REEMPLAZAMOS el monto_pagado
-            // porque la cuenta representa 1 mes (un XML por mes). Si quieres sumar diferentes
-            // comprobantes por el mismo mes, cambia esta lógica a suma.
+            
+            
+            
             $montoPagadoXml = $importeBaseXml;
             $montoPagadoTotal = floatval($montoPagadoXml);
 
-            // total a pagar = importeBaseMes - ISR (si aplica)
+            
             $totalPagar = max(0, $importeBaseMes - $isrXml);
 
             $saldoPendiente = max(0, $totalPagar - $montoPagadoTotal);
 
             $estado = ($saldoPendiente == 0) ? 'pagado' : 'parcial';
 
-            // Registrar meses pagados (mantener lista única)
+            
             $mesesPagados = json_decode($cuenta->mesespagados ?? '[]', true);
             if (!is_array($mesesPagados)) $mesesPagados = [];
             if (!in_array($mesXml, $mesesPagados)) {
                 $mesesPagados[] = $mesXml;
             }
 
-            // Actualizar la fila de forma atómica
+            
             DB::table('cuentasporpagar')
                 ->where('id_cuentas_por_pagar', $cuenta->id_cuentas_por_pagar)
                 ->update([
@@ -249,8 +249,8 @@ public function actualizarConXML(XmlFile $xml)
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            // opcional: logear error para debugging
-            // \Log::error('Error en actualizarConXML: '.$e->getMessage());
+            
+            
         }
 }
 
@@ -272,15 +272,15 @@ public function calcularMontos()
             ->get();
 
         foreach ($cuentas as $c) {
-            // si la cuenta ya tiene xml asociado, NO la recalculamos aquí (actualizarConXML ya lo hizo)
+            
             if ($c->xml_file_id) continue;
 
-            // Obtener mes
+            
             $meses = json_decode($c->mesesdepago, true);
             $mesCuenta = $meses['mes'] ?? null;
             if (!$mesCuenta) continue;
 
-            // Buscar incremento aplicable
+            
             $importeIncremento = DB::table('incrementos_importe')
                 ->where('id_contract', $c->id_contract)
                 ->whereDate('fecha_inicio', '<=', $mesCuenta . '-01')
@@ -354,16 +354,16 @@ public function Index(Request $request)
         $user = Session::get('user');
         if (!$user) return redirect('/inicio-de-sesion');
 
-        // 1) Asegurar meses por contrato
+        
         $this->calcularCuentasPorPagar($user->id);
 
-        // 2) Asociar XMLs y actualizar cuentas (solo los XMLs del user)
+        
         $xmls = XmlFile::where('id_user', $user->id)->get();
         foreach ($xmls as $xml) {
             $this->actualizarConXML($xml);
         }
 
-        // 3) Recalcular montos para cuentas sin XML
+        
         $this->calcularMontos();
 
         $query = Cuentas::with('contract')
@@ -381,12 +381,12 @@ public function Index(Request $request)
             ->where('cuentasporpagar.estado', '!=', 'pagado')
             ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(cuentasporpagar.mesesdepago, '$.mes')) <= ?", [date('Y-m')]);
 
-            // =============================
-            //   FILTRO POR MES DEL LAYOUT
-            // =============================
+            
+            
+            
             if ($request->filled('month')) {
 
-                $selectedMonth = $request->month; // Ej: 2025-01
+                $selectedMonth = $request->month; 
 
                 $query->where(function ($q) use ($selectedMonth) {
                     $q->where('cuentasporpagar.mesesdepago->mes', $selectedMonth);
@@ -428,7 +428,7 @@ public function graficaAnualNoPagados($year)
     $user = Session::get('user');
     if (!$user) return response()->json([]);
 
-    // 1️⃣ Traemos SOLO las cuentas cuyos contratos pertenecen al usuario en sesión
+    
     $cuentas = DB::table('cuentasporpagar')
         ->join('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
         ->where('contract.user_id', $user->id)
@@ -446,7 +446,7 @@ public function graficaAnualNoPagados($year)
 
             if (!$mesJson || !isset($mesJson->mes)) continue;
 
-            // extraemos año y mes
+            
             [$y, $month] = explode('-', $mesJson->mes);
 
             if ((int)$y === (int)$year && (int)$month === $m) {

@@ -25,7 +25,7 @@ class UploadFactura extends Controller
             ->join('users', 'xml_files.id_user', '=', 'users.id')
             ->select('xml_files.*', 'users.proyect', 'users.name as inversor_name');
 
-            // FILTRO POR MES
+            
             if ($request->filled('month')) {
                 $year  = substr($request->month, 0, 4);
                 $month = substr($request->month, 5, 2);
@@ -48,7 +48,7 @@ class UploadFactura extends Controller
         }
 
 
-                // Leer filtros desde la sesión
+                
         $search    = session('search');
         $categoria = session('categoria');
 
@@ -63,7 +63,7 @@ class UploadFactura extends Controller
                 case 'fecha':
                     $query->whereDate('created_at', $search);
                     if ($search != Carbon::parse($search)->format('Y-m-d')) {
-                        // Si la fecha no es válida, limpiamos los filtros
+                        
                         session()->forget(['search', 'categoria']);
                         return redirect()->back()->withErrors(['search' => 'La fecha no es válida.']);
                     }
@@ -79,21 +79,21 @@ class UploadFactura extends Controller
     }
 
     public function limpiar(){
-            // Borrar filtros guardados en la sesión
+            
             session()->forget(['search', 'categoria']);
 
-            // Redirigir al listado sin filtros
+            
             return redirect()->route('facturas');
     }
 
     public function buscar(Request $request){
-        // Guardar filtros en la sesión
+        
         session([
             'search'    => $request->input('search'),
             'categoria' => $request->input('categoria'),
         ]);
 
-        // Redirigir al index sin parámetros en la URL
+        
         return redirect()->route('facturas');
     }
     /**
@@ -112,7 +112,7 @@ class UploadFactura extends Controller
             return back()->with('error', 'Archivo no encontrado.');
         }
 
-        // Detecta si file_path trae la carpeta o solo el archivo
+        
         $filePath = $xmlFile->file_path;
 
         if (basename($filePath) === $filePath) {
@@ -150,7 +150,7 @@ class UploadFactura extends Controller
 
         $pdfPath = $xmlFile->pdf_path;
 
-        // Detectar ruta completa
+        
         if (basename($pdfPath) === $pdfPath) {
             $fullPath = public_path('storage/pdf_files/' . $pdfPath);
         } else {

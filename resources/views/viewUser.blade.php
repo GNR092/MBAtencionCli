@@ -216,7 +216,7 @@
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                // Lógica Marquee
+                
                 const marquee = document.getElementById('marquee');
                 if (marquee && marquee.children.length > 0) {
                     const content = marquee.innerHTML;
@@ -225,7 +225,7 @@
             });
 
             document.addEventListener('DOMContentLoaded', function () {
-                // --- LÓGICA CHAT CORREGIDA ---
+                
                 const openBtn = document.getElementById('openChatBtn');
                 const closeBtn = document.getElementById('closeChatBtn');
                 const modal = document.getElementById('chatModal');
@@ -233,7 +233,7 @@
                 const input = document.getElementById('chatInput');
                 const sendBtn = document.getElementById('sendChatBtn');
 
-                // Protección para CSRF: Si no existe, devuelve string vacío para evitar crash
+                
                 const csrfMeta = document.querySelector('meta[name="csrf-token"]');
                 const csrf = csrfMeta ? csrfMeta.getAttribute('content') : '';
 
@@ -241,8 +241,8 @@
                     openBtn.onclick = (e) => {
                         e.preventDefault();
 
-                        // CORRECCIÓN PRINCIPAL:
-                        // Remover explícitamente la clase hidden Y aplicar display flex
+                        
+                        
                         modal.classList.remove('hidden');
                         modal.style.display = 'flex';
 
@@ -251,7 +251,7 @@
                     };
 
                     closeBtn.onclick = () => {
-                        // Al cerrar, volvemos a poner la clase hidden
+                        
                         modal.classList.add('hidden');
                         modal.style.display = 'none';
                     };
@@ -309,7 +309,7 @@
                 }
             });
 
-            // --- LÓGICA DE ANUNCIOS (CARRUSEL INFINITO) ---
+            
             let currentAnuncio = 0;
             const slides = document.querySelectorAll('.anuncio-slide');
             const dots = document.querySelectorAll('.anuncio-dot');
@@ -317,7 +317,7 @@
             function jumpToAnuncio(index) {
                 if (slides.length <= 1) return;
 
-                // 1. Limpiar slide y dot actual
+                
                 slides[currentAnuncio].classList.replace('opacity-100', 'opacity-0');
                 slides[currentAnuncio].classList.replace('z-10', 'z-0');
 
@@ -327,10 +327,10 @@
                     allDots[currentAnuncio].classList.add('bg-white/30', 'w-2');
                 }
 
-                // 2. Calcular nuevo índice (Ciclo infinito)
+                
                 currentAnuncio = (index + slides.length) % slides.length;
 
-                // 3. Activar nuevo slide y dot
+                
                 slides[currentAnuncio].classList.replace('opacity-0', 'opacity-100');
                 slides[currentAnuncio].classList.replace('z-0', 'z-10');
 
@@ -339,7 +339,7 @@
                     allDots[currentAnuncio].classList.add('bg-[#d8c495]', 'w-6');
                 }
 
-                // 4. Reiniciar el scroll del PDF al cambiar de anuncio
+                
                 const activeScroll = slides[currentAnuncio].querySelector('.overflow-y-auto');
                 if (activeScroll) activeScroll.scrollTop = 0;
             }
@@ -348,7 +348,7 @@
                 jumpToAnuncio(currentAnuncio + direction);
             }
 
-            // Auto-play cada 8 segundos
+            
             let autoPlayInterval = setInterval(() => changeAnuncio(1), 8000);
 
             function expandirAnuncio() {
@@ -375,14 +375,14 @@
 
                 document.getElementById('fullScreenAnuncio').classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
-                clearInterval(autoPlayInterval); // Pausar carrusel al ampliar
+                clearInterval(autoPlayInterval); 
             }
 
             function cerrarFullScreen() {
                 document.getElementById('fullScreenAnuncio').classList.add('hidden');
                 document.getElementById('fs-media').innerHTML = '';
                 document.body.style.overflow = 'auto';
-                autoPlayInterval = setInterval(() => changeAnuncio(1), 8000); // Reanudar
+                autoPlayInterval = setInterval(() => changeAnuncio(1), 8000); 
             }
 
             function closeMiniVideo(event) {

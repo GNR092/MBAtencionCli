@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth; // Importar la fachada Auth
+use Illuminate\Support\Facades\Auth; 
 
 class AuthController extends Controller
 {
@@ -33,10 +33,10 @@ class AuthController extends Controller
 
 
         Session::put('user', $user);
-        // Inicia la sesión oficial de Laravel
+        
         Auth::login($user);
 
-        // Regenera el ID de sesión
+        
         $request->session()->regenerate();
 
         return response()->json([
@@ -46,12 +46,12 @@ class AuthController extends Controller
         ]);
     }
 
-    public function logout(Request $request) // Añadir Request para invalidate y regenerate
+    public function logout(Request $request) 
     {
-        Auth::logout(); // Cerrar sesión del usuario
+        Auth::logout(); 
 
-        $request->session()->invalidate(); // Invalidar la sesión actual
-        $request->session()->regenerateToken(); // Regenerar el token CSRF
+        $request->session()->invalidate(); 
+        $request->session()->regenerateToken(); 
 
         return redirect('/inicio-de-sesion');
     }

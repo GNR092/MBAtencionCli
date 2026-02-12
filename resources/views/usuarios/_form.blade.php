@@ -5,7 +5,7 @@
 
 @php
     $selectedRole = old('role', isset($usuario) ? ($usuario->roles->first()->name ?? '') : '');
-    // Asignar prefijo si no se ha pasado, para retrocompatibilidad
+    
     $prefix = $prefix ?? (isset($usuario) ? 'editar' : 'crear');
 @endphp
 

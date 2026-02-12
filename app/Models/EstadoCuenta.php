@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class EstadoCuenta extends Model{
      use HasFactory;
-         // Nombre de la tabla
+         
     protected $table = 'estados_de_cuenta';
 
     //

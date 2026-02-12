@@ -20,7 +20,7 @@ class EstadoController extends Controller
 
 public function Index(Request $request)
 {
-    // Verificar sesión de usuario
+    
     $user = Session::get('user');
     if (!$user) {
         return redirect('/inicio-de-sesion');
@@ -28,7 +28,7 @@ public function Index(Request $request)
 
     $yearActual = date('Y');
 
-    // Query base
+    
     $query = Cuentas::with('contract')
         ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
         ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
@@ -45,22 +45,22 @@ public function Index(Request $request)
 
 
         ->where(function ($q) use ($yearActual) {
-            // Extraer el valor "2024-10"
+            
             $q->whereRaw("LEFT(JSON_UNQUOTE(JSON_EXTRACT(cuentasporpagar.mesesdepago, '$.mes')), 4) < ?", [
                 $yearActual
-            ]) // Años anteriores
+            ]) 
 
             ->orWhereRaw("LEFT(JSON_UNQUOTE(JSON_EXTRACT(cuentasporpagar.mesesdepago, '$.mes')), 4) = ?", [
                 $yearActual
-            ]); // Meses del año actual
+            ]); 
         });
 
-                    // =============================
-            //   FILTRO POR MES DEL LAYOUT
-            // =============================
+                    
+            
+            
             if ($request->filled('month')) {
 
-                $selectedMonth = $request->month; // Ej: 2025-01
+                $selectedMonth = $request->month; 
 
                 $query->where(function ($q) use ($selectedMonth) {
                     $q->where('cuentasporpagar.mesesdepago->mes', $selectedMonth);
@@ -85,7 +85,7 @@ public function Index(Request $request)
         }
 
 
-    // Paginación
+    
     $cuentas = $query->paginate(6)->appends($request->query());
 
     if ($request->expectsJson()) {
@@ -99,7 +99,7 @@ public function Index(Request $request)
 
     return view('estadosDeCuenta', [
     'cuentas' => $cuentas,
-    'user' => $user,   // 👈 NECESARIO PARA EL BOTÓN
+    'user' => $user,   
     'usuario' => $user
 ]);
 
@@ -162,7 +162,7 @@ public function graficaAnualPagados($year){
         $user = Session::get('user');
     if (!$user) return response()->json([]);
 
-    //  Traemos SOLO las cuentas cuyos contratos pertenecen al usuario en sesión
+    
     $cuentas = DB::table('cuentasporpagar')
         ->join('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
         ->where('contract.user_id', $user->id)
@@ -180,7 +180,7 @@ public function graficaAnualPagados($year){
 
             if (!$mesJson || !isset($mesJson->mes)) continue;
 
-            // extraemos año y mes
+            
             [$y, $month] = explode('-', $mesJson->mes);
 
             if ((int)$y === (int)$year && (int)$month === $m) {
@@ -202,14 +202,14 @@ public function descargarPdf(Request $request)
 {
     $id = $request->id_usuario;
 
-    // Validar que exista el usuario
+    
     $usuario = User::findOrFail($id);
 
-    // Filtros
+    
     $desde = $request->desde;
     $hasta = $request->hasta;
 
-    // Query base
+    
     $query = Cuentas::with('contract')
         ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
         ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
@@ -220,7 +220,7 @@ public function descargarPdf(Request $request)
         )
         ->where('contract.user_id', $id);
 
-    // Aplicar filtro de fechas
+    
     if ($desde) {
         $query->whereDate('cuentasporpagar.created_at', '>=', $desde);
     }
@@ -231,7 +231,7 @@ public function descargarPdf(Request $request)
 
     $cuentas = $query->orderBy('cuentasporpagar.created_at', 'asc')->get();
 
-    // Generar PDF
+    
     $pdf = Pdf::loadView('pdf.estadodecuenta', [
         'usuario' => $usuario,
         'cuentas' => $cuentas

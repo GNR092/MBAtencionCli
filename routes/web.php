@@ -29,17 +29,17 @@ use App\Http\Controllers\RegimenFiscalController;
 use App\Http\Controllers\ProyectoController;
 
 
-// Rutas públicas
+
 Route::get('/', function () {
     return view('welcome');
 });
 
-// Login
+
 Route::get('/inicio-de-sesion', [AuthController::class, 'showLoginForm'])->name('login.form');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Rutas para usuarios
+
 Route::middleware([AuthUser::class.':usuario'])->group(function () {
     Route::get('/vista-usuario', [UserViewController::class, 'index']);
     //rutas de factura
@@ -75,14 +75,14 @@ Route::middleware([AuthUser::class.':usuario'])->group(function () {
     Route::get('/contratos/descargar/{id}', [ContractController::class, 'descargar'])->name('contratos.descargar');
     Route::put('/perfil/foto', [UserViewController::class, 'actualizarFoto'])->name('perfil.foto');
 
-    // Chat routes for user
+    
     Route::get('/chat/messages', [UserChatController::class, 'getMessages'])->name('chat.getMessages');
     Route::post('/chat/messages', [UserChatController::class, 'sendMessage'])->name('chat.sendMessage');
 });
 
-// Rutas para administradores
+
 Route::middleware([AuthUser::class.':administrador'])->group(function () {
-    // Gestión de Logos para el Carrusel
+    
     Route::get('/admin/logos', [LogoController::class, 'index'])->name('admin.logos.index');
     Route::post('/admin/logos', [LogoController::class, 'store'])->name('admin.logos.store');
     Route::post('/admin/logos/{logo}/toggle', [LogoController::class, 'toggle'])->name('admin.logos.toggle');
@@ -108,7 +108,7 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::get('/cuentas-por-pagar/limpiar',[CuentasPorPagar::class,'limpiar'])->name('viewAdministrador.limpiar');
     Route::post('/cuentas-por-pagar/export', [CuentasPorPagar::class, 'export'])->name('viewAdministrador.export');
 
-    // Gráfica anual
+    
     Route::get('/cuentas/grafica-anual/{year}', [CuentasPorPagar::class, 'graficaAnual']);
     Route::get('/cuentas/grafica-anual-proyecto/{year}/{proyecto}', [CuentasPorPagar::class, 'graficaAnualProyecto']);
 
@@ -146,20 +146,20 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
 
         Route::resource('incrementos', IncrementoImporteController::class);
 
-        // Admin User Chat Directory
+        
 
         Route::get('/admin/users/chat-directory', [AdminChatController::class, 'showUserChatDirectory'])->name('admin.users.chat-directory');
 
 
 
-        // Chat routes for admin
+        
 
         Route::get('/admin/chat/messages/{userId}', [AdminChatController::class, 'getMessages'])->name('admin.chat.getMessages');
 
         Route::post('/admin/chat/messages/{userId}', [AdminChatController::class, 'sendMessage'])->name('admin.chat.sendMessage');
 
 
-        // Rutas de administración para anuncios
+        
     Route::get('/anuncios-admin', [AnuncioController::class, 'index'])->name('admin.anuncios.index');
     Route::post('/anuncios-admin', [AnuncioController::class, 'store'])->name('admin.anuncios.store');
     Route::post('/anuncios-admin/{id}/toggle', [AnuncioController::class, 'toggleStatus'])->name('admin.anuncios.toggle');
@@ -174,12 +174,12 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
 
     });
 
-// Rutas para usuarios autenticados (cualquier role)
+
 Route::middleware([AuthUser::class])->group(function () {
     Route::get('/api/notifications/unread-count', [AvisoController::class, 'unreadCount'])->name('notifications.unreadCount');
 });
 
-// Validación de contraseña AJAX
+
 Route::post('/password-check', [PasswordCheckController::class, 'check'])
     ->name('password.check');
 

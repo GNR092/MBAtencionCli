@@ -16,11 +16,11 @@ class UserChatController extends Controller
         $adminIds = \App\Models\User::where('role', 'administrador')->pluck('id')->toArray();
 
         $messages = \App\Models\Message::where(function ($query) use ($userId, $adminIds) {
-            // Mensajes del usuario a cualquier administrador
+            
             $query->where('sender_id', $userId)
                 ->whereIn('receiver_id', $adminIds);
         })->orWhere(function ($query) use ($userId, $adminIds) {
-            // Respuestas de cualquier administrador al usuario
+            
             $query->whereIn('sender_id', $adminIds)
                 ->where('receiver_id', $userId);
         })
@@ -37,7 +37,7 @@ class UserChatController extends Controller
 
             $userId = Session::has('user') ? Session::get('user')->id : auth()->id();
 
-            // Buscamos al primer administrador para satisfacer la llave foránea
+            
             $firstAdmin = \App\Models\User::where('role', 'administrador')->first();
 
             if (!$firstAdmin) {
@@ -46,7 +46,7 @@ class UserChatController extends Controller
 
             $message = \App\Models\Message::create([
                 'sender_id'   => $userId,
-                'receiver_id' => $firstAdmin->id, // Usamos un ID real que existe en la tabla users
+                'receiver_id' => $firstAdmin->id, 
                 'message'     => $request->input('message'),
             ]);
 

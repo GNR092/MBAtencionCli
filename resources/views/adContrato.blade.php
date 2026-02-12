@@ -152,15 +152,15 @@
 function formatearImporte(input) {
     let valor = input.value;
 
-    // Eliminar todo lo que no sea número o punto
+    
     valor = valor.replace(/[^0-9.]/g, '');
 
-    // Convertir a número
+    
     let numero = parseFloat(valor);
 
-    // Validar que sea número
+    
     if (!isNaN(numero)) {
-        // Formatear con separador de miles y dos decimales
+        
         input.value = '$' + numero.toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2

@@ -11,7 +11,7 @@ class LogoController extends Controller
     public function index()
     {
         $logos = Logo::orderBy('created_at', 'desc')->get();
-        return view('logos', compact('logos')); // Busca logos.blade.php directamente
+        return view('logos', compact('logos')); 
     }
 
     public function store(Request $request)
@@ -26,12 +26,12 @@ class LogoController extends Controller
             ],
             'url_redireccion' => 'nullable|url'
         ], [
-            // Mensajes personalizados para el administrador
+            
             'logo.mimes' => 'El logo debe ser un archivo de tipo: png, svg.',
             'logo.max' => 'El tamaño del logo no debe ser mayor a 2MB.',
         ]);
 
-        // El resto del código de guardado se mantiene igual...
+        
         $path = $request->file('logo')->store('logos_carrusel', 'public');
 
         \App\Models\Logo::create([

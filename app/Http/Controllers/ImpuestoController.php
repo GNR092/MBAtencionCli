@@ -29,16 +29,16 @@ class ImpuestoController extends Controller
                 'impuesto.isr'
             );
 
-        // 🔹 Filtros reutilizables
+        
         $this->aplicarFiltros($query, $request);
-                 // Filtros manuales basados en el modal
+                 
 
         if ($request->filled('desde')) 
             { $query->whereDate('impuesto.created_at', '>=', $request->desde); } 
         if ($request->filled('hasta')) 
             { $query->whereDate('impuesto.created_at', '<=', $request->hasta); }
 
-        // 🔹 Calcular totales
+        
         $totalISR = (clone $query)->sum('impuesto.isr');
         $totalBase = (clone $query)->sum('impuesto.importeBase');
 
@@ -52,14 +52,14 @@ class ImpuestoController extends Controller
 public function index(Request $request)
 {
 
-    // Verificar sesión de usuario
+    
     $user = Session::get('user');
     if (!$user) {
         return redirect('/inicio-de-sesion');
     }
     
 
-    // Consulta base
+    
     $query = DB::table('xml_files')
     
         ->join('users', 'xml_files.id_user', '=', 'users.id')
@@ -77,7 +77,7 @@ public function index(Request $request)
 
         );
 
-        // FILTRO POR MES
+        
         if ($request->filled('month')) {
             $year = substr($request->month, 0, 4);
             $month = substr($request->month, 5, 2);
@@ -88,7 +88,7 @@ public function index(Request $request)
 
         
 
-    // filtro dinámico (si el usuario busca)
+    
     if ($request->filled('search') && $request->filled('categoria')) {
         $search = $request->input('search');
         $categoria = $request->input('categoria');
@@ -108,14 +108,14 @@ public function index(Request $request)
         }
     }
 
-    //  Clonamos la consulta para calcular totales SIN afectar la paginación
+    
     $totalISR = (clone $query)->sum('impuesto.isr');
     $totalBase = (clone $query)->sum('impuesto.importeBase');
 
-    //  Paginación (SE HACE AL FINAL y se respetan los filtros)
+    
     $xmlFiles = $query->paginate(6)->appends($request->query());
 
-    //  Enviamos a la vista
+    
     return view('inpuestos', compact('xmlFiles', 'totalISR', 'totalBase'));
 }
 
@@ -166,7 +166,7 @@ public function index(Request $request)
             $query->where('impuesto.isr', $request->input('isr'));
         }
 
-        // 🔎 Búsqueda por categoría
+        
         if ($request->filled('search') && $request->filled('categoria')) {
             $search = $request->input('search');
             $categoria = $request->input('categoria');

@@ -21,7 +21,6 @@ class ProyectoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'id_proyecto' => 'required|string|max:50|unique:proyectos,id_proyecto',
             'nombre_proyecto' => 'required|string|max:255',
         ]);
 

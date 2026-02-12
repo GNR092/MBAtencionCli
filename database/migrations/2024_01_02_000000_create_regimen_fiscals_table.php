@@ -10,14 +10,14 @@ return new class extends Migration
     public function up(): void
 {
     Schema::create('regimen_fiscals', function (Blueprint $table) {
-        // Definimos el ID manualmente y sin autoincremento
+        
         $table->unsignedInteger('id_regimen')->primary(); 
         $table->string('nombre_regimen');
         $table->decimal('tasa_retencion', 8, 4); 
         $table->timestamps();
     });
 
-    // Insertar los datos con sus códigos SAT
+    
     DB::table('regimen_fiscals')->insert([
         [
             'id_regimen'     => 606,
@@ -29,7 +29,7 @@ return new class extends Migration
         [
             'id_regimen'     => 621,
             'nombre_regimen' => 'RIF',
-            'tasa_retencion' => 0.1000, // Ajustado según sea el caso
+            'tasa_retencion' => 0.1000, 
             'created_at'     => now(),
             'updated_at'     => now(),
         ],

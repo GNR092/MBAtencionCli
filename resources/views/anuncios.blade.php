@@ -241,7 +241,7 @@
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Mueve el modal al final del body para evitar conflictos de superposición
+    
     const modalEditar = document.getElementById('modalEditar');
     if (modalEditar) {
         document.body.appendChild(modalEditar);

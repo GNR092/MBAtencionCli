@@ -11,25 +11,25 @@ class UserViewController extends Controller
 {
     public function index()
     {
-        // Get user ID from session, then fetch user from DB to ensure freshest data
+        
         $sessionUser = Session::get('user');
         $userId = $sessionUser ? $sessionUser->id : null;
         $user = $userId ? User::find($userId) : null;
 
-        // Redirect to login if user not found (or handle error appropriately)
+        
         if (!$user) {
             return redirect()->route('login.form')->withErrors('Usuario no encontrado o sesión caducada.');
         }
 
-        // --- LÓGICA DE ANUNCIOS DINÁMICOS ---
-        // Obtenemos solo anuncios activos
-        // Ordenamos por prioridad (Alta primero) y luego por fecha de creación
+        
+        
+        
         $anuncios = \App\Models\Anuncio::where('estado', 'activo')
             ->orderByRaw("FIELD(prioridad, 'alta', 'media', 'baja')")
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Dummy data for now
+        
         $ticketsCount = 0;
         $equiposAsignados = 0;
         $entregasCount = 0;
@@ -40,7 +40,7 @@ class UserViewController extends Controller
         $usuarios = [];
         $misResguardos = [];
 
-        // Fetch administrators for the chat directory
+        
         $administradores = User::where('role', 'administrador')->get();
 
         return view('viewUser', compact(
@@ -55,7 +55,7 @@ class UserViewController extends Controller
             'usuarios',
             'misResguardos',
             'administradores',
-            'anuncios' // Pasamos la variable a la vista
+            'anuncios' 
         ));
     }
 
@@ -68,14 +68,14 @@ class UserViewController extends Controller
         $user = User::find(Session::get('user')->id);
 
         if ($request->hasFile('foto')) {
-            if ($user->foto) { // Delete old photo if exists
+            if ($user->foto) { 
                 Storage::disk('public')->delete($user->foto);
             }
             $path = $request->file('foto')->store('fotos_perfil', 'public');
             $user->foto = $path;
             $user->save();
 
-            // Update session user object
+            
             Session::put('user', $user);
         }
 

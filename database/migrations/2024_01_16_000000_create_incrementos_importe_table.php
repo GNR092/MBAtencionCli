@@ -10,15 +10,15 @@ return new class extends Migration
     {
         Schema::create('incrementos_importe', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_contract'); // Relación con contratos
+            $table->unsignedBigInteger('id_contract'); 
             $table->date('fecha_inicio');
             $table->date('fecha_fin');
             $table->decimal('importe_base', 10, 2);
             
-            // Opcional: para trazabilidad
+            
             $table->timestamps();
 
-            // Clave foránea
+            
             $table->foreign('id_contract')
                   ->references('id')
                   ->on('contract')

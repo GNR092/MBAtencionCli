@@ -116,21 +116,21 @@
         const curtain = document.getElementById('black-curtain');
 
         if (logo && curtain) {
-            // 1. Espera inicial (1 segundo)
+            
             setTimeout(() => {
 
-                // 2. ¡ACCIÓN! Inicia la caída y el cambio de opacidad
+                
                 logo.classList.add('logo-smash');
 
-                // 3. Coordinar la desaparición de lo negro
+                
                 setTimeout(() => {
                     curtain.style.opacity = '0';
                     curtain.style.visibility = 'hidden';
 
-                    // Mandar logo al fondo (detrás del contenido)
+                    
                     logoContainer.classList.add('logo-background-mode');
 
-                    // Limpieza
+                    
                     setTimeout(() => {
                         curtain.remove();
                     }, 1000);

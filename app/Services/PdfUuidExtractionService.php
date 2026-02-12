@@ -18,13 +18,13 @@ class PdfUuidExtractionService
             $parser = new Parser();
             $pdf = $parser->parseFile($pdfPath);
 
-            // 🔹 EXTRAER TEXTO REAL
+            
             $text = $pdf->getText();
 
             Log::info("Texto extraído del PDF:");
             Log::debug(substr($text, 0, 1000));
 
-            // UUID CFDI estricto
+            
             $uuidPattern = '/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/';
 
             if (preg_match($uuidPattern, $text, $matches)) {

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -21,10 +22,10 @@ class XmlFile extends Model
         'pdf_filename',
         'pdf_path',
         'pdf_uploaded',
-        //'proyectos',
         'departamento',
         'id_user',
         'mes',
+        'id_proyecto',
     ];
 
     protected $casts = [
@@ -33,9 +34,15 @@ class XmlFile extends Model
         'validation_errors' => 'array'
     ];
 
-public function impuestos() {
-    return $this->hasMany(Impuesto::class, 'xml_file_id');
-}
+    public function proyecto()
+    {
+        return $this->belongsTo(Proyecto::class, 'id_proyecto', 'id_proyecto');
+    }
+
+    public function impuestos()
+    {
+        return $this->hasMany(Impuesto::class, 'xml_file_id');
+    }
 
 
 

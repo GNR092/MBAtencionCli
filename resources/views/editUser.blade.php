@@ -20,10 +20,10 @@
     <input type="text" name="phone" value="{{ preg_replace('/^52/', '', $userToEdit->phone) }}" class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200">
 
         @php
-        // Convertimos el campo proyect a array
+        
         $selectedProyects = json_decode($userToEdit->proyect, true) ?? [];
         if (!is_array($selectedProyects)) {
-            $selectedProyects = [$userToEdit->proyect]; // por si está en string
+            $selectedProyects = [$userToEdit->proyect]; 
         }
     @endphp
 

@@ -20,7 +20,7 @@ class cuentasExport implements FromView
 
     public function view(): View
     {
-        // Ejecutamos la consulta
+        
         $cuentas = $this->query->get();
 
         return view('exports.cuentas', [

@@ -11,10 +11,10 @@ class IncrementoImporte extends Model
     protected $table='incrementos_importe';
 
     protected $primarykey = 'id';
-        // Indica que la PK es autoincremental
+        
     public $incrementing = true;
 
-    // Tipo de clave primaria
+    
     protected $keyType = 'int';
 
     protected $fillable= [

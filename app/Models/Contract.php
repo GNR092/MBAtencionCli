@@ -9,9 +9,9 @@ class Contract extends Model
 {
     use HasFactory;
 
-    // Nombre de la tabla (opcional si sigue convención plural "contracts")
+    
      protected $table = 'contract';
-    // Campos que se pueden asignar masivamente
+    
     protected $fillable = [
         'user_id',
         'estado',
@@ -27,7 +27,7 @@ class Contract extends Model
         'proyecto',
     ];
 
-    // Relación: un contrato pertenece a un usuario
+    
     public function user()
     {
         return $this->belongsTo(User::class);

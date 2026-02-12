@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('contract', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id'); // FK al usuario
+            $table->unsignedBigInteger('user_id'); 
             $table->boolean('is_admin')->default(false);
             $table->string('folio');
             $table->date('fecha');
@@ -27,7 +27,7 @@ return new class extends Migration
             $table->date('fecha_terminacion')->nullable();
             $table->timestamps();
 
-             // Clave foránea
+             
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }

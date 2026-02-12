@@ -10,10 +10,10 @@ class IncrementoImporteController extends Controller
 {
     public function index(Request $request)
     {
-        // Consulta base
+        
         $query = IncrementoImporte::with('contract');
 
-        // FILTRO POR MES
+        
         if ($request->filled('month')) {
             $year  = substr($request->month, 0, 4);
             $month = substr($request->month, 5, 2);
@@ -22,7 +22,7 @@ class IncrementoImporteController extends Controller
                 ->whereMonth('created_at', $month);
         }
 
-        // Obtener resultados paginados
+        
         $incrementos = $query->paginate(10)->appends($request->query());
 
         return view('incrementos.index', compact('incrementos'));

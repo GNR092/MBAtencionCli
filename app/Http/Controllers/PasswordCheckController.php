@@ -16,7 +16,7 @@ class PasswordCheckController extends Controller
             return response()->json(['message' => 'No autenticado'], 401);
         }
 
-        // Buscar usuario real en la BD
+        
         $dbUser = User::find($user->id);
 
         if (!$dbUser || !Hash::check($request->password, $dbUser->password)) {

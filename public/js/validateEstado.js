@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const activo = document.getElementById('activo');
     const inactivo = document.getElementById('inactivo');
     const errorDiv = document.getElementById('estado-error');
-    const form = document.querySelector('form'); // asumiendo que tienes un <form>
+    const form = document.querySelector('form'); 
 
     form.addEventListener('submit', (e) => {
         errorDiv.classList.add('hidden');

@@ -22,6 +22,6 @@ class AvisoMail extends Mailable
     public function build()
     {
         return $this->subject($this->asunto)
-                    ->view('emails.aviso'); // Vista HTML simple
+                    ->view('emails.aviso'); 
     }
 }

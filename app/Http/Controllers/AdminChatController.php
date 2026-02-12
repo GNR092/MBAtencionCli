@@ -13,7 +13,7 @@ class AdminChatController extends Controller
     {
         $query = User::where('role', 'usuario');
 
-        // Manejo de búsqueda
+        
         if ($request->has('search') && $request->input('search') != '') {
             $searchTerm = $request->input('search');
             $query->where(function ($q) use ($searchTerm) {
@@ -22,7 +22,7 @@ class AdminChatController extends Controller
             });
         }
 
-        // Manejo de orden
+        
         $sort = $request->input('sort', 'asc');
         if ($sort === 'recent') {
             $query->orderBy('created_at', 'desc');
@@ -48,20 +48,20 @@ class AdminChatController extends Controller
 
         $messages = Message::with('sender:id,name,role')
             ->where(function ($query) use ($userId, $allAdminIds) {
-                // CAMBIO CLAVE: Mensajes del usuario dirigidos a CUALQUIER admin (ID 0)
-                // o a un administrador específico.
+                
+                
                 $query->where('sender_id', $userId)
                     ->whereIn('receiver_id', array_merge([0], $allAdminIds));
             })->orWhere(function ($query) use ($userId, $allAdminIds) {
-                // Mensajes de cualquier admin dirigidos a este usuario específico.
+                
                 $query->whereIn('sender_id', $allAdminIds)
                     ->where('receiver_id', $userId);
             })
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Marcamos como leído solo lo que entró al buzón general (0)
-        // o lo que fue dirigido específicamente a este admin.
+        
+        
         Message::where('sender_id', $userId)
             ->whereIn('receiver_id', [0, $currentAdminId])
             ->whereNull('read_at')
@@ -80,7 +80,7 @@ class AdminChatController extends Controller
 
         $message = Message::create([
             'sender_id' => $adminId,
-            'receiver_id' => $userId, // La respuesta va directo al ID del usuario
+            'receiver_id' => $userId, 
             'message' => $request->input('message'),
         ]);
 

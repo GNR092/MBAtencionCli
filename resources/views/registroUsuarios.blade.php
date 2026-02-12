@@ -131,7 +131,7 @@
         const proyectSelect = document.getElementById('proyect');
         const dynamicProjectFields = document.getElementById('dynamicProjectFields');
 
-        // Initialize multiselect if not already done by multiselect.js
+        
         if (typeof multiselect === 'function') {
             multiselect(proyectSelect);
         }
@@ -140,7 +140,7 @@
         const oldProjectDetails = @json(old('project_details', []));
 
         function renderDynamicProjectFields() {
-            dynamicProjectFields.innerHTML = ''; // Clear previous fields
+            dynamicProjectFields.innerHTML = ''; 
             const selectedProjectIds = Array.from(proyectSelect.selectedOptions).map(option => option.value);
 
             selectedProjectIds.forEach(projectId => {
@@ -185,7 +185,7 @@
 
                 dynamicProjectFields.appendChild(projectDiv);
 
-                // Add event listener for Cuenta Predial checkbox
+                
                 const cuentaPredialCheckbox = projectDiv.querySelector(`#project_details_${projectId}_cuenta_predial`);
                 const agregarCuentaDiv = projectDiv.querySelector(`#agregarCuentaDiv_${projectId}`);
 
@@ -194,16 +194,16 @@
                         agregarCuentaDiv.classList.remove('hidden');
                     } else {
                         agregarCuentaDiv.classList.add('hidden');
-                        agregarCuentaDiv.querySelector('input').value = ''; // Clear input if hidden
+                        agregarCuentaDiv.querySelector('input').value = ''; 
                     }
                 });
             });
         }
 
-        // Initial render
+        
         renderDynamicProjectFields();
 
-        // Attach event listener for multiselect changes
+        
         proyectSelect.addEventListener('change', renderDynamicProjectFields);
     });
 </script>

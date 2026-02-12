@@ -22,7 +22,7 @@ return new class extends Migration
             $table->foreign('xml_file_id')
                   ->references('id')
                   ->on('xml_files')
-                  ->onDelete('cascade'); // Si se elimina una factura, se eliminan sus impuestos
+                  ->onDelete('cascade'); 
 
 
             $table->timestamps();

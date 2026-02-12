@@ -10,7 +10,7 @@ class RegimenFiscalController extends Controller
     public function index()
     {
         $regimenes = RegimenFiscal::all();
-        // El punto indica que entra a la carpeta admin, luego a regimen_fiscal
+        
         return view('admin.regimen_fiscal.index', compact('regimenes'));
     }
 

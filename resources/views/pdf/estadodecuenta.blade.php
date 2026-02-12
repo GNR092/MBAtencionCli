@@ -82,23 +82,23 @@
     <p><strong>Email:</strong> {{ $usuario->email ?? '—' }}</p>
 </div>
 @php
-    $totalCargos = 0;      // Deuda total (pendiente)
-    $totalAbonos = 0;      // Total pagado
+    $totalCargos = 0;      
+    $totalAbonos = 0;      
 
     foreach ($cuentas as $c) {
 
-        // CARGOS = saldo pendiente (deuda acumulada todos los años)
+        
         if (!is_null($c->saldo_pendiente)) {
             $totalCargos += (float) $c->saldo_pendiente;
         }
 
-        // ABONOS = monto pagado (todos los años)
+        
         if (!is_null($c->monto_pagado)) {
             $totalAbonos += (float) $c->monto_pagado;
         }
     }
 
-    // SALDO FINAL = lo que falta por pagar en total
+    
     $saldoFinal = $totalCargos - $totalAbonos;
 @endphp
 

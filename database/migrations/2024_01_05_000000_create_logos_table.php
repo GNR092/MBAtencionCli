@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('logos', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
-            $table->string('imagen_ruta'); // Referencia al archivo en storage
-            $table->string('url_redireccion')->nullable(); // Por si no todos tienen link
-            $table->integer('orden')->default(0); // Para organizar la prioridad
-            $table->boolean('activo')->default(true); // Para prender/apagar sin borrar
+            $table->string('imagen_ruta'); 
+            $table->string('url_redireccion')->nullable(); 
+            $table->integer('orden')->default(0); 
+            $table->boolean('activo')->default(true); 
             $table->timestamps();
         });
     }

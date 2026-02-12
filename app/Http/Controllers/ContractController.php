@@ -22,7 +22,7 @@ class ContractController extends Controller
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'asc');
 
-        // Leer filtros desde la sesión
+        
         $search    = session('search');
         $categoria = session('categoria');
 
@@ -52,43 +52,43 @@ class ContractController extends Controller
 
     public function buscar(Request $request)
     {
-        // Guardar filtros en la sesión
+        
         session([
             'search'    => $request->input('search'),
             'categoria' => $request->input('categoria'),
         ]);
 
-        // Redirigir al index sin parámetros en la URL
+        
         return redirect()->route('contratos.index');
     }
 
     public function limpiar()
     {
-        // Borrar filtros guardados en la sesión
+        
         session()->forget(['search', 'categoria']);
 
-        // Redirigir al listado sin filtros
+        
         return redirect()->route('contratos.index');
     }
     
     public function search(Request $request)
     {
-        // Guardar filtros en la sesión
+        
         session([
             'search'    => $request->input('search'),
             'categoria' => $request->input('categoria'),
         ]);
 
-        // Redirigir al index sin parámetros en la URL
+        
         return redirect()->route('contratos.show');
     }
 
     public function clean()
     {
-        // Borrar filtros guardados en la sesión
+        
         session()->forget(['search', 'categoria']);
 
-        // Redirigir al listado sin filtros
+        
         return redirect()->route('contratos.show');
     }
 
@@ -100,21 +100,21 @@ class ContractController extends Controller
 
         $admin = Session::get('user');
 
-        // Verifica que esté logueado y sea administrador
+        
         if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
-        // Validar contraseña
+        
         if (Hash::check($request->password, $admin->password)) {
-            // Guardar bandera temporal en la sesión
+            
             session(['validated_admin_contract' => true]);
 
-            // Redirigir al formulario de creación
+            
             return redirect()->route('contratos.crear');
         }
 
-        // Si la contraseña es incorrecta
+        
         return back()->with('error', 'Contraseña incorrecta, intenta nuevamente.');
     }
 
@@ -124,21 +124,21 @@ class ContractController extends Controller
             'password' => 'required|string',
         ]);
 
-        // Verifica que sea admin desde sesión
+        
         $admin = Session::get('user');
         if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
-        // Verifica la contraseña del admin
+        
         if (!Hash::check($request->password, $admin->password)) {
             return back()->withErrors(['password' => 'Contraseña incorrecta']);
         }
 
-        // Guardamos en sesión que ya validó
+        
         session(['validated_edit_contrato' => $request->user_id]);
 
-        // Redirigimos al formulario de edición
+        
         return redirect()->route('contratos.editar', $request->user_id);
     }
   
@@ -146,24 +146,24 @@ class ContractController extends Controller
     {
         $admin = Session::get('user');
 
-        // Verificar que sea administrador
+        
         if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
-        //  Verificar que el admin validó antes de abrir este contrato
+        
         if (session('validated_edit_contrato') != $id) {
             return redirect()->route('contratos.show')
                             ->withErrors(['auth' => 'Debes confirmar tu contraseña antes de editar este contrato.']);
         }
 
-        // Obtener el contrato a editar
+        
         $contractToEdit = Contract::findOrFail($id);
 
-        // Obtener todos los usuarios (para el select o lista)
+        
         $users = User::all();
 
-        // Enviar datos a la vista
+        
         return view('editContrato', compact('admin', 'contractToEdit', 'users'));
     }
     
@@ -174,13 +174,13 @@ class ContractController extends Controller
 
         $contrato = \App\Models\Contract::findOrFail($id);
 
-        // Actualizar campos
+        
         $contrato->user_id = $request->input('user_id', $contrato->user_id);
         $contrato->importe_bruto_renta = str_replace(['$', ','], '', $request->input('importe_bruto_renta'));
         $contrato->proyecto = $request->input('proyect');
         $contrato->estado = $request->input('activo') ? 'activo' : ($request->input('inactivo') ? 'inactivo' : 'desconocido');
 
-        // Si se subió un nuevo archivo
+        
         if ($request->hasFile('archivo')) {
             $archivo = $request->file('archivo');
             $contrato->nombre = $archivo->getClientOriginalName();
@@ -196,7 +196,7 @@ class ContractController extends Controller
     public function subir(Request $request)
     {
         $request->validate([
-            'archivo' => 'required|file|max:2048', // Máximo 2MB
+            'archivo' => 'required|file|max:2048', 
         ]);
 
         $importe = str_replace(['$', ','], '', $request->input('importe_bruto_renta'));
@@ -207,7 +207,7 @@ class ContractController extends Controller
         $fechaTerminacion= $request->input('fecha_terminacion');
 
         //validar proyecto
-        $proyecto = $request->input('proyect'); // siempre será un solo valor
+        $proyecto = $request->input('proyect'); 
 
         $user = Session::get('user');
         if (!$user) {
@@ -228,7 +228,7 @@ class ContractController extends Controller
             'folio'     => $this->generarFolio(),
             'fecha'=> $filectime = date('Y-m-d H:i:s'),
             'estado'    => $this->generarEstado($request),
-            'importe_bruto_renta'=> $importe, // guardado limpio y decimal
+            'importe_bruto_renta'=> $importe, 
             'fecha_inicio'=> $fechaInicio,
             'fecha_terminacion'=> $fechaTerminacion,
             'proyecto'=> $proyecto,
@@ -246,14 +246,14 @@ class ContractController extends Controller
             return redirect('/inicio-de-sesion');
         }
 
-        // Validar contraseña del administrador
+        
         if (!Hash::check($request->input('password'), $admin->password)) {
             return back()->with('error', 'Contraseña incorrecta');
         }
 
         $contratoId = $request->input('id');
 
-        // Verifica que el contrato exista antes de eliminar
+        
         $contrato = contract::find($contratoId);
 
         if (!$contrato) {
@@ -264,23 +264,23 @@ class ContractController extends Controller
 
         return back()->with('success', 'Contrato eliminado correctamente.');
     }
-    // Crear contrato
+    
 
     public function crear()
     {
         $admin = Session::get('user');
 
-        // Si no está logueado o no es administrador, fuera
+        
         if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
-        // Si no ha validado la contraseña, no puede entrar
+        
         if (!session('validated_admin_contract')) {
             return redirect()->route('contratos.show')->with('error', '⚠️ Debes confirmar tu contraseña antes de crear un contrato.');
         }
 
-        // Limpiar la sesión para evitar reutilizar la validación
+        
         session()->forget('validated_admin_contract');
 
         $users = User::all();
@@ -297,13 +297,13 @@ class ContractController extends Controller
 
         $users = User::all();
 
-        // Comienza la consulta base
+        
         $query = DB::table('contract')
             ->join('users', 'contract.user_id', '=', 'users.id')
             ->select('contract.*', 'users.name as user_name')
             ->orderBy('contract.created_at', 'asc');
 
-            // FILTRO POR MES
+            
             if (request()->filled('month')) {
                 $year  = substr(request('month'), 0, 4);
                 $month = substr(request('month'), 5, 2);
@@ -313,7 +313,7 @@ class ContractController extends Controller
             }
 
 
-        // Leer filtros desde la sesión
+        
         $search    = session('search');
         $categoria = session('categoria');
 
@@ -328,10 +328,10 @@ class ContractController extends Controller
             }
         }
 
-        // Ejecutar la consulta con paginación
+        
         $contratos = $query->paginate(6);
 
-        // Limpiar bandera de validación
+        
         session()->forget('validated_edit_contract');
 
         return view('subirContrato', compact('users', 'contratos', 'search', 'categoria'));
@@ -345,7 +345,7 @@ class ContractController extends Controller
             return redirect('/inicio-de-sesion');
         }
 
-        // Buscar contrato que pertenezca al usuario
+        
         $contrato = DB::table('contract')
             ->where('id', $id)
             ->where('user_id', $user->id)
@@ -355,7 +355,7 @@ class ContractController extends Controller
             abort(404, 'Contrato no encontrado');
         }
 
-        // Retornar el archivo guardado en la BD
+        
         return response($contrato->contenido)
             ->header('Content-Type', $contrato->tipo)
             ->header('Content-Disposition', 'attachment; filename="'.$contrato->nombre.'"');

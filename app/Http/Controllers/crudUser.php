@@ -9,44 +9,47 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
-class crudUser extends Controller{
-    public function index(Request $request){
-            $currentUser = Session::get('user'); // usuario logueado
+class crudUser extends Controller
+{
+    public function index(Request $request)
+    {
+        $currentUser = Session::get('user'); 
 
-            $query = DB::table('users')
-                ->where('role','usuario');
+        $query = User::where('role', 'usuario');
 
-            $search = $request->input('search');
-            $categoria = $request->input('categoria');
+        $search = $request->input('search');
+        $categoria = $request->input('categoria');
 
-            if ($search && $categoria) {
-                switch ($categoria) {
-                    case 'nombre':
-                        $query->where('name', 'LIKE', '%' . $search . '%');
-                        break;
-                    case 'email':
-                        $query->where('email', 'LIKE', '%' . $search . '%');
-                        break;
-                    case 'proyecto':
-                        $query->whereRaw('LOWER(proyect) LIKE ?', ['%' . strtolower($search) . '%']);
-                        break;
-                }
+        if ($search && $categoria) {
+            switch ($categoria) {
+                case 'nombre':
+                    $query->where('name', 'LIKE', '%' . $search . '%');
+                    break;
+                case 'email':
+                    $query->where('email', 'LIKE', '%' . $search . '%');
+                    break;
+                case 'proyecto':
+                    $query->whereHas('proyectos', function ($q) use ($search) {
+                        $q->where('nombre_proyecto', 'like', '%' . $search . '%');
+                    });
+                    break;
             }
+        }
 
-            // FILTRO POR MES
-            if ($request->filled('month')) {
-                $year  = substr($request->month, 0, 4);
-                $month = substr($request->month, 5, 2);
+        
+        if ($request->filled('month')) {
+            $year  = substr($request->month, 0, 4);
+            $month = substr($request->month, 5, 2);
 
-                $query->whereYear('users.created_at', $year)
-                    ->whereMonth('users.created_at', $month);
-            }
+            $query->whereYear('created_at', $year)
+                ->whereMonth('created_at', $month);
+        }
 
-            $users = $query->paginate(10);
-            $roles = ['admin', 'jefe', 'usuario'];
-            $areas = [];
+        $users = $query->paginate(10);
+        $roles = ['admin', 'jefe', 'usuario'];
+        $areas = [];
 
-            return view('admiUsers', compact('users','search', 'categoria', 'roles', 'areas'));
+        return view('admiUsers', compact('users', 'search', 'categoria', 'roles', 'areas'));
     }
 
     public function limpiar()
@@ -61,21 +64,21 @@ class crudUser extends Controller{
             'password' => 'required|string',
         ]);
 
-        // Verifica que sea admin desde sesión
+        
         $admin = Session::get('user');
         if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
-        // Verifica la contraseña del admin
+        
         if (!Hash::check($request->password, $admin->password)) {
             return back()->withErrors(['password' => 'Contraseña incorrecta']);
         }
 
-        // Guardamos en sesión que ya validó
+        
         session(['validated_edit_user' => $request->user_id]);
 
-        // Redirigimos al formulario de edición
+        
         return redirect()->route('users.edit', $request->user_id);
     }
 
@@ -83,18 +86,18 @@ class crudUser extends Controller{
     {
         $admin = Session::get('user');
 
-        // Verificar que sea admin
+        
         if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
-        // Verificar que el admin validó antes de abrir este usuario
+        
         if (session('validated_edit_user') != $id) {
             return redirect()->route('admiUsers')
-                            ->withErrors(['auth' => 'Debes confirmar tu contraseña antes de editar este usuario.']);
+                ->withErrors(['auth' => 'Debes confirmar tu contraseña antes de editar este usuario.']);
         }
 
-        // Usuario que se quiere editar
+        
         $userToEdit = User::findOrFail($id);
 
         return view('editUser', compact('admin', 'userToEdit'));
@@ -104,98 +107,93 @@ class crudUser extends Controller{
     {
         $admin = Session::get('user');
 
-        // Verificar que sea admin
+        
         if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
-        // Validar contraseña ingresada
+        
         if (!Hash::check($request->input('password'), $admin->password)) {
             return back()->with('error', 'Contraseña incorrecta');
         }
 
         $id = $request->input('user_id');
 
-        // Evitar autodestrucción del admin
+        
         if ($id == $admin->id) {
             return back()->with('error', ' No puedes eliminar tu propia cuenta de administrador.');
         }
 
-        // Eliminar usuario
+        
         User::destroy($id);
 
         return back()->with('success', 'Usuario eliminado correctamente.');
     }
 
     public function editar(Request $request)
-{
-    $admin = Session::get('user');
+    {
+        $admin = Session::get('user');
+        if (!$admin || $admin->role !== 'administrador') {
+            return redirect('/inicio-de-sesion');
+        }
 
-    // Verificar que sea admin
-    if (!$admin || $admin->role !== 'administrador') {
-        return redirect('/inicio-de-sesion');
+        $id = $request->input('id');
+        $user = User::findOrFail($id);
+
+        $user->name = mb_convert_encoding($request->input('name'), 'UTF-8', 'UTF-8');
+        $user->email = $request->input('email');
+        $user->phone = '52' . $request->input('phone');
+        $user->id_regimen = $request->input('regimenFiscal');
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->input('password'));
+        }
+
+        $user->save();
+
+        if ($request->has('proyect')) {
+            
+            
+            $user->proyectos()->sync($request->input('proyect'));
+        } else {
+            $user->proyectos()->detach();
+        }
+
+        session()->forget('validated_edit_user');
+
+        return redirect()->route('admiUsers')
+            ->with('success', 'Usuario editado correctamente.');
     }
 
-    $id = $request->input('id');
-    $name = $request->input('name');
-    $email = $request->input('email');
-    $phone = '52' . $request->input('phone'); // anteponer 52
-    $proyect = $request->input('proyect');
-    $regimenFiscal = $request->input('regimenFiscal');
-    $password = $request->input('password');
+    public function store(Request $request)
+    {
+        $admin = Session::get('user');
+        if (!$admin || $admin->role !== 'administrador') {
+            return redirect('/inicio-de-sesion');
+        }
 
-    // Datos base que siempre se actualizan
-    $data = [
-        'name' => $name,
-        'email' => $email,
-        'phone' => $phone,
-        'proyect' => json_encode($proyect),
-        'regimenFiscal' => $regimenFiscal,
-    ];
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'phone' => 'required|string|max:20',
+            'proyect' => 'sometimes|array', 
+            'regimenFiscal' => 'required|integer',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
 
-    // Solo actualizar contraseña si no viene vacía
-    if (!empty($password)) {
-        $data['password'] = Hash::make($password);
+        $user = User::create([
+            'name' => mb_convert_encoding($request->name, 'UTF-8', 'UTF-8'),
+            'email' => $request->email,
+            'phone' => '52' . $request->phone,
+            'id_regimen' => $request->regimenFiscal,
+            'password' => Hash::make($request->password),
+            'role' => 'usuario',
+        ]);
+
+        if ($request->has('proyect')) {
+            $user->proyectos()->attach($request->proyect);
+        }
+
+        return redirect()->route('admiUsers')->with('success', 'Usuario creado correctamente.');
     }
-
-    DB::table('users')->where('id', $id)->update($data);
-
-    // limpiar validación después de editar
-    session()->forget('validated_edit_user');
-
-    return redirect()->route('admiUsers')
-        ->with('success', 'Usuario editado correctamente.');
-}
-
-public function store(Request $request)
-{
-    // Verificar que sea admin
-    $admin = Session::get('user');
-    if (!$admin || $admin->role !== 'administrador') {
-        return redirect('/inicio-de-sesion');
-    }
-
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|max:255|unique:users',
-        'phone' => 'required|string|max:20',
-        'proyect' => 'required|array',
-        'regimenFiscal' => 'required|string|max:255',
-        'password' => 'required|string|min:8|confirmed',
-    ]);
-
-    User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'phone' => '52' . $request->phone,
-        'proyect' => json_encode($request->proyect),
-        'regimenFiscal' => $request->regimenFiscal,
-        'password' => Hash::make($request->password),
-        'role' => 'usuario', // Asigna el role por defecto de 'usuario'
-    ]);
-
-    return redirect()->route('admiUsers')->with('success', 'Usuario creado correctamente.');
-}
-
-
 }

@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB; // Agregado
+use Illuminate\Support\Facades\DB; 
 
 return new class extends Migration
 {
@@ -16,7 +16,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Insertar los datos de los proyectos
+        
         DB::table('proyectos')->insert([
             [
                 'nombre_proyecto' => 'RESIDENT 1',

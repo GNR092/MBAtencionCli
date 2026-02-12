@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
 
                 if (data.success) {
-                    this.style.backgroundColor = estado === 'pagado' ? '#bbf7d0' : '#fde68a'; // verde o amarillo
-                    this.disabled = true; // evita cambios adicionales
+                    this.style.backgroundColor = estado === 'pagado' ? '#bbf7d0' : '#fde68a'; 
+                    this.disabled = true; 
                     alert('✅ Estado actualizado correctamente a: ' + estado);
                 } else {
                     alert('⚠️ No se pudo actualizar el estado: ' + (data.message ?? 'Error desconocido'));

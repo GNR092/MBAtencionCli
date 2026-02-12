@@ -20,7 +20,7 @@ class XmlFilesExport implements FromView
 
     public function view(): View
     {
-        // Ejecutamos la consulta
+        
         $xmlFiles = $this->query->get();
 
         return view('exports.xml_files', [

@@ -12,10 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->foreign('id_regimen')
-                  ->references('id_regimen') 
-                  ->on('regimen_fiscals')    
-                  ->onDelete('set null');    
+            $table->dropColumn('proyect');
         });
     }
 
@@ -25,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropForeign(['id_regimen']);
+            $table->string('proyect')->nullable();
         });
     }
 };

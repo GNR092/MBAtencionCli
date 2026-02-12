@@ -33,16 +33,16 @@ public function export(Request $request)
                 'contract.proyecto as proyecto'
             );
 
-        // Filtros reutilizables
+        
         $this->aplicarFiltros($query, $request);
 
-        //  Calcular totales
+        
          
 
-         // Filtros manuales basados en el modal
+         
 
             if ($request->filled('desde')) {
-                $desdeMes = substr($request->desde, 0, 7); // "2025-01"
+                $desdeMes = substr($request->desde, 0, 7); 
                 $query->where('cuentasporpagar.mesesdepago->mes', '>=', $desdeMes);
             }
 
@@ -70,25 +70,25 @@ public function calculodesaldos()
     $cuentas = DB::table('cuentasporpagar')
         ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
         ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
-                    ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id') // 🔹 IMPUESTO
+                    ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id') 
                     ->leftJoin('users', 'contract.user_id', '=', 'users.id')
-                    ->leftJoin('regimen_fiscals', 'users.id_regimen', '=', 'regimen_fiscals.id_regimen') // Unir con regimen_fiscals
+                    ->leftJoin('regimen_fiscals', 'users.id_regimen', '=', 'regimen_fiscals.id_regimen') 
                     ->select(
                         'cuentasporpagar.id_cuentas_por_pagar',
                         'cuentasporpagar.id_contract',
                         'cuentasporpagar.monto_pagado',
                         'cuentasporpagar.estado',
                         'contract.importe_bruto_renta as importeBaseContrato',
-                        'impuesto.importeBase as importeBaseXML',       // 🔹 EL IMPORTE REAL
-                        'regimen_fiscals.nombre_regimen as regimenFiscal', // Seleccionar el nombre del régimen
+                        'impuesto.importeBase as importeBaseXML',       
+                        'regimen_fiscals.nombre_regimen as regimenFiscal', 
                         'cuentasporpagar.mesesdepago'
                     )        ->get();
 
     foreach ($cuentas as $cuenta) {
 
-        // =========================
-        //   Obtener mes del registro
-        // =========================
+        
+        
+        
         $mesData = null;
         if (!empty($cuenta->mesesdepago)) {
             $decoded = json_decode($cuenta->mesesdepago, true);
@@ -107,9 +107,9 @@ public function calculodesaldos()
             continue;
         }
 
-        // =========================
-        //   Buscar incrementos
-        // =========================
+        
+        
+        
         $incremento = DB::table('incrementos_importe')
             ->where('id_contract', $cuenta->id_contract)
             ->where(function ($q) use ($mesDate) {
@@ -122,62 +122,62 @@ public function calculodesaldos()
             ->orderByDesc('fecha_inicio')
             ->first();
 
-        // =========================
-        //   Selección correcta del importe base
-        // =========================
-        $importeBase = $cuenta->importeBaseXML              // PRIORIDAD XML
-            ?? ($incremento->importe_base ?? null)         // Incremento
-            ?? $cuenta->importeBaseContrato;               //  Contrato
+        
+        
+        
+        $importeBase = $cuenta->importeBaseXML              
+            ?? ($incremento->importe_base ?? null)         
+            ?? $cuenta->importeBaseContrato;               
 
         $importeBase = floatval($importeBase);
 
-        // =========================
-        //   Cálculo ISR
-        // =========================
+        
+        
+        
         $regimen = strtolower($cuenta->regimenFiscal ?? '');
         $tasaCuota = $regimen === 'resico' ? 0.0125 :
                      ($regimen === 'arrendamiento' ? 0.10 : 0.00);
 
         $isr = round($importeBase * $tasaCuota, 2);
 
-        // =========================
-        //   Cálculo saldo neto y pendiente
-        // =========================
+        
+        
+        
         $saldoNeto = round($importeBase - $isr, 2);
         $saldoPendiente = round($saldoNeto - ($cuenta->monto_pagado ?? 0), 2);
 
-        // =========================
-        //   Estado
-        // =========================
+        
+        
+        
         if ($cuenta->estado === 'pagado') {
-    // No recalcular nada, no modificar estado
+    
     continue;
 }
- // =========================
-//   Estado (NO cerrar automático)
-// =========================
+ 
 
-// 1️⃣ Si NO ha pagado nada
+
+
+
 if ($cuenta->monto_pagado == 0) {
     $estado = 'pendiente';
 }
 
-// 2️⃣ Si pagó algo pero aún no lo confirmas manualmente
+
 elseif ($cuenta->monto_pagado > 0 && $cuenta->monto_pagado < $saldoNeto) {
     $estado = 'parcial';
 }
 
-// 3️⃣ Si pagó TODO → NO cerrar automático, dejar “parcial”
-//    (se cierra solo cuando actualizarEstado() se usa)
+
+
 elseif ($cuenta->monto_pagado == $saldoNeto) {
-    $estado = 'parcial'; // 👈 antes era "pagado"
+    $estado = 'parcial'; 
     $saldoPendiente = 0;
 }
 
 
-        // =========================
-        //   Actualizar registro
-        // =========================
+        
+        
+        
         DB::table('cuentasporpagar')
             ->where('id_cuentas_por_pagar', $cuenta->id_cuentas_por_pagar)
             ->update([
@@ -220,12 +220,12 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             );
 
 
-            // =============================
-            //   FILTRO POR MES DEL LAYOUT
-            // =============================
+            
+            
+            
             if ($request->filled('month')) {
 
-                $selectedMonth = $request->month; // Ej: 2025-01
+                $selectedMonth = $request->month; 
 
                 $query->where(function ($q) use ($selectedMonth) {
                     $q->where('cuentasporpagar.mesesdepago->mes', $selectedMonth);
@@ -317,7 +317,7 @@ private function aplicarFiltros(&$query, Request $request)
             $query->where('cuentasporpagar.saldo_pendiente', $request->input('saldo_pendiente'));
         }
 
-        // 🔎 Búsqueda por categoría
+        
         if ($request->filled('search') && $request->filled('categoria')) {
             $search = $request->input('search');
             $categoria = $request->input('categoria');
@@ -352,7 +352,7 @@ public function graficaAnual($year)
 
             if (!$mesJson || !isset($mesJson->mes)) continue;
 
-            // extraemos año y mes
+            
             [$y, $month] = explode('-', $mesJson->mes);
 
             if ((int)$y === (int)$year && (int)$month === $m) {
@@ -380,9 +380,9 @@ public function graficaAnual($year)
 private function normalizar($texto)
 {
     $texto = strtolower(trim($texto));
-    $texto = iconv('UTF-8', 'ASCII//TRANSLIT', $texto); // quitar acentos
-    $texto = preg_replace('/[^a-z0-9]+/', ' ', $texto); // eliminar símbolos
-    return trim(preg_replace('/\s+/', ' ', $texto)); // quitar espacios dobles
+    $texto = iconv('UTF-8', 'ASCII//TRANSLIT', $texto); 
+    $texto = preg_replace('/[^a-z0-9]+/', ' ', $texto); 
+    return trim(preg_replace('/\s+/', ' ', $texto)); 
 }
 
 public function graficaAnualProyecto($year, $proyecto)

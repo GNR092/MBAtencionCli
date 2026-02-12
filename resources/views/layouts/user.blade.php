@@ -124,7 +124,7 @@
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                // Month change handler
+                
                 document.getElementById('start').addEventListener('change', function() {
                     const month = this.value;
                     if (month) {
@@ -134,7 +134,7 @@
                     }
                 });
 
-                // Dropdown toggle handler (for sidebar)
+                
                 const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
                 dropdownToggles.forEach(toggle => {
                     toggle.addEventListener('click', function() {
@@ -151,7 +151,7 @@
                     });
                 });
 
-                // Sidebar toggle handler
+                
                 const sidebar = document.getElementById('sidebar');
                 const mainContent = document.getElementById('main-content');
                 const sidebarToggle = document.getElementById('sidebar-toggle');
@@ -161,7 +161,7 @@
                     mainContent.classList.toggle('main-content-collapsed');
                 });
 
-                // Notification Bell Logic
+                
                 const notificationBellContainer = document.getElementById('notification-bell-container');
                 const notificationBadge = document.getElementById('notification-badge');
                 const notificationDropdown = document.getElementById('notification-dropdown');
@@ -248,8 +248,8 @@
                             });
                         });
                     }
-                } // Fin del bloque de notificaciones
-            }); // Fin del DOMContentLoaded
+                } 
+            }); 
         </script>
     @endpush
 

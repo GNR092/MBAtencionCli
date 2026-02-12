@@ -11,7 +11,7 @@ class AnuncioController extends Controller
     public function index()
     {
         $anuncios = Anuncio::orderBy('prioridad', 'desc')->get();
-        // Llama a la vista anuncios.blade.php en resources/views/
+        
         return view('anuncios', compact('anuncios'));
     }
 

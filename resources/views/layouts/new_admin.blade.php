@@ -130,19 +130,19 @@
 
     <!-- Scripts Generales -->
     <script>
-        // CONTROL DE CARGA (FOUC)
+        
         window.addEventListener('load', function() {
             const loader = document.getElementById('initial-loader');
             const content = document.getElementById('app-content');
 
-            // Ocultar loader
+            
             loader.style.opacity = '0';
             loader.style.visibility = 'hidden';
 
-            // Mostrar contenido
+            
             content.style.opacity = '1';
 
-            // Habilitar scroll de nuevo
+            
             document.body.style.overflow = 'auto';
             document.documentElement.style.overflow = 'auto';
         });
