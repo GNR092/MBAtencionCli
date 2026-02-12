@@ -75,7 +75,7 @@
                         <td>{{ $file->id }}</td>
                         <td class="text-xs font-mono">{{ Str::limit($file->uuid, 8) }}</td>
                         <td>{{ $file->created_at }}</td>
-                        <td>{{ $file->proyectos }}</td>
+                        <td>Proyecto_ficticio</td>
                         <td>{{ $file->departamento }}</td>
                         <td>{{ $file->emisor_name }}</td>
                         <td>{{ $file->tipoFactor }}</td>

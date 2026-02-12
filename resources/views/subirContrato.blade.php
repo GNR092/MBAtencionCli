@@ -46,7 +46,7 @@ setTimeout(() => {
             </a>
 
             <!-- BOTÓN NUEVO CONTRATO -->
-            <button id="openModalBtn" class="bg-green-300 hover:bg-green-400 text-black px-4 py-2 rounded mx-2">
+            <button type="button" id="openModalBtn" class="bg-green-300 hover:bg-green-400 text-black px-4 py-2 rounded mx-2">
                 Agregar
             </button>
         </form>

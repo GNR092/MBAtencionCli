@@ -21,7 +21,7 @@ class XmlFile extends Model
         'pdf_filename',
         'pdf_path',
         'pdf_uploaded',
-        'proyectos',
+        //'proyectos',
         'departamento',
         'id_user',
         'mes',

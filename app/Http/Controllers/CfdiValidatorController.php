@@ -152,7 +152,7 @@ class CfdiValidatorController extends BaseController
         //     return response()->json(['errors' => ['proyect' => ['El proyecto no existe']]], 422);
         // }
 
-        // $proyecto = $request->input('proyect'); // siempre será un solo valor
+        $proyecto = $request->input('proyect'); // siempre será un solo valor
 
         // if (!in_array($proyecto, $compareProyect)) {
         //     return response()->json(['errors' => ['proyect' => ['El proyecto no es válido']]], 422);
@@ -232,6 +232,7 @@ class CfdiValidatorController extends BaseController
                 'mes' => $validationResult['periodo_pago'],
             ]);
 
+            
             // Guardar impuestos si existen en el XML validado
             Impuesto::create([
                 //tipo factor y regimen fiscal no aparecen en impuestos

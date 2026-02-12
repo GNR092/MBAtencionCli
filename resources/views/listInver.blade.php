@@ -56,7 +56,7 @@
                     @forelse($xmlFiles as $file)
                     <tr>
                         <td class="font-bold">{{ $file->batch_id }}</td>
-                        <td>{{ $file->proyectos }}</td>
+                        <td>Proyecto_ficticio</td>
                         <td>{{ $file->created_at }}</td>
                         <td>{{ $file->emisor_name }}</td>
                     </tr>

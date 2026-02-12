@@ -64,7 +64,7 @@
                     <tr>
                         <td>{{ $file->batch_id }}</td>
                         <td>{{ $file->created_at }}</td>
-                        <td>{{ $file->proyectos }}</td>
+                        <td>Proyecto_ficticio</td>
                         <td>{{ $file->emisor_name }}</td>
 
                         <td>

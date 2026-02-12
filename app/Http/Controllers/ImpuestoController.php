@@ -17,12 +17,13 @@ class ImpuestoController extends Controller
         $query = DB::table('xml_files')
             ->join('users', 'xml_files.id_user', '=', 'users.id')
             ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id')
+            ->leftJoin('regimen_fiscals', 'users.id_regimen', '=', 'regimen_fiscals.id_regimen')
             ->select(
                 'xml_files.*',
                 'users.proyect',
                 'users.name as inversor_name',
                 'impuesto.tipoFactor',
-                'users.regimenFiscal',
+                'regimen_fiscals.nombre_regimen as regimenFiscal',
                 'impuesto.importeBase',
                 'impuesto.tasaCuota',
                 'impuesto.isr'
@@ -63,10 +64,11 @@ public function index(Request $request)
     
         ->join('users', 'xml_files.id_user', '=', 'users.id')
         ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id')
+        ->leftJoin('regimen_fiscals', 'users.id_regimen', '=', 'regimen_fiscals.id_regimen')
         ->select(
             'xml_files.*',
             'users.name as usuario',
-            'users.regimenFiscal as regimenFiscal',
+            'regimen_fiscals.nombre_regimen as regimenFiscal',
             'users.proyect as proyecto',
             'impuesto.isr as isr',
             'impuesto.importeBase as importeBase',
