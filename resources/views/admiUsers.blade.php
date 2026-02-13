@@ -55,10 +55,40 @@
                             </td>
                             <td>
                                 <div class="flex justify-center gap-2">
-                                    <button onclick="openModal('{{ $user->id }}')"
+                                    @php
+                                        // Solo los datos que SÍ existen en tu registro
+                                        $userData = [
+                                            'id' => $user->id,
+                                            'name' => $user->name,
+                                            'email' => $user->email,
+                                            // Asumiendo que guardas con '52' al inicio, lo quitamos para mostrar
+                                            'phone' => strlen($user->phone) > 10 ? substr($user->phone, 2) : $user->phone,
+                                            'id_regimen' => $user->id_regimen,
+                                            'projects' => []
+                                        ];
+
+                                        // Estructura de proyectos y departamentos (Igual que antes)
+                                        foreach($user->userProyectos ?? [] as $up) {
+
+                                            $depts = [];
+                                            foreach($up->deptos ?? [] as $d) {
+
+                                                $depts[] = [
+                                                    'nombre_depto' => $d->nombre,
+                                                    'cuenta_numero' => $d->predial,
+                                                    'importe' => $d->importe,
+                                                    'cuenta_predial' => ($d->predial && $d->predial !== 'N/A')
+                                                ];
+                                            }
+                                            $userData['projects'][$up->id_proyecto] = $depts;
+                                        }
+                                    @endphp
+
+                                    <button onclick='openEditModal(@json($userData))'
                                             class="bg-blue-50 text-blue-600 border border-blue-200 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-blue-100 transition">
                                         Editar
                                     </button>
+
                                     <button onclick="openDeleteModal('{{ $user->id }}')"
                                             class="bg-red-50 text-red-600 border border-red-200 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-red-100 transition">
                                         Eliminar
@@ -106,23 +136,62 @@
     </div>
 
     <div id="confirmModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm items-center justify-center p-4" onclick="closeModal()">
-        <div onclick="event.stopPropagation()" class="bg-[#1a1a1a] rounded-xl shadow-2xl w-full max-w-2xl border border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
+        <div onclick="event.stopPropagation()" class="bg-[#1a1a1a] rounded-xl shadow-2xl w-full max-w-4xl border border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-black/20">
                 <h2 class="text-xl font-light text-[#d8c495] tracking-widest uppercase">Editar Usuario</h2>
                 <button onclick="closeModal()" class="text-white/50 hover:text-white">✕</button>
             </div>
+
             <div class="p-6 overflow-y-auto custom-scroll">
-                <form id="formEditarUsuario" action="{{ route('users.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                <form id="formEditarUsuario" action="{{ route('users.update') }}" method="POST" class="space-y-6">
                     @csrf
-                    <input type="hidden" name="id" id="userIdInput"/>
-                    @include('usuarios._form', ['prefix' => 'editar', 'usuario' => null, 'roles' => $roles, 'areas' => $areas])
-                    <div>
-                        <label class="block text-xs font-bold text-[#d8c495] uppercase tracking-widest mb-2">Contraseña Admin</label>
-                        <input type="password" name="password" required class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:border-[#d8c495] outline-none transition">
+                    <input type="hidden" name="id" id="editUserIdInput"/>
+
+                    {{-- Campos Idénticos al Registro --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-[#d8c495] uppercase tracking-widest mb-1">Nombre</label>
+                            <input type="text" name="name" id="edit_name" required class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:border-[#d8c495] outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-[#d8c495] uppercase tracking-widest mb-1">Email</label>
+                            <input type="email" name="email" id="edit_email" required class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:border-[#d8c495] outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-[#d8c495] uppercase tracking-widest mb-1">Teléfono</label>
+                            <div class="flex">
+                                <span class="inline-flex items-center px-3 border border-r-0 border-white/10 bg-white/5 text-gray-400 text-xs font-bold rounded-l">+52</span>
+                                <input type="text" name="phone" id="edit_phone" required maxlength="10" class="w-full bg-white/5 border border-white/10 rounded-r px-3 py-2 text-white focus:border-[#d8c495] outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-[#d8c495] uppercase tracking-widest mb-1">Régimen Fiscal</label>
+                            <select name="regimenFiscal" id="edit_regimen" class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:border-[#d8c495] outline-none">
+                                @foreach($regimenesFiscales ?? [] as $regimen)
+                                    <option value="{{ $regimen->id_regimen }}" class="text-black">{{ $regimen->nombre_regimen }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
+
+                    <hr class="border-white/10">
+
+                    {{-- Proyectos (Igual que antes) --}}
+                    <div>
+                        <label class="block text-xs font-bold text-[#d8c495] uppercase tracking-widest mb-2">Asignación de Proyectos</label>
+                        <select name="proyect[]" id="edit_proyect_select" multiple class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white h-32 focus:border-[#d8c495] outline-none custom-scroll">
+                            @foreach($proyectos ?? [] as $proyecto)
+                                <option value="{{ $proyecto->id_proyecto }}">{{ $proyecto->nombre_proyecto }}</option>
+                            @endforeach
+                        </select>
+                        <p class="text-[10px] text-gray-500 mt-1">* Mantén Ctrl/Cmd para seleccionar varios.</p>
+                    </div>
+
+                    <div id="editDynamicProjectFields" class="space-y-4"></div>
+
                     <div class="flex justify-end gap-3 pt-4 border-t border-white/10">
                         <button type="button" onclick="closeModal()" class="px-4 py-2 text-white/60 hover:text-white text-xs uppercase font-bold tracking-widest transition">Cancelar</button>
-                        <button type="submit" class="bg-[#d8c495] hover:bg-[#c9a143] text-black px-6 py-2 rounded text-xs font-bold uppercase tracking-widest transition">Actualizar</button>
+                        <button type="submit" class="bg-[#d8c495] hover:bg-[#c9a143] text-black px-6 py-2 rounded text-xs font-bold uppercase tracking-widest transition">Actualizar Datos</button>
                     </div>
                 </form>
             </div>
@@ -154,6 +223,9 @@
 
 @push('scripts')
     <script>
+        // ==========================================
+        // 1. LÓGICA DEL MODAL DE CREAR (Nuevo Usuario)
+        // ==========================================
         window.abrirModalUsuario = function () {
             document.getElementById('modalUsuario').classList.remove('hidden');
             document.getElementById('modalUsuario').classList.add('flex');
@@ -162,21 +234,186 @@
             document.getElementById('modalUsuario').classList.add('hidden');
             document.getElementById('modalUsuario').classList.remove('flex');
         }
-        function openModal(userId) {
-            document.getElementById("confirmModal").classList.remove("hidden");
-            document.getElementById("confirmModal").classList.add("flex");
-            document.getElementById("userIdInput").value = userId;
+
+        // ==========================================
+        // 2. LÓGICA DEL MODAL DE EDITAR
+        // ==========================================
+
+        // Obtenemos la lista de proyectos para usar sus nombres en los encabezados
+        const projectOptions = @json($proyectos->pluck('nombre_proyecto', 'id_proyecto'));
+
+        window.openEditModal = function(userData) {
+            const modal = document.getElementById("confirmModal");
+
+            // 1. Mostrar el Modal
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+
+            // 2. Rellenar Campos Básicos (Solo los que existen en Registro)
+            document.getElementById("editUserIdInput").value = userData.id;
+            document.getElementById("edit_name").value = userData.name;
+            document.getElementById("edit_email").value = userData.email;
+            document.getElementById("edit_phone").value = userData.phone;
+            document.getElementById("edit_regimen").value = userData.id_regimen;
+
+            // 3. Pre-seleccionar Proyectos en el Select Múltiple
+            const select = document.getElementById("edit_proyect_select");
+            const existingProjectIds = Object.keys(userData.projects); // IDs de proyectos que tiene el usuario
+
+            Array.from(select.options).forEach(option => {
+                option.selected = existingProjectIds.includes(option.value);
+            });
+
+            // 4. Reconstruir los Contenedores de Departamentos
+            const container = document.getElementById("editDynamicProjectFields");
+            container.innerHTML = ''; // Limpiamos cualquier dato anterior
+
+            existingProjectIds.forEach(projectId => {
+                const depts = userData.projects[projectId];
+
+                // Creamos el contenedor visual del proyecto (Encabezado + Botón Agregar)
+                createProjectContainer(projectId, container);
+
+                // Si tiene departamentos guardados, los dibujamos
+                if (depts && depts.length > 0) {
+                    depts.forEach(dept => {
+                        addEditDepartment(projectId, dept);
+                    });
+                } else {
+                    // Si seleccionó el proyecto pero no guardó deptos, agregamos uno vacío por defecto
+                    addEditDepartment(projectId);
+                }
+            });
+
+            // 5. Escuchar cambios en el select para agregar/quitar proyectos dinámicamente
+            select.onchange = function() { refreshEditProjectContainers(this, container); };
         }
-        function closeModal() {
-            document.getElementById("confirmModal").classList.add("hidden");
-            document.getElementById("confirmModal").classList.remove("flex");
+
+        window.closeModal = function() {
+            const modal = document.getElementById("confirmModal");
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
         }
-        function openDeleteModal(userId) {
+
+        // --- Funciones Auxiliares para la Edición ---
+
+        // Crea el bloque gris con el título del proyecto y el botón "+ Depto"
+        function createProjectContainer(projectId, mainContainer) {
+            // Evitar duplicados
+            if(document.getElementById(`edit_project_container_${projectId}`)) return;
+
+            const projectName = projectOptions[projectId] || 'Proyecto';
+
+            const div = document.createElement('div');
+            div.id = `edit_project_container_${projectId}`;
+            div.className = 'bg-white/5 p-4 rounded-xl border border-white/10 mb-4 fade-in-content';
+
+            div.innerHTML = `
+            <div class="flex justify-between items-center border-b border-white/10 pb-2 mb-3">
+                <h3 class="text-sm font-bold text-[#d8c495] uppercase">${projectName}</h3>
+                <button type="button" onclick="addEditDepartment('${projectId}')"
+                        class="text-[10px] px-2 py-1 border border-[#d8c495] text-[#d8c495] rounded hover:bg-[#d8c495] hover:text-black transition">
+                    + Depto
+                </button>
+            </div>
+            <div id="edit_departments_list_${projectId}" class="space-y-3">
+                </div>
+        `;
+            mainContainer.appendChild(div);
+        }
+
+        // Agrega una fila de departamento (Nombre, Importe, Predial)
+        window.addEditDepartment = function(projectId, data = null) {
+            const list = document.getElementById(`edit_departments_list_${projectId}`);
+            // Usamos timestamp para generar índices únicos y evitar conflictos al borrar/agregar
+            const uniqueIndex = Date.now() + Math.floor(Math.random() * 1000);
+
+            // Valores: si viene 'data' es edición, si no, es vacío
+            const nombre = data ? data.nombre_depto : '';
+            const importe = data ? data.importe : '';
+            const predialNum = data ? data.cuenta_numero : '';
+            const tienePredial = data ? data.cuenta_predial : false;
+
+            const deptDiv = document.createElement('div');
+            deptDiv.className = 'bg-black/20 p-3 rounded border border-white/5 relative fade-in-content';
+
+            deptDiv.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 mb-1">Nombre Depto</label>
+                    <input type="text" name="project_details[${projectId}][${uniqueIndex}][nombre_depto]" value="${nombre}"
+                           class="w-full bg-white/10 border border-white/10 rounded px-2 py-1 text-white text-xs focus:border-[#d8c495] outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 mb-1">Importe</label>
+                    <input type="number" step="0.01" name="project_details[${projectId}][${uniqueIndex}][importe]" value="${importe}"
+                           class="w-full bg-white/10 border border-white/10 rounded px-2 py-1 text-white text-xs focus:border-[#d8c495] outline-none" required>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="edit_check_${uniqueIndex}"
+                           name="project_details[${projectId}][${uniqueIndex}][cuenta_predial]"
+                           onchange="toggleEditPredial(this, '${uniqueIndex}')"
+                           class="form-checkbox h-3 w-3 text-[#d8c495] rounded border-gray-500 bg-transparent"
+                           ${tienePredial ? 'checked' : ''}>
+                    <label for="edit_check_${uniqueIndex}" class="text-xs text-gray-400">¿Cuenta Predial?</label>
+                </div>
+
+                <div id="edit_predial_div_${uniqueIndex}" class="${tienePredial ? '' : 'hidden'} ml-2 flex-1">
+                    <input type="text" name="project_details[${projectId}][${uniqueIndex}][cuenta_numero]" value="${predialNum}"
+                           placeholder="Núm. Cuenta"
+                           class="w-full bg-white/10 border border-white/10 rounded px-2 py-1 text-white text-xs focus:border-[#d8c495] outline-none">
+                </div>
+
+                <button type="button" onclick="this.closest('.bg-black\\/20').remove()" class="text-red-500 text-xs ml-auto hover:text-red-400 transition">
+                    ✕ Eliminar
+                </button>
+            </div>
+        `;
+            list.appendChild(deptDiv);
+        }
+
+        // Muestra u oculta el campo de número de cuenta predial
+        window.toggleEditPredial = function(checkbox, uniqueIndex) {
+            const div = document.getElementById(`edit_predial_div_${uniqueIndex}`);
+            if(checkbox.checked) {
+                div.classList.remove('hidden');
+            } else {
+                div.classList.add('hidden');
+                div.querySelector('input').value = ''; // Limpiar valor al ocultar
+            }
+        }
+
+        // Maneja qué pasa cuando seleccionas/deseleccionas proyectos en el select múltiple
+        function refreshEditProjectContainers(select, container) {
+            const selectedIds = Array.from(select.selectedOptions).map(o => o.value);
+
+            // 1. Agregar nuevos contenedores si no existen
+            selectedIds.forEach(id => {
+                if(!document.getElementById(`edit_project_container_${id}`)) {
+                    createProjectContainer(id, container);
+                    addEditDepartment(id); // Agregar uno vacío por defecto al seleccionar proyecto nuevo
+                }
+            });
+
+            // 2. Eliminar contenedores de proyectos que se desmarcaron
+            Array.from(container.children).forEach(child => {
+                const id = child.id.replace('edit_project_container_', '');
+                if(!selectedIds.includes(id)) {
+                    child.remove();
+                }
+            });
+        }
+
+
+        window.openDeleteModal = function(userId) {
             document.getElementById("deleteConfirmModal").classList.remove("hidden");
             document.getElementById("deleteConfirmModal").classList.add("flex");
             document.getElementById("deleteUserIdInput").value = userId;
         }
-        function closeDeleteModal() {
+        window.closeDeleteModal = function() {
             document.getElementById("deleteConfirmModal").classList.add("hidden");
             document.getElementById("deleteConfirmModal").classList.remove("flex");
         }

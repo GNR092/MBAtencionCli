@@ -68,4 +68,10 @@ class User extends Authenticatable
         return $this->belongsToMany(Proyecto::class, 'user_proyectos', 'id_user', 'id_proyecto')
             ->using(UserProyecto::class);
     }
+
+    public function userProyectos()
+    {
+        return $this->hasMany(UserProyecto::class, 'id_user', 'id');
+    }
+
 }

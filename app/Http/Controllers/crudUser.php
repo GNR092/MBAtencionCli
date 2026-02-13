@@ -8,14 +8,22 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\RegimenFiscal;
+use App\Models\Proyecto;
+
 
 class crudUser extends Controller
 {
     public function index(Request $request)
     {
-        $currentUser = Session::get('user'); 
+        $proyectos = Proyecto::all();
+        $currentUser = Session::get('user');
 
-        $query = User::where('role', 'usuario');
+        $query = User::where('role', 'usuario')
+            ->with([
+                'userProyectos.deptos',
+                'userProyectos.proyecto'
+            ]);
 
         $search = $request->input('search');
         $categoria = $request->input('categoria');
@@ -25,18 +33,19 @@ class crudUser extends Controller
                 case 'nombre':
                     $query->where('name', 'LIKE', '%' . $search . '%');
                     break;
+
                 case 'email':
                     $query->where('email', 'LIKE', '%' . $search . '%');
                     break;
+
                 case 'proyecto':
-                    $query->whereHas('proyectos', function ($q) use ($search) {
+                    $query->whereHas('userProyectos.proyecto', function ($q) use ($search) {
                         $q->where('nombre_proyecto', 'like', '%' . $search . '%');
                     });
                     break;
             }
         }
 
-        
         if ($request->filled('month')) {
             $year  = substr($request->month, 0, 4);
             $month = substr($request->month, 5, 2);
@@ -46,10 +55,20 @@ class crudUser extends Controller
         }
 
         $users = $query->paginate(10);
+
         $roles = ['admin', 'jefe', 'usuario'];
+
         $areas = [];
 
-        return view('admiUsers', compact('users', 'search', 'categoria', 'roles', 'areas'));
+        return view('admiUsers', compact(
+            'users',
+            'search',
+            'categoria',
+            'roles',
+            'areas',
+            'proyectos'
+        ));
+
     }
 
     public function limpiar()
@@ -64,21 +83,21 @@ class crudUser extends Controller
             'password' => 'required|string',
         ]);
 
-        
+
         $admin = Session::get('user');
         if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
-        
+
         if (!Hash::check($request->password, $admin->password)) {
             return back()->withErrors(['password' => 'Contraseña incorrecta']);
         }
 
-        
+
         session(['validated_edit_user' => $request->user_id]);
 
-        
+
         return redirect()->route('users.edit', $request->user_id);
     }
 
@@ -86,18 +105,18 @@ class crudUser extends Controller
     {
         $admin = Session::get('user');
 
-        
+
         if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
-        
+
         if (session('validated_edit_user') != $id) {
             return redirect()->route('admiUsers')
                 ->withErrors(['auth' => 'Debes confirmar tu contraseña antes de editar este usuario.']);
         }
 
-        
+
         $userToEdit = User::findOrFail($id);
 
         return view('editUser', compact('admin', 'userToEdit'));
@@ -107,28 +126,37 @@ class crudUser extends Controller
     {
         $admin = Session::get('user');
 
-        
         if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
-        
         if (!Hash::check($request->input('password'), $admin->password)) {
             return back()->with('error', 'Contraseña incorrecta');
         }
 
         $id = $request->input('user_id');
 
-        
         if ($id == $admin->id) {
-            return back()->with('error', ' No puedes eliminar tu propia cuenta de administrador.');
+            return back()->with('error', 'No puedes eliminar tu propia cuenta.');
         }
 
-        
-        User::destroy($id);
+        DB::transaction(function () use ($id) {
+
+            $pivots = \App\Models\UserProyecto::where('id_user', $id)->get();
+
+            foreach ($pivots as $pivot) {
+
+                \App\Models\UserDepto::where('id_user_p', $pivot->id_user_p)->delete();
+            }
+
+            \App\Models\UserProyecto::where('id_user', $id)->delete();
+
+            User::destroy($id);
+        });
 
         return back()->with('success', 'Usuario eliminado correctamente.');
     }
+
 
     public function editar(Request $request)
     {
@@ -152,8 +180,8 @@ class crudUser extends Controller
         $user->save();
 
         if ($request->has('proyect')) {
-            
-            
+
+
             $user->proyectos()->sync($request->input('proyect'));
         } else {
             $user->proyectos()->detach();
@@ -176,7 +204,7 @@ class crudUser extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'phone' => 'required|string|max:20',
-            'proyect' => 'sometimes|array', 
+            'proyect' => 'sometimes|array',
             'regimenFiscal' => 'required|integer',
             'password' => 'required|string|min:8|confirmed',
         ]);
