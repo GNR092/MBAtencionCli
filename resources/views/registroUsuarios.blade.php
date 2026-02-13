@@ -131,79 +131,101 @@
         const proyectSelect = document.getElementById('proyect');
         const dynamicProjectFields = document.getElementById('dynamicProjectFields');
 
-        
         if (typeof multiselect === 'function') {
             multiselect(proyectSelect);
         }
 
         const projectOptions = @json($proyectos->pluck('nombre_proyecto', 'id_proyecto'));
-        const oldProjectDetails = @json(old('project_details', []));
 
         function renderDynamicProjectFields() {
-            dynamicProjectFields.innerHTML = ''; 
             const selectedProjectIds = Array.from(proyectSelect.selectedOptions).map(option => option.value);
 
+            // Mantener datos existentes para no borrarlos al seleccionar nuevos proyectos
+            const currentFields = {};
+
             selectedProjectIds.forEach(projectId => {
-                const projectName = projectOptions[projectId] || `Proyecto ${projectId}`;
-                const oldDetails = oldProjectDetails[projectId] || {};
+                if (!document.getElementById(`project_container_${projectId}`)) {
+                    const projectName = projectOptions[projectId] || `Proyecto ${projectId}`;
 
-                const projectDiv = document.createElement('div');
-                projectDiv.className = 'bg-gray-50 p-4 rounded-lg border border-carbon/30 space-y-3';
-                projectDiv.innerHTML = `
-                    <h3 class="text-md font-bold text-gris-carbon border-b pb-2 mb-3">${projectName}</h3>
+                    const projectContainer = document.createElement('div');
+                    projectContainer.id = `project_container_${projectId}`;
+                    projectContainer.className = 'bg-gray-100 p-4 rounded-xl border-2 border-dorado/20 mb-6 space-y-4';
 
-                    <div>
-                        <label for="project_details_${projectId}_nombre_depto" class="block text-sm font-bold text-gris-carbon mb-1">Nombre Depto:</label>
-                        <input type="text" id="project_details_${projectId}_nombre_depto" name="project_details[${projectId}][nombre_depto]"
-                               class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors"
-                               value="${oldDetails.nombre_depto || ''}" required>
+                    projectContainer.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-dorado/30 pb-2">
+                        <h3 class="text-lg font-bold text-gris-carbon uppercase">${projectName}</h3>
+                        <button type="button" onclick="addDepartment('${projectId}')"
+                                class="bg-gris-carbon text-dorado text-xs px-3 py-1 rounded-md border border-dorado hover:bg-dorado hover:text-white transition-all">
+                            + AGREGAR DEPARTAMENTO
+                        </button>
                     </div>
-
-                    <div class="flex items-center gap-2">
-                        <input type="checkbox" id="project_details_${projectId}_cuenta_predial" name="project_details[${projectId}][cuenta_predial]"
-                               class="form-checkbox h-4 w-4 text-dorado rounded border-gray-300 focus:ring-dorado"
-                               ${oldDetails.cuenta_predial ? 'checked' : ''}>
-                        <label for="project_details_${projectId}_cuenta_predial" class="text-sm font-bold text-gris-carbon">¿Cuenta Predial?</label>
-                    </div>
-
-                    <div id="agregarCuentaDiv_${projectId}" class="${oldDetails.cuenta_predial ? '' : 'hidden'} space-y-3">
-                        <div>
-                            <label for="project_details_${projectId}_cuenta_numero" class="block text-sm font-bold text-gris-carbon mb-1">Número de Cuenta:</label>
-                            <input type="text" id="project_details_${projectId}_cuenta_numero" name="project_details[${projectId}][cuenta_numero]"
-                                   class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors"
-                                   value="${oldDetails.cuenta_numero || ''}">
+                    <div id="departments_container_${projectId}" class="space-y-4 pt-2">
                         </div>
-                    </div>
-
-                    <div>
-                        <label for="project_details_${projectId}_importe" class="block text-sm font-bold text-gris-carbon mb-1">Importe:</label>
-                        <input type="number" step="0.01" id="project_details_${projectId}_importe" name="project_details[${projectId}][importe]"
-                               class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors"
-                               value="${oldDetails.importe || ''}" required>
-                    </div>
                 `;
+                    dynamicProjectFields.appendChild(projectContainer);
+                    // Agregar el primer departamento por defecto
+                    addDepartment(projectId);
+                }
+            });
 
-                dynamicProjectFields.appendChild(projectDiv);
-
-                
-                const cuentaPredialCheckbox = projectDiv.querySelector(`#project_details_${projectId}_cuenta_predial`);
-                const agregarCuentaDiv = projectDiv.querySelector(`#agregarCuentaDiv_${projectId}`);
-
-                cuentaPredialCheckbox.addEventListener('change', function() {
-                    if (this.checked) {
-                        agregarCuentaDiv.classList.remove('hidden');
-                    } else {
-                        agregarCuentaDiv.classList.add('hidden');
-                        agregarCuentaDiv.querySelector('input').value = ''; 
-                    }
-                });
+            // Limpiar proyectos que se deseleccionaron
+            Array.from(dynamicProjectFields.children).forEach(container => {
+                const id = container.id.replace('project_container_', '');
+                if (!selectedProjectIds.includes(id)) {
+                    container.remove();
+                }
             });
         }
 
-        
-        renderDynamicProjectFields();
+        // Función global para que el botón pueda llamarla
+        window.addDepartment = function(projectId) {
+            const container = document.getElementById(`departments_container_${projectId}`);
+            const deptIndex = container.children.length; // Índice para el arreglo
 
-        
+            const deptDiv = document.createElement('div');
+            deptDiv.className = 'bg-white p-4 rounded-lg border border-gray-300 shadow-sm relative fade-in-content';
+            deptDiv.innerHTML = `
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-xs font-bold text-dorado uppercase tracking-widest">Datos del Departamento</span>
+                ${deptIndex > 0 ? `<button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-500 text-xs hover:underline">Eliminar</button>` : ''}
+            </div>
+
+            <div class="grid grid-cols-1 gap-3">
+                <div>
+                    <label class="block text-sm font-bold text-gris-carbon mb-1">Nombre Depto:</label>
+                    <input type="text" name="project_details[${projectId}][${deptIndex}][nombre_depto]"
+                           class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:border-dorado focus:ring-1 focus:ring-dorado outline-none" required>
+                </div>
+
+                <div class="flex items-center gap-2 my-2">
+                    <input type="checkbox" id="predial_${projectId}_${deptIndex}"
+                           name="project_details[${projectId}][${deptIndex}][cuenta_predial]"
+                           onchange="togglePredial(this, '${projectId}', ${deptIndex})"
+                           class="form-checkbox h-4 w-4 text-dorado rounded border-gray-300">
+                    <label for="predial_${projectId}_${deptIndex}" class="text-sm font-bold text-gris-carbon">¿Cuenta Predial?</label>
+                </div>
+
+                <div id="div_predial_${projectId}_${deptIndex}" class="hidden">
+                    <label class="block text-sm font-bold text-gris-carbon mb-1">Número de Cuenta:</label>
+                    <input type="text" name="project_details[${projectId}][${deptIndex}][cuenta_numero]"
+                           class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:border-dorado focus:ring-1 focus:ring-dorado outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gris-carbon mb-1">Importe:</label>
+                    <input type="number" step="0.01" name="project_details[${projectId}][${deptIndex}][importe]"
+                           class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:border-dorado focus:ring-1 focus:ring-dorado outline-none" required>
+                </div>
+            </div>
+        `;
+            container.appendChild(deptDiv);
+        };
+
+        window.togglePredial = function(checkbox, projectId, index) {
+            const div = document.getElementById(`div_predial_${projectId}_${index}`);
+            div.classList.toggle('hidden', !checkbox.checked);
+        };
+
         proyectSelect.addEventListener('change', renderDynamicProjectFields);
     });
 </script>
