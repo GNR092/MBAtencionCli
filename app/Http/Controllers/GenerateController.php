@@ -60,10 +60,12 @@ class GenerateController extends Controller
                 foreach ($proyectosIds as $index => $projectId) {
 
                     
-                    $pivot = UserProyecto::create([
-                        'id_user'     => $newUser->id,
-                        'id_proyecto' => $projectId
-                    ]);
+                    $pivot = new UserProyecto();
+                    $pivot->id_user = $newUser->id;
+                    $pivot->id_proyecto = $projectId;
+                    $pivot->created_at = now();
+                    $pivot->updated_at = now();
+                    $pivot->save();
 
                     
                     $data = $detallesDeptos[$projectId] ?? null;

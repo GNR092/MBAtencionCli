@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class UserProyecto extends Pivot
 {
+    public $incrementing = true;
     protected $table = 'user_proyectos';
     protected $primaryKey = 'id_user_p';
 
