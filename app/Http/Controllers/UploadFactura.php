@@ -1,9 +1,10 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session; 
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use App\Models\XmlFile;
@@ -23,16 +24,17 @@ class UploadFactura extends Controller
 
         $query = DB::table('xml_files')
             ->join('users', 'xml_files.id_user', '=', 'users.id')
-            ->select('xml_files.*', 'users.proyect', 'users.name as inversor_name');
+            ->select('xml_files.*', 'users.name as inversor_name', 
+            DB::raw('(SELECT GROUP_CONCAT(p.nombre_proyecto SEPARATOR ", ") FROM user_proyectos up JOIN proyectos p ON up.id_proyecto = p.id_proyecto WHERE up.id_user = users.id) as proyecto'));
 
-            
-            if ($request->filled('month')) {
-                $year  = substr($request->month, 0, 4);
-                $month = substr($request->month, 5, 2);
 
-                $query->whereYear('xml_files.created_at', $year)
-                    ->whereMonth('xml_files.created_at', $month);
-            }
+        if ($request->filled('month')) {
+            $year  = substr($request->month, 0, 4);
+            $month = substr($request->month, 5, 2);
+
+            $query->whereYear('xml_files.created_at', $year)
+                ->whereMonth('xml_files.created_at', $month);
+        }
 
 
         if ($request->filled('fecha')) {
@@ -48,7 +50,7 @@ class UploadFactura extends Controller
         }
 
 
-                
+
         $search    = session('search');
         $categoria = session('categoria');
 
@@ -58,12 +60,11 @@ class UploadFactura extends Controller
                     $query->where('batch_id', $search);
                     break;
                 case 'inversionista':
-                    $query->where('emisor_name', $search);
+                    $query->where('users.name', $search);
                     break;
                 case 'fecha':
-                    $query->whereDate('created_at', $search);
+                    $query->whereDate('xml_files.created_at', $search);
                     if ($search != Carbon::parse($search)->format('Y-m-d')) {
-                        
                         session()->forget(['search', 'categoria']);
                         return redirect()->back()->withErrors(['search' => 'La fecha no es válida.']);
                     }
@@ -75,25 +76,27 @@ class UploadFactura extends Controller
 
         return view('facturas', [
             'xmlFiles' => $xmlFiles
-        ],compact('search', 'categoria'));
+        ], compact('search', 'categoria'));
     }
 
-    public function limpiar(){
-            
-            session()->forget(['search', 'categoria']);
+    public function limpiar()
+    {
 
-            
-            return redirect()->route('facturas');
+        session()->forget(['search', 'categoria']);
+
+
+        return redirect()->route('facturas');
     }
 
-    public function buscar(Request $request){
-        
+    public function buscar(Request $request)
+    {
+
         session([
             'search'    => $request->input('search'),
             'categoria' => $request->input('categoria'),
         ]);
 
-        
+
         return redirect()->route('facturas');
     }
     /**
@@ -112,7 +115,7 @@ class UploadFactura extends Controller
             return back()->with('error', 'Archivo no encontrado.');
         }
 
-        
+
         $filePath = $xmlFile->file_path;
 
         if (basename($filePath) === $filePath) {
@@ -129,8 +132,8 @@ class UploadFactura extends Controller
     }
 
     /**
- * Descargar el PDF asociado a un XML
- */
+     * Descargar el PDF asociado a un XML
+     */
     public function descargarPdf($id)
     {
         $user = Session::get('user');
@@ -150,7 +153,7 @@ class UploadFactura extends Controller
 
         $pdfPath = $xmlFile->pdf_path;
 
-        
+
         if (basename($pdfPath) === $pdfPath) {
             $fullPath = public_path('storage/pdf_files/' . $pdfPath);
         } else {
@@ -163,5 +166,4 @@ class UploadFactura extends Controller
 
         return response()->download($fullPath, basename($fullPath));
     }
-
 }

@@ -3,7 +3,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session; 
+use Illuminate\Support\Facades\Session;
 use App\Models\XmlFile;
 use App\Exports\XmlFilesExport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -18,9 +18,10 @@ class ImpuestoController extends Controller
             ->join('users', 'xml_files.id_user', '=', 'users.id')
             ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id')
             ->leftJoin('regimen_fiscals', 'users.id_regimen', '=', 'regimen_fiscals.id_regimen')
+            ->leftJoin('proyectos', 'xml_files.id_proyecto', '=', 'proyectos.id_proyecto')
             ->select(
                 'xml_files.*',
-                'users.proyect',
+                'proyectos.nombre_proyecto as proyecto',
                 'users.name as inversor_name',
                 'impuesto.tipoFactor',
                 'regimen_fiscals.nombre_regimen as regimenFiscal',
@@ -33,9 +34,9 @@ class ImpuestoController extends Controller
         $this->aplicarFiltros($query, $request);
                  
 
-        if ($request->filled('desde')) 
-            { $query->whereDate('impuesto.created_at', '>=', $request->desde); } 
-        if ($request->filled('hasta')) 
+        if ($request->filled('desde'))
+            { $query->whereDate('impuesto.created_at', '>=', $request->desde); }
+        if ($request->filled('hasta'))
             { $query->whereDate('impuesto.created_at', '<=', $request->hasta); }
 
         
@@ -49,33 +50,33 @@ class ImpuestoController extends Controller
     }
 
     /* ================= INDEX ================= */
-public function index(Request $request)
-{
+    public function index(Request $request)
+    {
 
     
-    $user = Session::get('user');
-    if (!$user) {
-        return redirect('/inicio-de-sesion');
-    }
+        $user = Session::get('user');
+        if (!$user) {
+            return redirect('/inicio-de-sesion');
+        }
     
 
     
-    $query = DB::table('xml_files')
+        $query = DB::table('xml_files')
     
-        ->join('users', 'xml_files.id_user', '=', 'users.id')
-        ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id')
-        ->leftJoin('regimen_fiscals', 'users.id_regimen', '=', 'regimen_fiscals.id_regimen')
-        ->select(
-            'xml_files.*',
-            'users.name as usuario',
-            'regimen_fiscals.nombre_regimen as regimenFiscal',
-            'users.proyect as proyecto',
-            'impuesto.isr as isr',
-            'impuesto.importeBase as importeBase',
-            'impuesto.tasaCuota as tasaCuota',
-            'impuesto.tipoFactor as tipoFactor',
-
-        );
+            ->join('users', 'xml_files.id_user', '=', 'users.id')
+            ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id')
+            ->leftJoin('regimen_fiscals', 'users.id_regimen', '=', 'regimen_fiscals.id_regimen')
+            ->leftJoin('proyectos', 'xml_files.id_proyecto', '=', 'proyectos.id_proyecto')
+            ->select(
+                'xml_files.*',
+                'users.name as usuario',
+                'regimen_fiscals.nombre_regimen as regimenFiscal',
+                'proyectos.nombre_proyecto as proyecto',
+                'impuesto.isr as isr',
+                'impuesto.importeBase as importeBase',
+                'impuesto.tasaCuota as tasaCuota',
+                'impuesto.tipoFactor as tipoFactor'
+            );
 
         
         if ($request->filled('month')) {
@@ -89,35 +90,35 @@ public function index(Request $request)
         
 
     
-    if ($request->filled('search') && $request->filled('categoria')) {
-        $search = $request->input('search');
-        $categoria = $request->input('categoria');
+        if ($request->filled('search') && $request->filled('categoria')) {
+            $search = $request->input('search');
+            $categoria = $request->input('categoria');
 
-        switch ($categoria) {
-            case 'proyecto':
-                $query->where('users.proyect', 'LIKE', "%{$search}%");
-                break;
+            switch ($categoria) {
+                case 'proyecto':
+                    $query->where('proyectos.nombre_proyecto', 'LIKE', "%{$search}%");
+                    break;
 
-            case 'inversionista':
-                $query->where('xml_files.emisor_name', 'LIKE', "%{$search}%");
-                break;
+                case 'inversionista':
+                    $query->where('xml_files.emisor_name', 'LIKE', "%{$search}%");
+                    break;
 
-            case 'departamento':
-                $query->where('xml_files.departamento', 'LIKE', "%{$search}%");
-                break;
+                case 'departamento':
+                    $query->where('xml_files.departamento', 'LIKE', "%{$search}%");
+                    break;
+            }
         }
+
+    
+        $totalISR = (clone $query)->sum('impuesto.isr');
+        $totalBase = (clone $query)->sum('impuesto.importeBase');
+
+    
+        $xmlFiles = $query->paginate(6)->appends($request->query());
+
+    
+        return view('inpuestos', compact('xmlFiles', 'totalISR', 'totalBase'));
     }
-
-    
-    $totalISR = (clone $query)->sum('impuesto.isr');
-    $totalBase = (clone $query)->sum('impuesto.importeBase');
-
-    
-    $xmlFiles = $query->paginate(6)->appends($request->query());
-
-    
-    return view('inpuestos', compact('xmlFiles', 'totalISR', 'totalBase'));
-}
 
 
     /* ================= LIMPIAR FILTROS ================= */
@@ -173,7 +174,7 @@ public function index(Request $request)
 
             switch ($categoria) {
                 case 'proyecto':
-                    $query->where('users.proyect', 'LIKE', "%{$search}%");
+                    $query->where('proyectos.nombre_proyecto', 'LIKE', "%{$search}%");
                     break;
                 case 'inversionista':
                     $query->where('xml_files.emisor_name', 'LIKE', "%{$search}%");

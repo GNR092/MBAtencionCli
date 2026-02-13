@@ -64,8 +64,8 @@
                     <tr>
                         <td>{{ $file->batch_id }}</td>
                         <td>{{ $file->created_at }}</td>
-                        <td>Proyecto_ficticio</td>
-                        <td>{{ $file->emisor_name }}</td>
+                        <td>{{ $file->proyecto }}</td>
+                        <td>{{ $file->inversor_name }}</td>
 
                         <td>
                             <a href="{{ route('facturas.descargar', $file->id) }}"

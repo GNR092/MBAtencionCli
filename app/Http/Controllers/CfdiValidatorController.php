@@ -33,19 +33,19 @@ class CfdiValidatorController extends BaseController
     {
         $user = Auth::user();
 
-        
+
         $usuario = DB::table('users')->where('id', $user->id)->first();
 
         if (!$usuario || empty($usuario->proyect)) {
-            return null; 
+            return null;
         }
 
-        
+
         $proyectos = json_decode($usuario->proyect, true);
 
-        
+
         if (!is_array($proyectos)) {
-            
+
             $proyectos = is_object($proyectos) ? array_values((array)$proyectos) : [$proyectos];
         }
 
@@ -56,11 +56,11 @@ class CfdiValidatorController extends BaseController
     {
         $user = Auth::user();
 
-        
+
         $usuario = DB::table('users')->where('id', $user->id)->first();
 
         if (!$usuario || empty($usuario->email)) {
-            return null; 
+            return null;
         } else {
             return $usuario->email;
         }
@@ -72,7 +72,7 @@ class CfdiValidatorController extends BaseController
     ) {
         $this->xmlValidationService = $xmlValidationService;
         $this->pdfUuidExtractionService = $pdfUuidExtractionService;
-    }    
+    }
     private function getNextQuincenaDeadline(): Carbon
     {
         $today = now();
@@ -85,14 +85,14 @@ class CfdiValidatorController extends BaseController
             $deadline = Carbon::create($today->year, $today->month, $deadlineDay, 23, 59, 59);
         }
 
-        
+
         if ($deadline->isSaturday()) {
             $deadline->addDays(2);
         } elseif ($deadline->isSunday()) {
             $deadline->addDay();
         }
 
-        
+
         $holidays = Yasumi::create('Mexico', $today->year, 'es_ES');
         while ($holidays->isHoliday($deadline)) {
             $deadline->addDay();
@@ -112,10 +112,10 @@ class CfdiValidatorController extends BaseController
         $success = '';
 
         $user = Auth::user();
-        $userP = UserProyecto::where('id_user',$user->id)->get();
+        $userP = UserProyecto::where('id_user', $user->id)->get();
         $idsProyectos = $userP->pluck('id_proyecto');
         $proyectos = $user->proyectos()->get();
-        
+
         if ($request->expectsJson()) {
             $html = view('factura', compact('batch', 'isDeadlinePassed', 'success', 'user'))->render();
             return response()->json(['html' => $html]);
@@ -127,10 +127,6 @@ class CfdiValidatorController extends BaseController
     //Sube y valida archivos XML, Los inválidos no se guardan,Los válidos se guardan en disco y BD.
     public function uploadXmlFiles(Request $request)
     {
-
-
-
-
         $request->validate([
             'xml_files' => 'required|array|max:' . $this->maxBatchSize,
             'xml_files.*' => 'required|file|mimes:xml|max:10240',
@@ -141,32 +137,8 @@ class CfdiValidatorController extends BaseController
         $sessionId = $request->session()->getId();
         $deadline = $this->getNextQuincenaDeadline();
 
-        
-        
-        
-        
-        
+        $proyecto = $request->input('proyect');
 
-        
-        
-
-
-        
-        
-        
-
-        $proyecto = $request->input('proyect'); 
-
-        
-        
-        
-
-        
-        
-        
-        
-
-        
         $batch = XmlBatch::firstOrCreate(
             ['session_id' => $sessionId],
             [
@@ -188,16 +160,12 @@ class CfdiValidatorController extends BaseController
 
         foreach ($request->file('xml_files') as $file) {
             $filename = $file->getClientOriginalName();
-            $tempPath = $file->getPathname(); 
+            $tempPath = $file->getPathname();
 
-
-            
             $validationResult = $this->xmlValidationService->validateXml($tempPath, $filename);
 
-            
             Storage::put('validation_results.txt', json_encode($validationResult, JSON_PRETTY_PRINT));
 
-            
             if (!$validationResult['valid']) {
                 $flatErrors = collect($validationResult['errors'])->flatten();
                 foreach ($flatErrors as $errorMsg) {
@@ -206,17 +174,14 @@ class CfdiValidatorController extends BaseController
                 continue;
             }
 
-
-            
             if (($uuid = $validationResult['uuid'] ?? null) && isset($uuidMapping[$uuid])) {
                 $errors[] = "Archivo {$filename}: UUID duplicado {$validationResult['uuid']}";
                 continue;
             }
 
-            
+
             $filePath = $file->store('xml_files', 'public');
 
-            
 
             $xmlFile = XmlFile::create([
                 'batch_id' => $batch->id,
@@ -227,7 +192,7 @@ class CfdiValidatorController extends BaseController
                 'emisor_name' => $validationResult['emisor_name'],
                 'receptor_name' => $validationResult['receptor_name'],
                 //cambiar el valiudation resul por la comparativa de proyectos que se hizo arriba
-                'proyectos' => $proyecto,
+                'id_proyecto' => $proyecto,
                 'file_path' => $filePath,
                 'departamento' => $validationResult['departamento'],
                 //verificar si el id del usuario existe en la dba de factura
@@ -236,7 +201,7 @@ class CfdiValidatorController extends BaseController
             ]);
 
 
-            
+
             Impuesto::create([
                 //tipo factor y regimen fiscal no aparecen en impuestos
                 //checar que el regimrn fiscal u el tipo de factor aparescan
@@ -245,16 +210,16 @@ class CfdiValidatorController extends BaseController
                 'importeBase' => $validationResult['valorUnitario'] ?? 0,
                 'tasaCuota' => $validationResult['tasaCuota'] ?? 0,
                 'isr' => $validationResult['isr'] ?? 0,
-                'xml_file_id' => $xmlFile->id, 
+                'xml_file_id' => $xmlFile->id,
             ]);
 
-            
+
             if ($validationResult['uuid']) {
                 $uuidMapping[$validationResult['uuid']] = $filename;
                 $batch->increment('valid_files');
             }
 
-            
+
             FileLog::create([
                 'filename' => $filename,
                 'file_type' => 'xml',
@@ -266,7 +231,7 @@ class CfdiValidatorController extends BaseController
             ]);
         }
 
-        
+
         $batch->update([
             'total_files' => $batch->xmlFiles()->count(),
             'uuid_mapping' => $uuidMapping
@@ -287,14 +252,14 @@ class CfdiValidatorController extends BaseController
         $batch = XmlBatch::where('session_id', $sessionId)->first();
 
         if ($batch) {
-            
+
             $batch->update(['session_id' => 'archived_' . $batch->id]);
         }
 
         return redirect()->back()->with('success', 'Lote reiniciado, puedes comenzar otro sin borrar el histórico.');
     }
 
-    
+
     public function xmlFiles()
     {
         return $this->hasMany(XmlFile::class, 'batch_id');
@@ -308,7 +273,7 @@ class CfdiValidatorController extends BaseController
 
         $sessionId = $request->session()->getId();
 
-        
+
         $batch = XmlBatch::where('session_id', $sessionId)->first();
 
         if (!$batch || $batch->valid_files === 0) {
@@ -317,10 +282,10 @@ class CfdiValidatorController extends BaseController
             ]);
         }
 
-        
+
         $pdfPath = $request->file('pdf_file')->store('pdf_files', 'public');
 
-        
+
         $pdfUuid = $this->pdfUuidExtractionService
             ->extractUuidFromPdf(storage_path('app/public/' . $pdfPath));
 
@@ -330,14 +295,14 @@ class CfdiValidatorController extends BaseController
             ]);
         }
 
-        
+
         if (!isset($batch->uuid_mapping[$pdfUuid])) {
             return redirect()->back()->withErrors([
                 'pdf' => 'El UUID del PDF no coincide con ningún XML cargado'
             ]);
         }
 
-        
+
         $xmlFile = XmlFile::where('batch_id', $batch->id)
             ->where('uuid', $pdfUuid)
             ->first();
@@ -348,15 +313,15 @@ class CfdiValidatorController extends BaseController
             ]);
         }
 
-        
+
         $xmlFile->update([
             'pdf_path' => $pdfPath,
         ]);
 
-        
+
         $batch->increment('uploaded_pdfs');
 
-        
+
         FileLog::create([
             'filename' => basename($pdfPath),
             'file_type' => 'pdf',

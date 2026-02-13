@@ -33,7 +33,8 @@ class ListController extends Controller
         
         $query = DB::table('xml_files')
             ->join('users', 'xml_files.id_user', '=', 'users.id')
-            ->select('xml_files.*', 'users.proyect', 'users.name as inversor_name');
+            ->leftJoin('proyectos', 'xml_files.id_proyecto', '=', 'proyectos.id_proyecto')
+            ->select('xml_files.*', 'users.name as inversor_name', 'proyectos.nombre_proyecto');
 
         
         $query->whereYear('xml_files.created_at', $year)
@@ -59,10 +60,10 @@ class ListController extends Controller
 
             switch ($categoria) {
                 case 'proyectos':
-                    $query->where('xml_files.proyectos', 'LIKE', "%{$search}%");
+                    $query->where('proyectos.nombre_proyecto', 'LIKE', "%{$search}%");
                     if ($search == '') {
-                        $query->orWhereNull('xml_files.proyectos');
-                    } 
+                        $query->orWhereNull('proyectos.nombre_proyecto');
+                    }
                     break;
 
                 case 'nombre':

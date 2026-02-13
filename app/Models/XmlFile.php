@@ -12,6 +12,8 @@ class XmlFile extends Model
     protected $fillable = [
         'batch_id',
         'filename',
+        'id_user',
+        'id_proyecto',
         'uuid',
         'is_valid',
         'fecha_inicio',
@@ -23,9 +25,7 @@ class XmlFile extends Model
         'pdf_path',
         'pdf_uploaded',
         'departamento',
-        'id_user',
         'mes',
-        'id_proyecto',
     ];
 
     protected $casts = [
