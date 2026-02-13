@@ -390,8 +390,7 @@
                 const meta = document.querySelector('meta[name="csrf-token"]');
                 if (!meta) return;
 
-                fetch('{{ route('
-                        notifications.unreadCount ') }}', {
+                fetch('{{ route('notifications.unreadCount') }}', {
                             method: 'GET',
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
@@ -412,29 +411,50 @@
             }
 
             function loadNotifications() {
-                notificationList.innerHTML = '<p class="text-gray-500 text-sm p-4">Cargando...</p>';
-                const meta = document.querySelector('meta[name="csrf-token"]');
-                if (!meta) return;
 
-                fetch('{{ route('
-                        notificaciones.index ') }}', {
-                            method: 'GET',
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'X-CSRF-TOKEN': meta.getAttribute('content')
-                            }
-                        })
-                    .then(r => r.ok ? r.json() : Promise.reject(r))
-                    .then(data => {
-                        notificationList.innerHTML = data.html ||
-                            '<p class="text-gray-500 text-sm p-4">No hay notificaciones.</p>';
-                        attachNotificationClickHandlers();
-                    })
-                    .catch(e => {
-                        notificationList.innerHTML =
-                            '<p class="text-red-500 text-sm p-4">Error al cargar.</p>';
-                    });
-            }
+                            notificationList.innerHTML = '<p class="text-gray-500 text-sm p-4">Cargando...</p>';
+
+                            const meta = document.querySelector('meta[name="csrf-token"]');
+
+                            if (!meta) return;
+
+            
+
+                            fetch('{{ route('notificaciones.index') }}', {
+
+                                        method: 'GET',
+
+                                        headers: {
+
+                                            'X-Requested-With': 'XMLHttpRequest',
+
+                                            'X-CSRF-TOKEN': meta.getAttribute('content')
+
+                                        }
+
+                                    })
+
+                                .then(r => r.ok ? r.json() : Promise.reject(r))
+
+                                .then(data => {
+
+                                    notificationList.innerHTML = data.html ||
+
+                                        '<p class="text-gray-500 text-sm p-4">No hay notificaciones.</p>';
+
+                                    attachNotificationClickHandlers();
+
+                                })
+
+                                .catch(e => {
+
+                                    notificationList.innerHTML =
+
+                                        '<p class="text-red-500 text-sm p-4">Error al cargar.</p>';
+
+                                });
+
+                        }
 
             notificationBellContainer.addEventListener('click', function(event) {
                 event.stopPropagation();
