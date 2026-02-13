@@ -28,7 +28,7 @@
                 <form id="login-form" onsubmit="loginUsuario(event)">
                     <div class="py-2">
                         <label for="email" class="text-white block text-sm font-medium">Correo Electrónico</label>
-                        <input type="email" id="email" autocomplete="off" required class="w-full text-white bg-gray-800 rounded-lg border-transparent focus:border-white focus:ring-0 transition-all"/>
+                        <input type="email" id="email" autocomplete="email" required class="w-full text-white bg-gray-800 rounded-lg border-transparent focus:border-white focus:ring-0 transition-all"/>
                     </div>
 
                     <div class="py-2">

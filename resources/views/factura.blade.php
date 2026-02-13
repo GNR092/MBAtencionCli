@@ -67,7 +67,7 @@
                                 </div>
                                 <input type="email" name="user_email" required
                                     class="block w-full border border-gray-300 rounded-lg pl-10 pr-3 py-3 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors bg-white shadow-sm"
-                                    placeholder="usuario@mbsignature.com">
+                                    placeholder="usuario@mbsignature.com" value="{{ $user->email ?? '' }}" readonly>
                             </div>
                         </div>
 
@@ -77,9 +77,10 @@
                             <div class="relative">
                                 <select name="proyect" id="proyect" required
                                     class="block w-full border border-gray-300 rounded-lg pl-3 pr-10 py-3 text-gris-carbon bg-white focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors appearance-none cursor-pointer shadow-sm">
-                                    <option value="" disabled selected>Seleccionar Unidad...</option>
-                                    <option value="RESIDENT 1">RESIDENT 1</option>
-                                    {{-- Agrega aquí tus otras opciones --}}
+                                    <option value="" disabled selected>Seleccionar Proyecto...</option>
+                                    @foreach($proyectos as $proyecto)
+                                        <option value="{{ $proyecto->id_proyecto }}">{{ $proyecto->nombre_proyecto }}</option>
+                                    @endforeach
                                 </select>
                                 <div
                                     class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-500">
@@ -91,6 +92,7 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
                     <div class="relative group">

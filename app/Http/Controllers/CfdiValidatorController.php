@@ -7,6 +7,8 @@ use App\Models\XmlBatch;
 use App\Models\XmlFile;
 use App\Models\Impuesto;
 use App\Models\FileLog;
+use App\Models\UserProyecto;
+use App\Models\Proyecto;
 use App\Services\XmlValidationService;
 use App\Services\PdfUuidExtractionService;
 use Illuminate\Http\Request;
@@ -17,6 +19,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Auth; // Import Auth facade
 
 class CfdiValidatorController extends BaseController
 {
@@ -28,7 +31,7 @@ class CfdiValidatorController extends BaseController
     //validar que el usuario tenga el proyecto asignado
     private function getProyectos()
     {
-        $user = Session::get('user');
+        $user = Auth::user();
 
         
         $usuario = DB::table('users')->where('id', $user->id)->first();
@@ -48,11 +51,10 @@ class CfdiValidatorController extends BaseController
 
         return $proyectos;
     }
-
     //funcion para validar el email
     private function getMail()
     {
-        $user = Session::get('user');
+        $user = Auth::user();
 
         
         $usuario = DB::table('users')->where('id', $user->id)->first();
@@ -63,7 +65,6 @@ class CfdiValidatorController extends BaseController
             return $usuario->email;
         }
     }
-
     //valida los servicios
     public function __construct(
         XmlValidationService $xmlValidationService,
@@ -71,10 +72,7 @@ class CfdiValidatorController extends BaseController
     ) {
         $this->xmlValidationService = $xmlValidationService;
         $this->pdfUuidExtractionService = $pdfUuidExtractionService;
-    }
-
-
-    
+    }    
     private function getNextQuincenaDeadline(): Carbon
     {
         $today = now();
@@ -113,12 +111,17 @@ class CfdiValidatorController extends BaseController
 
         $success = '';
 
+        $user = Auth::user();
+        $userP = UserProyecto::where('id_user',$user->id)->get();
+        $idsProyectos = $userP->pluck('id_proyecto');
+        $proyectos = $user->proyectos()->get();
+        
         if ($request->expectsJson()) {
-            $html = view('factura', compact('batch', 'isDeadlinePassed', 'success'))->render();
+            $html = view('factura', compact('batch', 'isDeadlinePassed', 'success', 'user'))->render();
             return response()->json(['html' => $html]);
         }
 
-        return view('factura', compact('batch', 'isDeadlinePassed', 'success'));
+        return view('factura', compact('batch', 'isDeadlinePassed', 'success', 'user', 'proyectos'));
     }
 
     //Sube y valida archivos XML, Los inválidos no se guardan,Los válidos se guardan en disco y BD.
@@ -179,7 +182,7 @@ class CfdiValidatorController extends BaseController
         $errors = [];
         $uuidMapping = $batch->uuid_mapping ?? [];
 
-        $user = Session::get('user');
+        $user = Auth::user();
 
 
 

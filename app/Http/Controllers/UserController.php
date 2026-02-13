@@ -13,4 +13,3 @@ class UserController extends Controller
     public function contratos() { return view('contratos'); }
     public function notificaciones() { return view('notificaciones'); }
 }
-

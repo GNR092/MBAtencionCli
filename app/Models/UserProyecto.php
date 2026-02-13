@@ -2,15 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model; 
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class UserProyecto extends Model
+class UserProyecto extends Pivot
 {
     protected $table = 'user_proyectos';
     protected $primaryKey = 'id_user_p';
-
-    
-    public $incrementing = true;
 
     protected $fillable = [
         'id_user',
