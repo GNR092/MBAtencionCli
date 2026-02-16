@@ -6,12 +6,12 @@
     {{-- Header Minimalista (Proporciones Exactas de Referencia) --}}
     <nav class="flex justify-between items-center mb-16 px-2">
         <a href="/vista-usuario"
-            class="group flex items-center gap-4 text-[10px] tracking-[0.4em] uppercase text-white/40 hover:text-dorado transition-all duration-700">
+            class="group flex items-center gap-4 text-[10px] tracking-[0.4em] uppercase text-white/40 hover:text-dorado-400 transition-all duration-700">
             <span class="text-lg group-hover:-translate-x-2 transition-transform duration-500">←</span>
             <span>Volver al Panel</span>
         </a>
         <div class="h-px flex-1 mx-10 bg-linear-to-r from-[#8B6B23]/40 to-transparent"></div>
-        <span class="text-[9px] text-dorado tracking-[0.5em] uppercase opacity-70">
+        <span class="text-[9px] text-dorado-400 tracking-[0.5em] uppercase opacity-70">
             MB Signature Properties •
         </span>
     </nav>
@@ -19,9 +19,9 @@
     {{-- Hero Section (Proporciones Exactas de Referencia) --}}
     <header class="mb-20 px-2">
         <div class="flex items-baseline gap-4">
-            <span class="text-dorado text-sm font-serif italic">05</span>
+            <span class="text-dorado-400 text-sm font-serif italic">05</span>
             <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
-                Contratos<span class="font-light text-dorado"></span><span class="text-dorado animate-pulse">_</span>
+                Contratos<span class="font-light text-dorado"></span><span class="text-dorado-400 animate-pulse">_</span>
             </h1>
         </div>
         <p class="text-white/20 text-xs tracking-[0.3em] uppercase mt-6 ml-12">
@@ -34,28 +34,28 @@
         <div class="flex flex-col gap-8 bg-transparent">
 
             {{-- ISLA 1: BUSCADOR (Tarjeta Blanca) --}}
-            <div class="bg-white rounded-2xl shadow-xl border border-carbon p-8 md:p-10">
+            <div class="bg-white rounded-2xl shadow-xl border border-carbon-200 p-8 md:p-10">
                 <form method="post" action="{{ route('contratos.buscar') }}"
                     class="flex flex-col lg:flex-row items-end gap-6">
                     @csrf
 
                     <div class="flex-1 w-full">
-                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-gris-carbon mb-3">
+                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-carbon-900 mb-3">
                             Buscar Documento
                         </label>
                         <div class="relative w-full">
                             <input type="text" name="search" value="{{ $search }}" placeholder="FOLIO O ID..."
-                                class="w-full bg-gray-50 border border-gray-300 rounded-lg py-4 pl-4 pr-4 text-xl text-gris-carbon font-light focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-all uppercase tracking-tight placeholder-gray-300">
+                                class="w-full bg-gray-50 border border-gray-300 rounded-lg py-4 pl-4 pr-4 text-xl text-carbon-900 font-light focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-all uppercase tracking-tight placeholder-gray-300">
                         </div>
                     </div>
 
                     <div class="w-full lg:w-64">
-                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-gris-carbon mb-3">
+                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-carbon-900 mb-3">
                             Categoría
                         </label>
                         <div class="relative">
                             <select name="categoria"
-                                class="w-full bg-gray-50 border border-gray-300 rounded-lg py-4 pl-4 pr-10 text-lg text-gris-carbon font-light focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado appearance-none cursor-pointer transition-all">
+                                class="w-full bg-gray-50 border border-gray-300 rounded-lg py-4 pl-4 pr-10 text-lg text-carbon-900 font-light focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 appearance-none cursor-pointer transition-all">
                                 <option value="id" {{ $categoria == 'id' ? 'selected' : '' }}>ID</option>
                                 <option value="folio" {{ $categoria == 'folio' ? 'selected' : '' }}>FOLIO</option>
                                 <option value="fecha" {{ $categoria == 'fecha' ? 'selected' : '' }}>FECHA</option>
@@ -72,12 +72,12 @@
 
                     <div class="flex gap-4 w-full lg:w-auto">
                         <button type="submit"
-                            class="bg-gris-carbon text-white text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:bg-dorado hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
+                            class="bg-carbon-900 text-white text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:bg-dorado-400 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
                             Buscar
                         </button>
 
                         <a href="{{ route('contratos.limpiar') }}"
-                            class="flex items-center justify-center border border-gray-300 text-gray-500 text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:border-gris-carbon hover:text-gris-carbon transition-all duration-300">
+                            class="flex items-center justify-center border border-gray-300 text-gray-500 text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:border-carbon-900 hover:text-carbon-900 transition-all duration-300">
                             Limpiar
                         </a>
                     </div>
@@ -85,7 +85,7 @@
             </div>
 
             {{-- ISLA 2: TABLA (Tarjeta Blanca) --}}
-            <div class="tabla-dorada-container bg-white rounded-2xl shadow-xl border border-carbon overflow-hidden">
+            <div class="tabla-dorada-container bg-white rounded-2xl shadow-xl border border-carbon-200 overflow-hidden">
                 <div class="overflow-x-auto custom-scroll">
                     <table class="tabla-dorada">
                         <thead>
@@ -105,7 +105,7 @@
                                     #{{ $contrato->id }}
                                 </td>
 
-                                <td class="font-bold text-gris-carbon uppercase">
+                                <td class="font-bold text-carbon-900 uppercase">
                                     {{ $contrato->folio }}
                                 </td>
 
@@ -113,14 +113,14 @@
                                     {{ $contrato->proyecto }}
                                 </td>
 
-                                <td class="text-center font-medium text-gris-carbon">
+                                <td class="text-center font-medium text-carbon-900">
                                     {{ \Carbon\Carbon::parse($contrato->fecha)->format('d/m/Y') }}
                                 </td>
 
                                 <td class="text-center">
                                     <span class="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border
                                     {{ $contrato->estado === 'activo'
-                                        ? 'bg-dorado/10 text-dorado border-dorado/20'
+                                        ? 'bg-dorado/10 text-dorado-400 border-dorado/20'
                                         : 'bg-red-100 text-red-700 border-red-200' }}">
                                         {{ ucfirst($contrato->estado) }}
                                     </span>
@@ -128,7 +128,7 @@
 
                                 <td class="text-center pr-6">
                                     <button
-                                        class="bg-gris-carbon text-white px-5 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-dorado transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                                        class="bg-carbon-900 text-white px-5 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-dorado-400 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
                                         @click="show=true; docId={{ $contrato->id }}; password=''; error=''">
                                         Descargar
                                     </button>
@@ -161,17 +161,17 @@
     <div x-show="show" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center p-6"
         style="display: none;">
         <div class="absolute inset-0 bg-black/95 backdrop-blur-xl" @click="show=false"></div>
-        <div class="bg-gris-carbon border border-white/10 w-full max-w-md relative z-10 shadow-3xl p-12 md:p-16">
+        <div class="bg-carbon-900 border border-white/10 w-full max-w-md relative z-10 shadow-3xl p-12 md:p-16">
             <h2 class="text-white text-3xl font-extralight uppercase tracking-tighter mb-8">Validación de<br><span
-                    class="text-dorado font-bold">Seguridad</span></h2>
+                    class="text-dorado-400 font-bold">Seguridad</span></h2>
 
             <div class="space-y-8">
                 <div class="group">
                     <label
-                        class="block text-[9px] uppercase tracking-[0.3em] text-dorado mb-4 opacity-60 font-bold">Contraseña
+                        class="block text-[9px] uppercase tracking-[0.3em] text-dorado-400 mb-4 opacity-60 font-bold">Contraseña
                         de Usuario</label>
                     <input type="password" x-model="password" placeholder="••••••••"
-                        class="w-full bg-transparent border-b border-white/10 py-4 text-xl text-white outline-none focus:border-dorado transition-all">
+                        class="w-full bg-transparent border-b border-white/10 py-4 text-xl text-white outline-none focus:border-dorado-400 transition-all">
                 </div>
 
                 <p x-show="error" x-text="error"
@@ -179,7 +179,7 @@
 
                 <div class="flex flex-col gap-4 pt-4">
                     <button
-                        class="w-full bg-dorado text-black text-[10px] tracking-[0.3em] uppercase font-bold py-5 hover:bg-white transition-all duration-700"
+                        class="w-full bg-dorado-400 text-black text-[10px] tracking-[0.3em] uppercase font-bold py-5 hover:bg-white transition-all duration-700"
                         @click="checkPassword">
                         Confirmar Acceso
                     </button>

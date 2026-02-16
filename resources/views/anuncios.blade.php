@@ -3,9 +3,9 @@
 @section('content')
 <header class="mb-10 px-2">
     <div class="flex items-baseline gap-4">
-        <span class="text-dorado text-sm font-serif italic">|</span>
+        <span class="text-dorado-400 text-sm font-serif italic">|</span>
         <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
-            Emitir anuncios<span class="font-light text-dorado"></span><span class="text-dorado animate-pulse">_</span>
+            Emitir anuncios<span class="font-light text-dorado"></span><span class="text-dorado-400 animate-pulse">_</span>
         </h1>
     </div>
 </header>
@@ -57,7 +57,7 @@
                         <td>
                             <div class="flex items-center justify-center gap-2">
                                 <button onclick="editAnuncio('{{ json_encode($anuncio) }}')"
-                                    class="inline-flex items-center justify-center bg-dorado hover:bg-dorado/80 text-white w-8 h-8 rounded-lg transition shadow-sm border border-dorado/50"
+                                    class="inline-flex items-center justify-center bg-dorado-400 hover:bg-dorado/80 text-white w-8 h-8 rounded-lg transition shadow-sm border border-dorado/50"
                                     title="Editar Anuncio">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                         stroke-width="2" stroke="currentColor" class="w-4 h-4">
@@ -93,10 +93,10 @@
     class="bg-black/60 backdrop-blur-sm fixed inset-0 flex items-center justify-center hidden z-50 transition-opacity duration-300">
 
     <div
-        class="bg-white rounded-2xl w-[500px] shadow-2xl border border-carbon overflow-hidden transform transition-all scale-100">
+        class="bg-white rounded-2xl w-[500px] shadow-2xl border border-carbon-200 overflow-hidden transform transition-all scale-100">
 
-        <div class="bg-gris-carbon px-6 py-4 border-b-2 border-dorado flex justify-between items-center">
-            <h2 class="text-dorado text-lg font-bold uppercase tracking-widest">
+        <div class="bg-carbon-900 px-6 py-4 border-b-2 border-dorado-400 flex justify-between items-center">
+            <h2 class="text-dorado-400 text-lg font-bold uppercase tracking-widest">
                 Nuevo Anuncio
             </h2>
             <button type="button" onclick="document.getElementById('modalCrear').classList.add('hidden')"
@@ -113,21 +113,21 @@
             @csrf
 
             <div>
-                <label class="block text-xs font-bold text-gris-carbon uppercase mb-1">Título</label>
+                <label class="block text-xs font-bold text-carbon-900 uppercase mb-1">Título</label>
                 <input type="text" name="titulo" placeholder="Ej: Mantenimiento programado" required
-                    class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors">
+                    class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-carbon-900 focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-colors">
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-gris-carbon uppercase mb-1">Descripción</label>
+                <label class="block text-xs font-bold text-carbon-900 uppercase mb-1">Descripción</label>
                 <textarea name="descripcion" rows="3" placeholder="Detalles del anuncio..."
-                    class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors custom-scroll"></textarea>
+                    class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-carbon-900 focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-colors custom-scroll"></textarea>
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-gris-carbon uppercase mb-1">Prioridad</label>
+                <label class="block text-xs font-bold text-carbon-900 uppercase mb-1">Prioridad</label>
                 <select name="prioridad"
-                    class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon bg-white focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors">
+                    class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-carbon-900 bg-white focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-colors">
                     <option value="baja">Baja</option>
                     <option value="media">Media</option>
                     <option value="alta">Alta</option>
@@ -135,7 +135,7 @@
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-gris-carbon uppercase mb-1">Adjunto (Opcional)</label>
+                <label class="block text-xs font-bold text-carbon-900 uppercase mb-1">Adjunto (Opcional)</label>
                 <input type="file" name="adjunto" class="block w-full text-xs text-gray-500
                     file:mr-4 file:py-2 file:px-4
                     file:rounded-full file:border-0
@@ -146,11 +146,11 @@
 
             <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                 <button type="button" onclick="document.getElementById('modalCrear').classList.add('hidden')"
-                    class="px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-gris-carbon bg-gray-100 hover:bg-gray-200 transition border border-gray-200">
+                    class="px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-carbon-900 bg-gray-100 hover:bg-gray-200 transition border border-gray-200">
                     Cancelar
                 </button>
                 <button type="submit"
-                    class="px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-dorado hover:bg-dorado/80 transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                    class="px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-dorado-400 hover:bg-dorado/80 transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                     Guardar
                 </button>
             </div>
@@ -162,10 +162,10 @@
     class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300">
 
     <div
-        class="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-carbon overflow-hidden transform scale-100 transition-all relative">
+        class="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-carbon-200 overflow-hidden transform scale-100 transition-all relative">
 
-        <div class="bg-gris-carbon px-6 py-4 border-b-2 border-dorado flex justify-between items-center">
-            <h2 class="text-dorado text-lg font-bold uppercase tracking-widest">
+        <div class="bg-carbon-900 px-6 py-4 border-b-2 border-dorado-400 flex justify-between items-center">
+            <h2 class="text-dorado-400 text-lg font-bold uppercase tracking-widest">
                 Editar Anuncio
             </h2>
             <button type="button" onclick="document.getElementById('modalEditar').classList.add('hidden')"
@@ -181,24 +181,24 @@
             @csrf @method('PUT')
 
             <div>
-                <label for="edit_titulo" class="block text-xs font-bold text-gris-carbon uppercase mb-1">Título</label>
+                <label for="edit_titulo" class="block text-xs font-bold text-carbon-900 uppercase mb-1">Título</label>
                 <input type="text" name="titulo" id="edit_titulo" required
-                    class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors bg-white">
+                    class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-carbon-900 focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-colors bg-white">
             </div>
 
             <div>
                 <label for="edit_descripcion"
-                    class="block text-xs font-bold text-gris-carbon uppercase mb-1">Descripción</label>
+                    class="block text-xs font-bold text-carbon-900 uppercase mb-1">Descripción</label>
                 <textarea name="descripcion" id="edit_descripcion" rows="3"
-                    class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors bg-white resize-none"></textarea>
+                    class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-carbon-900 focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-colors bg-white resize-none"></textarea>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label for="edit_prioridad"
-                        class="block text-xs font-bold text-gris-carbon uppercase mb-1">Prioridad</label>
+                        class="block text-xs font-bold text-carbon-900 uppercase mb-1">Prioridad</label>
                     <select name="prioridad" id="edit_prioridad"
-                        class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon bg-white focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors cursor-pointer">
+                        class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-carbon-900 bg-white focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-colors cursor-pointer">
                         <option value="baja">Baja</option>
                         <option value="media">Media</option>
                         <option value="alta">Alta</option>
@@ -206,9 +206,9 @@
                 </div>
                 <div>
                     <label for="edit_estado"
-                        class="block text-xs font-bold text-gris-carbon uppercase mb-1">Estado</label>
+                        class="block text-xs font-bold text-carbon-900 uppercase mb-1">Estado</label>
                     <select name="estado" id="edit_estado"
-                        class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon bg-white focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors cursor-pointer">
+                        class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-carbon-900 bg-white focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-colors cursor-pointer">
                         <option value="activo">Activo</option>
                         <option value="inactivo">Inactivo</option>
                     </select>
@@ -216,23 +216,23 @@
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-gris-carbon uppercase mb-2">Adjunto</label>
+                <label class="block text-xs font-bold text-carbon-900 uppercase mb-2">Adjunto</label>
                 <input type="file" name="adjunto" class="block w-full text-xs text-slate-500
                     file:mr-4 file:py-2 file:px-4
                     file:rounded-full file:border-0
                     file:text-xs file:font-bold file:uppercase
-                    file:bg-dorado file:text-white
+                    file:bg-dorado-400 file:text-white
                     hover:file:bg-dorado/80 file:cursor-pointer cursor-pointer
                     file:transition-colors">
             </div>
 
             <div class="pt-4 mt-2 border-t border-gray-100 flex justify-end gap-3">
                 <button type="button" onclick="document.getElementById('modalEditar').classList.add('hidden')"
-                    class="px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-gris-carbon bg-gray-100 hover:bg-gray-200 transition border border-gray-200">
+                    class="px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-carbon-900 bg-gray-100 hover:bg-gray-200 transition border border-gray-200">
                     Cancelar
                 </button>
                 <button type="submit"
-                    class="px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-dorado hover:bg-dorado/90 transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                    class="px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-dorado-400 hover:bg-dorado/90 transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                     Actualizar
                 </button>
             </div>

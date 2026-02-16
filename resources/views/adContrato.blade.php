@@ -29,7 +29,7 @@
             <label for="myInput" class="text-white">Asignar a usuario:</label>
 
             <!-- Input de búsqueda -->
-            <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Buscar usuario..."
+            <input type="text" id="myInput" placeholder="Buscar usuario..."
                 class="bg-white rounded-lg px-4 py-2 w-full">
 
             <!-- Lista de usuarios -->
@@ -37,7 +37,7 @@
                 @foreach ($users as $u)
                 <li>
                     <a href="#" onclick="selectUser('{{ $u->id }}', '{{ $u->name }}')"
-                        class="block px-4 py-2 hover:bg-gray-200 ">
+                        class="block px-4 py-2 hover:bg-gray-200 text-gray-800">
                         {{ $u->name }}
                     </a>
                 </li>
@@ -54,21 +54,11 @@
                     class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200 text-black"
                     required>
                     <option value="" disabled selected>Selecciona proyecto</option>
-                    <option value="RESIDENT 1">RESIDENT 1</option>
-                    <option value="RESIDENT 2">RESIDENT 2</option>
-                    <option value="CAMPUS RECIDENCIA">CAMPUS RECIDENCIA</option>
-                    <option value="TMZN 122">TMZN 122</option>
-                    <option value="GRAND TEMOZON">GRAND TEMOZÓN</option>
-                    <option value="MB RESORT MERIDA">MB RESORT MÉRIDA</option>
-                    <option value="Princess Village">Princess Village</option>
-                    <option value="Royal Square Plaza">Royal Square Plaza</option>
-                    <option value="RUM">RUM</option>
-                    <option value="Avenue Temozon">Avenue Temozón</option>
-                    <option value="MB Resort Orlando">MB Resort Orlando</option>
-                    <option value="MB Wellness Resort">MB Wellness Resort</option>
-                    <option value="Aldea Borboleta I">Aldea Borboleta I</option>
-                    <option value="Aldea Borboleta II">Aldea Borboleta II </option>
-                    <option value="Aldea Borboleta III">Aldea Borboleta III</option>
+                    @if(isset($proyectos))
+                        @foreach($proyectos as $proyecto)
+                        <option value="{{ $proyecto->id_proyecto }}">{{ $proyecto->nombre_proyecto }}</option>
+                        @endforeach
+                    @endif
                 </select>
             </div>
 
@@ -130,7 +120,7 @@
 
                 <!-- Botón -->
                 <button type="submit"
-                    class="bg-dorado text-white px-6 py-2 rounded-lg font-semibold shadow-md transition duration-300 ease-in-out hover:scale-105 hover:bg-[#b58714]">
+                    class="bg-dorado-400 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition duration-300 ease-in-out hover:scale-105 hover:bg-[#b58714]">
                     SUBIR
                 </button>
             </div>

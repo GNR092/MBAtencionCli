@@ -6,12 +6,12 @@
     {{-- Header Minimalista --}}
     <nav class="flex justify-between items-center mb-16 px-2">
         <a href="/vista-usuario"
-            class="group flex items-center gap-4 text-[10px] tracking-[0.4em] uppercase text-white/40 hover:text-dorado transition-all duration-700">
+            class="group flex items-center gap-4 text-[10px] tracking-[0.4em] uppercase text-white/40 hover:text-dorado-400 transition-all duration-700">
             <span class="text-lg group-hover:-translate-x-2 transition-transform duration-500">←</span>
             <span>Volver al Panel</span>
         </a>
         <div class="h-px flex-1 mx-10 bg-linear-to-r from-[#8B6B23]/40 to-transparent"></div>
-        <span class="text-[9px] text-dorado tracking-[0.5em] uppercase opacity-70">
+        <span class="text-[9px] text-dorado-400 tracking-[0.5em] uppercase opacity-70">
             MB Signature Properties •
         </span>
     </nav>
@@ -19,9 +19,9 @@
     {{-- Hero Section --}}
     <header class="mb-20 px-2">
         <div class="flex items-baseline gap-4">
-            <span class="text-dorado text-sm font-serif italic">02</span>
+            <span class="text-dorado-400 text-sm font-serif italic">02</span>
             <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
-                Notifica<span class="font-light">ciones</span><span class="text-dorado animate-pulse">_</span>
+                Notifica<span class="font-light">ciones</span><span class="text-dorado-400 animate-pulse">_</span>
             </h1>
         </div>
         <p class="text-white/20 text-xs tracking-[0.3em] uppercase mt-6 ml-12">
@@ -33,14 +33,14 @@
     <div class="w-full px-4 mb-20 flex justify-center">
 
         {{-- TARJETA WIDGET (Ancho fijo max-w-lg) --}}
-        <div class="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-carbon overflow-hidden flex flex-col">
+        <div class="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-carbon-200 overflow-hidden flex flex-col">
 
             {{-- HEADER: Pestañas EXPANDIDAS (Ocupan el 100% exacto) --}}
-            <div class="flex w-full bg-gris-carbon border-b-4 border-dorado">
+            <div class="flex w-full bg-carbon-900 border-b-4 border-dorado">
 
                 {{-- Botón Nuevas: flex-1 para crecer y ocupar el 50% --}}
                 <button
-                    class="tablink flex-1 text-[11px] tracking-[0.3em] uppercase font-bold transition-all duration-300 text-dorado py-5 hover:bg-white/5 focus:outline-none border-r border-white/10 text-center"
+                    class="tablink flex-1 text-[11px] tracking-[0.3em] uppercase font-bold transition-all duration-300 text-dorado-400 py-5 hover:bg-white/5 focus:outline-none border-r border-white/10 text-center"
                     onclick="openPage('New', this, 'rgba(255, 255, 255, 0.1)')" id="defaultOpen">
                     Nuevas
                 </button>
@@ -66,11 +66,11 @@
                                 {{-- Header Notificación --}}
                                 <div class="w-full">
                                     <h3
-                                        class="text-gris-carbon text-sm font-bold uppercase tracking-wide leading-tight mb-2 break-words">
+                                        class="text-carbon-900 text-sm font-bold uppercase tracking-wide leading-tight mb-2 break-words">
                                         {{ $n->data['asunto'] }}
                                     </h3>
                                     <span
-                                        class="inline-block px-3 py-1 bg-dorado/10 text-dorado text-[9px] tracking-widest uppercase font-bold rounded-full">
+                                        class="inline-block px-3 py-1 bg-dorado/10 text-dorado-400 text-[9px] tracking-widest uppercase font-bold rounded-full">
                                         {{ $n->created_at->format('d/m/Y • H:i') }}
                                     </span>
                                 </div>
@@ -85,7 +85,7 @@
                                     class="w-full mt-2">
                                     @csrf
                                     <button type="submit"
-                                        class="w-full bg-dorado text-white text-[10px] tracking-[0.2em] uppercase font-bold py-3 rounded-lg shadow-md hover:bg-[#b58714] transition-all transform hover:-translate-y-0.5">
+                                        class="w-full bg-dorado-400 text-white text-[10px] tracking-[0.2em] uppercase font-bold py-3 rounded-lg shadow-md hover:bg-[#b58714] transition-all transform hover:-translate-y-0.5">
                                         Leer Notificación
                                     </button>
                                 </form>
@@ -103,7 +103,7 @@
                                     </path>
                                 </svg>
                             </div>
-                            <h4 class="text-gris-carbon text-xs tracking-[0.25em] uppercase font-bold mb-2">
+                            <h4 class="text-carbon-900 text-xs tracking-[0.25em] uppercase font-bold mb-2">
                                 Bandeja Vacía
                             </h4>
                             <p class="text-gray-400 text-[10px] uppercase tracking-wider">
@@ -124,7 +124,7 @@
                                     <div class="w-2 h-2 rounded-full bg-gray-300 mt-1 shrink-0"></div>
                                     <div class="w-full">
                                         <h3
-                                            class="text-gris-carbon text-xs font-bold uppercase leading-tight break-words">
+                                            class="text-carbon-900 text-xs font-bold uppercase leading-tight break-words">
                                             {{ $n->data['asunto'] }}</h3>
                                         <span
                                             class="text-[9px] text-gray-400 uppercase tracking-widest block mt-1">{{ $n->created_at->format('d/m/Y') }}</span>

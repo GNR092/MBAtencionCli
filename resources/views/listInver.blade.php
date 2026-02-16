@@ -4,10 +4,10 @@
 <div class="max-w-6xl mx-auto p-6">
     <header class="mb-10 px-2">
         <div class="flex items-baseline gap-4">
-            <span class="text-dorado text-sm font-serif italic">|</span>
+            <span class="text-dorado-400 text-sm font-serif italic">|</span>
             <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
                 Inversionistas<span class="font-light text-dorado"></span><span
-                    class="text-dorado animate-pulse">_</span>
+                    class="text-dorado-400 animate-pulse">_</span>
             </h1>
         </div>
     </header>
@@ -62,7 +62,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="py-10 text-gris-carbon font-medium italic">
+                        <td colspan="4" class="py-10 text-carbon-900 font-medium italic">
                             No se encontraron facturas
                         </td>
                     </tr>
@@ -71,7 +71,7 @@
             </table>
         </div>
 
-        <div class="bg-gray-50 border-t border-carbon p-4 flex justify-center">
+        <div class="bg-gray-50 border-t border-carbon-200 p-4 flex justify-center">
             {{ $xmlFiles->links('pagination::tailwind') }}
         </div>
     </div>

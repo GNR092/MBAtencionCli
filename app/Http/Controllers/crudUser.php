@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\RegimenFiscal;
 use App\Models\Proyecto;
+use \App\Models\UserDepto;
 
 
 class crudUser extends Controller
@@ -17,6 +18,7 @@ class crudUser extends Controller
     public function index(Request $request)
     {
         $proyectos = Proyecto::all();
+        $regimenesFiscales = RegimenFiscal::all();
         $currentUser = Session::get('user');
 
         $query = User::where('role', 'usuario')
@@ -66,7 +68,8 @@ class crudUser extends Controller
             'categoria',
             'roles',
             'areas',
-            'proyectos'
+            'proyectos',
+            'regimenesFiscales'
         ));
 
     }
@@ -166,31 +169,60 @@ class crudUser extends Controller
         }
 
         $id = $request->input('id');
-        $user = User::findOrFail($id);
 
-        $user->name = mb_convert_encoding($request->input('name'), 'UTF-8', 'UTF-8');
-        $user->email = $request->input('email');
-        $user->phone = '52' . $request->input('phone');
-        $user->id_regimen = $request->input('regimenFiscal');
+        DB::transaction(function () use ($request, $id) {
+            $user = User::findOrFail($id);
 
-        if ($request->filled('password')) {
-            $user->password = Hash::make($request->input('password'));
-        }
+            // 1. Actualizar datos básicos del usuario
+            $user->name = mb_convert_encoding($request->input('name'), 'UTF-8', 'UTF-8');
+            $user->email = $request->input('email');
+            $user->phone = '52' . $request->input('phone');
+            $user->id_regimen = $request->input('regimenFiscal');
 
-        $user->save();
+            if ($request->filled('password')) {
+                $user->password = Hash::make($request->input('password'));
+            }
 
-        if ($request->has('proyect')) {
+            $user->save();
 
+            // 2. Sincronizar proyectos
+            $projectIds = $request->input('proyect', []);
+            $user->proyectos()->sync($projectIds);
 
-            $user->proyectos()->sync($request->input('proyect'));
-        } else {
-            $user->proyectos()->detach();
-        }
+            // 3. Obtener los registros pivote 'user_proyectos' actualizados
+            $userProyectos = $user->userProyectos()->get()->keyBy('id_proyecto');
+
+            // 4. Limpiar departamentos antiguos de los proyectos gestionados
+            if ($userProyectos->isNotEmpty()) {
+                UserDepto::whereIn('id_user_p', $userProyectos->pluck('id_user_p'))->delete();
+            }
+
+            // 5. Procesar y guardar los nuevos detalles de departamentos
+            if ($request->has('project_details')) {
+                foreach ($request->project_details as $projectId => $departments) {
+                    // Asegurarse de que el proyecto exista en la relación del usuario
+                    if (isset($userProyectos[$projectId])) {
+                        $userProyectoId = $userProyectos[$projectId]->id_user_p;
+
+                        foreach ($departments as $deptData) {
+                            UserDepto::create([
+                                'id_user_p' => $userProyectoId,
+                                'nombre' => $deptData['nombre_depto'],
+                                'importe' => $deptData['importe'],
+                                // Si el checkbox no está marcado, no llegará. Usamos '?? false'
+                                'predial' => isset($deptData['cuenta_predial']) ? ($deptData['cuenta_numero'] ?? 'N/A') : null,
+                            ]);
+                        }
+                    }
+                }
+            }
+        });
 
         session()->forget('validated_edit_user');
 
-        return redirect()->route('admiUsers')
-            ->with('success', 'Usuario editado correctamente.');
+        return redirect(route('admiUsers') . '#user-' . $id)
+            ->with('success', 'Usuario editado correctamente.')
+            ->with('highlight_user', $id);
     }
 
     public function store(Request $request)

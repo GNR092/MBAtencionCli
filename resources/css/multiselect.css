@@ -14,7 +14,7 @@
   background-size: 16px 20px;
   min-height: 44px; /* Adjusted height */
   cursor: pointer;
-  color: var(--color-gris-carbon, #1a1a1a);
+  color: var(--color-carbon-900, #1a1a1a);
 }
 
 .multiselect-dropdown span.optext,
@@ -22,7 +22,7 @@
   display: inline-flex;
   align-items: center;
   background-color: var(--color-dorado, #d4a017);
-  color: var(--color-gris-carbon, #1a1a1a); /* Dark text for better contrast */
+  color: var(--color-carbon-900, #1a1a1a); /* Dark text for better contrast */
   font-weight: 600; /* Bolder text */
   border-radius: 16px; /* Pill shape */
   padding: 4px 12px;
@@ -34,7 +34,7 @@
   margin-left: 8px;
   font-size: 14px;
   cursor: pointer;
-  color: var(--color-gris-carbon, #1a1a1a);
+  color: var(--color-carbon-900, #1a1a1a);
 }
 
 .multiselect-dropdown span.optext .optdel:hover {
@@ -43,7 +43,7 @@
 
 .multiselect-dropdown span.placeholder {
   background-color: transparent;
-  color: var(--color-gris-carbon, #1a1a1a);
+  color: var(--color-carbon-900, #1a1a1a);
   font-weight: normal;
 }
 
@@ -74,7 +74,7 @@
   height: 15rem;
   overflow-y: auto;
   overflow-x: hidden;
-  color: var(--color-gris-carbon, #1a1a1a); /* Ensure text is dark */
+  color: var(--color-carbon-900, #1a1a1a); /* Ensure text is dark */
 }
 
 .multiselect-dropdown-list::-webkit-scrollbar {
@@ -86,7 +86,7 @@
   border-radius: 3px;
 }
 
-.multiselect-dropdown-list div {
+.multiselect-dropdown-list .multiselect-option {
   padding: 8px;
   border-radius: 4px;
   display: flex;
@@ -99,11 +99,11 @@
   margin-right: 0.5em;
 }
 
-.multiselect-dropdown-list div:hover {
+.multiselect-dropdown-list .multiselect-option:hover {
   background-color: #f3f4f6; /* Lighter gray on hover */
 }
 
-.multiselect-dropdown-list div.checked {
+.multiselect-dropdown-list .multiselect-option.checked {
     background-color: var(--color-dorado, #d4a017);
     color: white;
 }
@@ -111,7 +111,7 @@
 .multiselect-dropdown span.maxselected {
   width: 100%;
   background-color: var(--color-dorado, #d4a017);
-  color: var(--color-gris-carbon, #1a1a1a);
+  color: var(--color-carbon-900, #1a1a1a);
   font-weight: 600;
   border-radius: 16px;
   text-align: center;

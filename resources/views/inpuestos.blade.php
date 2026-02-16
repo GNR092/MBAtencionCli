@@ -4,9 +4,9 @@
 <div class="p-6">
     <header class="mb-10 px-2">
         <div class="flex items-baseline gap-4">
-            <span class="text-dorado text-sm font-serif italic">|</span>
+            <span class="text-dorado-400 text-sm font-serif italic">|</span>
             <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
-                Impuestos<span class="font-light text-dorado"></span><span class="text-dorado animate-pulse">_</span>
+                Impuestos<span class="font-light text-dorado"></span><span class="text-dorado-400 animate-pulse">_</span>
             </h1>
         </div>
     </header>
@@ -96,7 +96,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="10" class="py-10 text-gris-carbon font-medium italic">
+                        <td colspan="10" class="py-10 text-carbon-900 font-medium italic">
                             No se encontraron facturas
                         </td>
                     </tr>
@@ -106,11 +106,11 @@
                 <tfoot>
                     <tr>
                         <td colspan="9" class="text-right px-6 py-3 uppercase text-xs tracking-wider">TOTAL BASE:</td>
-                        <td class="px-4 py-3 font-black text-gris-carbon">
+                        <td class="px-4 py-3 font-black text-carbon-900">
                             ${{ number_format($totalBase, 2) }}
                         </td>
                     </tr>
-                    <tr class="border-t border-gris-carbon/20">
+                    <tr class="border-t border-carbon-900/20">
                         <td colspan="9" class="text-right px-6 py-3 uppercase text-xs tracking-wider">TOTAL ISR
                             RETENIDO:</td>
                         <td class="px-4 py-3 font-black text-red-700">
@@ -121,7 +121,7 @@
             </table>
         </div>
 
-        <div class="bg-gray-50 border-t border-carbon p-4 flex justify-center">
+        <div class="bg-gray-50 border-t border-carbon-200 p-4 flex justify-center">
             {{ $xmlFiles->links('pagination::tailwind') }}
         </div>
     </div>

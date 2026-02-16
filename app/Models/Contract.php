@@ -24,13 +24,18 @@ class Contract extends Model
         'fecha',
         'importe_bruto_renta',
         'fecha_terminacion',
-        'proyecto',
+        'id_user_p',
     ];
 
     
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function userProyecto()
+    {
+        return $this->belongsTo(UserProyecto::class, 'id_user_p', 'id_user_p');
     }
 
     

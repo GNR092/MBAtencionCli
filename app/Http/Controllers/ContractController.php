@@ -6,7 +6,8 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Contract;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session; 
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use App\Services\PdfReaderService; 
 
 class ContractController extends Controller
@@ -167,28 +168,49 @@ class ContractController extends Controller
         return view('editContrato', compact('admin', 'contractToEdit', 'users'));
     }
     
-    public function actualizar(Request $request,$id){
+    public function actualizar(Request $request, $id)
+    {
         $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'proyect' => 'required|exists:proyectos,id_proyecto',
             'importe_bruto_renta' => 'required',
+            'archivo' => 'sometimes|file|mimes:pdf|max:2048', // 'sometimes' makes it optional
         ]);
 
-        $contrato = \App\Models\Contract::findOrFail($id);
+        $contrato = Contract::findOrFail($id);
 
-        
-        $contrato->user_id = $request->input('user_id', $contrato->user_id);
-        $contrato->importe_bruto_renta = str_replace(['$', ','], '', $request->input('importe_bruto_renta'));
-        $contrato->proyecto = $request->input('proyect');
-        $contrato->estado = $request->input('activo') ? 'activo' : ($request->input('inactivo') ? 'inactivo' : 'desconocido');
+        $userId = $request->input('user_id');
+        $proyectoId = $request->input('proyect');
 
-        
-        if ($request->hasFile('archivo')) {
-            $archivo = $request->file('archivo');
-            $contrato->nombre = $archivo->getClientOriginalName();
-            $contrato->tipo = $archivo->getMimeType();
-            $contrato->contenido = file_get_contents($archivo->getRealPath());
+        // Find the user_proyectos pivot record
+        $userProyecto = \App\Models\UserProyecto::where('id_user', $userId)
+            ->where('id_proyecto', $proyectoId)
+            ->first();
+
+        if (!$userProyecto) {
+            return back()->with('error', 'Error: El usuario seleccionado no está asignado a este proyecto.');
         }
 
-        $contrato->updated_at = now();
+        // Handle file update
+        $path = $contrato->contenido;
+        if ($request->hasFile('archivo')) {
+            // Delete old file
+            if (Storage::exists($contrato->contenido)) {
+                Storage::delete($contrato->contenido);
+            }
+            // Store new file
+            $path = $request->file('archivo')->store('contracts');
+            $contrato->nombre = $request->file('archivo')->getClientOriginalName();
+            $contrato->tipo = $request->file('archivo')->getMimeType();
+        }
+
+        // Update contract fields
+        $contrato->user_id = $userId;
+        $contrato->id_user_p = $userProyecto->id_user_p;
+        $contrato->importe_bruto_renta = str_replace(['$', ','], '', $request->input('importe_bruto_renta'));
+        $contrato->estado = $request->input('activo') ? 'activo' : ($request->input('inactivo') ? 'inactivo' : 'desconocido');
+        $contrato->contenido = $path;
+
         $contrato->save();
 
         return redirect()->route('contratos.show')->with('success', 'Contrato actualizado correctamente.');
@@ -196,43 +218,42 @@ class ContractController extends Controller
     public function subir(Request $request)
     {
         $request->validate([
-            'archivo' => 'required|file|max:2048', 
+            'archivo' => 'required|file|mimes:pdf|max:2048',
+            'user_id' => 'required|exists:users,id',
+            'proyect' => 'required|exists:proyectos,id_proyecto',
+            'importe_bruto_renta' => 'required',
+            'fecha_inicio' => 'required|date',
+            'fecha_terminacion' => 'required|date',
         ]);
 
-        $importe = str_replace(['$', ','], '', $request->input('importe_bruto_renta'));
-        $archivo = $request->file('archivo');
-        $contenidoBinario = file_get_contents($archivo->getRealPath());
+        // Store the file and get the path
+        $path = $request->file('archivo')->store('contracts');
 
-        $fechaInicio= $request->input('fecha_inicio');
-        $fechaTerminacion= $request->input('fecha_terminacion');
+        $userId = $request->input('user_id');
+        $proyectoId = $request->input('proyect');
 
-        //validar proyecto
-        $proyecto = $request->input('proyect'); 
+        // Find the user_proyectos pivot record
+        $userProyecto = \App\Models\UserProyecto::where('id_user', $userId)
+            ->where('id_proyecto', $proyectoId)
+            ->first();
 
-        $user = Session::get('user');
-        if (!$user) {
-            return redirect('/inicio-de-sesion');
+        if (!$userProyecto) {
+            // Handle error: the selected user is not associated with the selected project
+            return back()->with('error', 'Error: El usuario seleccionado no está asignado a este proyecto.');
         }
 
-        $userId = $user->role === 'administrador' && $request->filled('user_id')
-            ? $request->user_id
-            : $user->id;
-
-        DB::table('contract')->insert([
+        Contract::create([
             'user_id'   => $userId,
-            'nombre'    => $archivo->getClientOriginalName(),
-            'tipo'      => $archivo->getMimeType(),
-            'contenido' => $contenidoBinario,
-            'created_at'=> now(),
-            'updated_at'=> now(),
+            'nombre'    => $request->file('archivo')->getClientOriginalName(),
+            'tipo'      => $request->file('archivo')->getMimeType(),
+            'contenido' => $path, // Store the path
+            'id_user_p' => $userProyecto->id_user_p, // Store the relationship ID
             'folio'     => $this->generarFolio(),
-            'fecha'=> $filectime = date('Y-m-d H:i:s'),
+            'fecha'     => now(),
             'estado'    => $this->generarEstado($request),
-            'importe_bruto_renta'=> $importe, 
-            'fecha_inicio'=> $fechaInicio,
-            'fecha_terminacion'=> $fechaTerminacion,
-            'proyecto'=> $proyecto,
-
+            'importe_bruto_renta'=> str_replace(['$', ','], '', $request->input('importe_bruto_renta')),
+            'fecha_inicio'=> $request->input('fecha_inicio'),
+            'fecha_terminacion'=> $request->input('fecha_terminacion'),
         ]);
 
         return back()->with('success', '✅ Archivo enviado correctamente.');
@@ -284,7 +305,8 @@ class ContractController extends Controller
         session()->forget('validated_admin_contract');
 
         $users = User::all();
-        return view('adContrato', compact('users'));
+        $proyectos = $admin->proyectos;
+        return view('adContrato', compact('users', 'proyectos'));
     }
 
 
@@ -344,21 +366,32 @@ class ContractController extends Controller
         if (!$user) {
             return redirect('/inicio-de-sesion');
         }
+    
+        $contrato = Contract::findOrFail($id);
+    
+        // Authorization: only the owner or an admin can download
+        if ($user->id !== $contrato->user_id && $user->role !== 'administrador') {
+            abort(403, 'No tienes permiso para descargar este archivo.');
+        }
+    
+        // Check if the file exists in storage
+        if (!Storage::exists($contrato->contenido)) {
+            abort(404, 'Archivo no encontrado.');
+        }
+    
+        // Return the file for download
+        return Storage::download($contrato->contenido, $contrato->nombre);
+    }
 
-        
-        $contrato = DB::table('contract')
-            ->where('id', $id)
-            ->where('user_id', $user->id)
-            ->first();
+    public function getProjectsForUser(User $user)
+    {
+        $admin = Session::get('user');
 
-        if (!$contrato) {
-            abort(404, 'Contrato no encontrado');
+        if (!$admin || $admin->role !== 'administrador') {
+            abort(403, 'Unauthorized action.');
         }
 
-        
-        return response($contrato->contenido)
-            ->header('Content-Type', $contrato->tipo)
-            ->header('Content-Disposition', 'attachment; filename="'.$contrato->nombre.'"');
+        return response()->json($user->proyectos);
     }
 
     private function generarFolio()

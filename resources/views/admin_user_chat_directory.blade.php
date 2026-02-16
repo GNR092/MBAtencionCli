@@ -3,18 +3,18 @@
 @section('content')
 <header class="mb-10 ">
     <div class="flex items-baseline gap-4">
-        <span class="text-dorado text-sm font-serif italic">|</span>
+        <span class="text-dorado-400 text-sm font-serif italic">|</span>
         <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
             Directorio de usuarios<span class="font-light text-dorado"></span><span
-                class="text-dorado animate-pulse">_</span>
+                class="text-dorado-400 animate-pulse">_</span>
         </h1>
     </div>
 </header>
 
-<div class="bg-white rounded-2xl shadow-xl border border-carbon overflow-hidden relative z-10">
+<div class="bg-white rounded-2xl shadow-xl border border-carbon-200 overflow-hidden relative z-10">
 
-    <div class="bg-gris-carbon px-6 py-4 border-b-2 border-dorado flex justify-between items-center">
-        <h2 class="text-dorado text-lg font-bold uppercase tracking-widest flex items-center gap-2">
+    <div class="bg-carbon-900 px-6 py-4 border-b-2 border-dorado-400 flex justify-between items-center">
+        <h2 class="text-dorado-400 text-lg font-bold uppercase tracking-widest flex items-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z">
@@ -29,11 +29,11 @@
             <div class="flex flex-col md:flex-row gap-4 items-end">
 
                 <div class="flex-grow w-full">
-                    <label class="block text-xs font-bold text-gris-carbon uppercase mb-1">Buscar Usuario</label>
+                    <label class="block text-xs font-bold text-carbon-900 uppercase mb-1">Buscar Usuario</label>
                     <div class="relative">
                         <input type="text" name="search" id="userSearchInput"
                             placeholder="Buscar por nombre o correo..." value="{{ $search ?? '' }}"
-                            class="block w-full border border-gray-300 rounded-lg pl-10 pr-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors">
+                            class="block w-full border border-gray-300 rounded-lg pl-10 pr-3 py-2 text-carbon-900 focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-colors">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -44,9 +44,9 @@
                 </div>
 
                 <div class="flex-shrink-0 w-full md:w-48">
-                    <label class="block text-xs font-bold text-gris-carbon uppercase mb-1">Ordenar</label>
+                    <label class="block text-xs font-bold text-carbon-900 uppercase mb-1">Ordenar</label>
                     <select name="sort"
-                        class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon bg-white focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors"
+                        class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-carbon-900 bg-white focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-colors"
                         onchange="this.form.submit()">
                         <option value="asc" @if($sort=='asc' ) selected @endif>A-Z</option>
                         <option value="desc" @if($sort=='desc' ) selected @endif>Z-A</option>
@@ -56,7 +56,7 @@
 
                 <div class="flex-shrink-0 w-full md:w-auto">
                     <button type="submit"
-                        class="w-full bg-gris-carbon text-dorado font-bold uppercase tracking-wider px-6 py-2 rounded-lg hover:bg-gris-carbon/90 transition shadow-sm border border-dorado/30">
+                        class="w-full bg-carbon-900 text-dorado-400 font-bold uppercase tracking-wider px-6 py-2 rounded-lg hover:bg-carbon-900/90 transition shadow-sm border border-dorado/30">
                         Buscar
                     </button>
                 </div>
@@ -65,27 +65,27 @@
 
         @if ($users->isEmpty())
         <div class="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
-            <p class="text-gris-carbon font-medium italic">No se encontraron usuarios con los criterios actuales.</p>
+            <p class="text-carbon-900 font-medium italic">No se encontraron usuarios con los criterios actuales.</p>
         </div>
         @else
-        <ul id="userList" class="divide-y divide-carbon border-t border-carbon">
+        <ul id="userList" class="divide-y divide-carbon-200 border-t border-carbon">
             @foreach ($users as $user)
             <li
                 class="user-item py-4 flex items-center justify-between hover:bg-gray-50 transition px-2 rounded-lg -mx-2">
                 <div class="flex items-center gap-4">
                     <div
-                        class="w-10 h-10 rounded-full bg-gris-carbon text-dorado flex items-center justify-center font-bold text-lg shadow-sm">
+                        class="w-10 h-10 rounded-full bg-carbon-900 text-dorado-400 flex items-center justify-center font-bold text-lg shadow-sm">
                         {{ substr($user->name, 0, 1) }}
                     </div>
 
                     <div>
-                        <p class="text-sm font-bold text-gris-carbon uppercase tracking-wide">{{ $user->name }}</p>
+                        <p class="text-sm font-bold text-carbon-900 uppercase tracking-wide">{{ $user->name }}</p>
                         <p class="text-xs text-gray-500">{{ $user->email }}</p>
                     </div>
                 </div>
 
                 <button type="button" data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}"
-                    class="start-chat-btn inline-flex items-center gap-2 bg-dorado hover:bg-dorado/80 text-white px-4 py-2 rounded-lg transition duration-300 shadow-sm font-bold text-xs uppercase tracking-wider">
+                    class="start-chat-btn inline-flex items-center gap-2 bg-dorado-400 hover:bg-dorado/80 text-white px-4 py-2 rounded-lg transition duration-300 shadow-sm font-bold text-xs uppercase tracking-wider">
                     <span>Chat</span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -103,13 +103,13 @@
     class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden z-50 transition-opacity duration-300">
 
     <div
-        class="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col h-[600px] border border-carbon overflow-hidden transform scale-100 transition-transform duration-300">
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col h-[600px] border border-carbon-200 overflow-hidden transform scale-100 transition-transform duration-300">
 
-        <div class="bg-gris-carbon px-5 py-4 border-b-2 border-dorado flex justify-between items-center shrink-0">
+        <div class="bg-carbon-900 px-5 py-4 border-b-2 border-dorado-400 flex justify-between items-center shrink-0">
             <div class="flex items-center gap-3">
                 <span
                     class="w-2.5 h-2.5 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse"></span>
-                <h3 class="text-dorado font-bold uppercase tracking-widest text-sm truncate max-w-[200px]"
+                <h3 class="text-dorado-400 font-bold uppercase tracking-widest text-sm truncate max-w-[200px]"
                     id="chattingWithName">
                     Chat
                 </h3>
@@ -130,16 +130,16 @@
             </div>
         </div>
 
-        <div class="p-3 border-t border-carbon bg-white shrink-0">
+        <div class="p-3 border-t border-carbon-200 bg-white shrink-0">
             <div
-                class="flex items-center gap-2 bg-gray-100 rounded-full px-2 py-2 border border-transparent focus-within:border-dorado focus-within:bg-white focus-within:ring-1 focus-within:ring-dorado transition-all duration-300">
+                class="flex items-center gap-2 bg-gray-100 rounded-full px-2 py-2 border border-transparent focus-within:border-dorado-400 focus-within:bg-white focus-within:ring-1 focus-within:ring-dorado-400 transition-all duration-300">
 
                 <input type="text" id="adminChatInput" placeholder="Escribe tu mensaje..."
-                    class="flex-1 bg-transparent border-none text-gris-carbon text-sm px-3 focus:ring-0 placeholder-gray-400"
+                    class="flex-1 bg-transparent border-none text-carbon-900 text-sm px-3 focus:ring-0 placeholder-gray-400"
                     disabled>
 
                 <button id="sendAdminChatBtn"
-                    class="bg-dorado text-white p-2 rounded-full hover:bg-dorado/80 transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                    class="bg-dorado-400 text-white p-2 rounded-full hover:bg-dorado/80 transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                     disabled>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
                         class="w-5 h-5 pl-0.5">
@@ -256,12 +256,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (isUserSender) {
                 
                 messageWrapper.classList.add('justify-start');
-                messageBubble.classList.add('bg-white', 'text-gris-carbon', 'rounded-2xl',
+                messageBubble.classList.add('bg-white', 'text-carbon-900', 'rounded-2xl',
                     'rounded-bl-none', 'border', 'border-gray-200');
             } else {
                 
                 messageWrapper.classList.add('justify-end');
-                messageBubble.classList.add('bg-gris-carbon', 'text-dorado', 'rounded-2xl',
+                messageBubble.classList.add('bg-carbon-900', 'text-dorado', 'rounded-2xl',
                     'rounded-br-none', 'font-medium');
             }
 

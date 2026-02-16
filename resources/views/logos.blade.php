@@ -4,10 +4,10 @@
 <div class="max-w-6xl mx-auto p-6">
     <header class="mb-10 px-2">
         <div class="flex items-baseline gap-4">
-            <span class="text-dorado text-sm font-serif italic">|</span>
+            <span class="text-dorado-400 text-sm font-serif italic">|</span>
             <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
                 Carrusel de logos<span class="font-light text-dorado"></span><span
-                    class="text-dorado animate-pulse">_</span>
+                    class="text-dorado-400 animate-pulse">_</span>
             </h1>
         </div>
     </header>
@@ -79,7 +79,7 @@
 
                         <td class="max-w-[150px]">
                             <a href="{{ $logo->url_redireccion }}" target="_blank"
-                                class="text-dorado hover:text-dorado/80 hover:underline truncate block transition text-xs font-medium">
+                                class="text-dorado-400 hover:text-dorado/80 hover:underline truncate block transition text-xs font-medium">
                                 {{ $logo->url_redireccion ?? 'N/A' }}
                             </a>
                         </td>
@@ -113,7 +113,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="py-10 text-gris-carbon font-medium italic">
+                        <td colspan="5" class="py-10 text-carbon-900 font-medium italic">
                             No hay logos cargados en el carrusel actualmente.
                         </td>
                     </tr>

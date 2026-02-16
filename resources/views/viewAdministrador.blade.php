@@ -4,10 +4,10 @@
 <div class="w-full p-4 md:p-6 animate-fadeInUp">
     <header class="mb-10 px-2">
         <div class="flex items-baseline gap-4">
-            <span class="text-dorado text-sm font-serif italic">|</span>
+            <span class="text-dorado-400 text-sm font-serif italic">|</span>
             <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
                 Cuentas por pagar<span class="font-light text-dorado"></span><span
-                    class="text-dorado animate-pulse">_</span>
+                    class="text-dorado-400 animate-pulse">_</span>
             </h1>
         </div>
     </header>
@@ -62,7 +62,7 @@
             <div class="overflow-x-auto custom-scroll">
                 <table class="w-full text-sm text-center border-collapse">
                     <thead
-                        class="bg-gris-carbon text-dorado uppercase text-xs tracking-widest border-b-2 border-dorado">
+                        class="bg-carbon-900 text-dorado-400 uppercase text-xs tracking-widest border-b-2 border-dorado">
                         <tr>
                             <th class="px-4 py-4">ID</th>
                             <th class="px-4 py-4">Inversionista</th>
@@ -79,7 +79,7 @@
 
                     <tbody class="divide-y divide-carbon">
                         @forelse($cuentas as $cuenta)
-                        <tr class="text-gris-carbon hover:bg-gray-50 transition duration-200">
+                        <tr class="text-carbon-900 hover:bg-gray-50 transition duration-200">
                             <td class="px-4 py-4 font-bold">{{ $cuenta->id_cuentas_por_pagar }}</td>
                             <td class="px-4 py-4 text-left font-medium">{{ $cuenta->name }}</td>
                             <td class="px-4 py-4">{{ $cuenta->proyecto }}</td>
@@ -102,27 +102,27 @@
                             <td class="px-4 py-4 text-xs">{{ json_decode($cuenta->mesesdepago)->mes ?? 'N/A' }}</td>
                             <td class="px-4 py-4 font-medium">${{ number_format($cuenta->importe_base_final,2) }}</td>
                             <td class="px-4 py-4 text-red-600 font-medium">${{ number_format($cuenta->isr,2) }}</td>
-                            <td class="px-4 py-4 font-bold text-gris-carbon">${{ number_format($cuenta->saldo_neto,2) }}
+                            <td class="px-4 py-4 font-bold text-carbon-900">${{ number_format($cuenta->saldo_neto,2) }}
                             </td>
                             <td class="px-4 py-4 text-green-700 font-medium">
                                 ${{ number_format($cuenta->monto_pagado,2) }}</td>
-                            <td class="px-4 py-4 font-black text-gris-carbon">
+                            <td class="px-4 py-4 font-black text-carbon-900">
                                 ${{ number_format($cuenta->saldo_pendiente,2) }}</td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="10" class="py-10 text-carbon italic">No se encontraron registros activos.</td>
+                            <td colspan="10" class="py-10 text-carbon-200 italic">No se encontraron registros activos.</td>
                         </tr>
                         @endforelse
                     </tbody>
 
-                    <tfoot class="bg-carbon border-t-2 border-gris-carbon">
-                        <tr class="font-bold text-gris-carbon">
+                    <tfoot class="bg-carbon-200 border-t-2 border-carbon-900">
+                        <tr class="font-bold text-carbon-900">
                             <td colspan="9" class="text-right px-6 py-3 uppercase text-xs tracking-wider">Total
                                 Pendiente:</td>
                             <td class="px-4 py-3 text-red-700">${{ number_format($totalPendiente, 2) }}</td>
                         </tr>
-                        <tr class="font-bold text-gris-carbon border-t border-gris-carbon/20">
+                        <tr class="font-bold text-carbon-900 border-t border-carbon-900/20">
                             <td colspan="9" class="text-right px-6 py-3 uppercase text-xs tracking-wider">Total Pagado:
                             </td>
                             <td class="px-4 py-3 text-green-800">${{ number_format($totalPagado, 2) }}</td>

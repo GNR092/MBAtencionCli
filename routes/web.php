@@ -123,6 +123,8 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::put('/subir-archivo/{id}/actualizar', [ContractController::class, 'actualizar'])->name('contratos.actualizar');
     Route::get('/subir-archivo/clean', [ContractController::class, 'clean'])->name('contratos.clean');
     Route::post('/subir-archivo/search', [ContractController::class, 'search'])->name('contratos.search');
+    Route::get('/api/users/{user}/projects', [ContractController::class, 'getProjectsForUser'])->name('api.users.projects');
+
 
     //rutas de envio de avisos
     Route::get('/enviar-avisos', fn() => view('enviarAvisos'));
@@ -144,21 +146,11 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::get('/inpuestos/limpiar',[ImpuestoController::class,'limpiar'])->name('inpuestos.limpiar');
     Route::post('/inpuestos/export', [ImpuestoController::class, 'export'])->name('inpuestos.export');
 
-        Route::resource('incrementos', IncrementoImporteController::class);
+    Route::resource('incrementos', IncrementoImporteController::class);
 
-        
-
-        Route::get('/admin/users/chat-directory', [AdminChatController::class, 'showUserChatDirectory'])->name('admin.users.chat-directory');
-
-
-
-        
-
-        Route::get('/admin/chat/messages/{userId}', [AdminChatController::class, 'getMessages'])->name('admin.chat.getMessages');
-
-        Route::post('/admin/chat/messages/{userId}', [AdminChatController::class, 'sendMessage'])->name('admin.chat.sendMessage');
-
-
+    Route::get('/admin/users/chat-directory', [AdminChatController::class, 'showUserChatDirectory'])->name('admin.users.chat-directory');
+    Route::get('/admin/chat/messages/{userId}', [AdminChatController::class, 'getMessages'])->name('admin.chat.getMessages');
+    Route::post('/admin/chat/messages/{userId}', [AdminChatController::class, 'sendMessage'])->name('admin.chat.sendMessage');
         
     Route::get('/anuncios-admin', [AnuncioController::class, 'index'])->name('admin.anuncios.index');
     Route::post('/anuncios-admin', [AnuncioController::class, 'store'])->name('admin.anuncios.store');

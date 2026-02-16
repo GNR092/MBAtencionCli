@@ -3,9 +3,9 @@
 @section('content')
 <header class="mb-10 px-2">
     <div class="flex items-baseline gap-4">
-        <span class="text-dorado text-sm font-serif italic">|</span>
+        <span class="text-dorado-400 text-sm font-serif italic">|</span>
         <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
-            Emitir anuncios<span class="font-light text-dorado"></span><span class="text-dorado animate-pulse">_</span>
+            Emitir anuncios<span class="font-light text-dorado"></span><span class="text-dorado-400 animate-pulse">_</span>
         </h1>
     </div>
 </header>
@@ -17,10 +17,10 @@
 @endif
 <!-- Formulario -->
 
-<div class="w-full relative bg-white rounded-2xl shadow-xl border border-carbon overflow-hidden pb-2">
+<div class="w-full relative bg-white rounded-2xl shadow-xl border border-carbon-200 overflow-hidden pb-2">
 
-    <div class="bg-gris-carbon px-6 py-4 border-b-2 border-dorado">
-        <h2 class="text-dorado text-lg font-bold uppercase tracking-widest flex items-center gap-2">
+    <div class="bg-carbon-900 px-6 py-4 border-b-2 border-dorado">
+        <h2 class="text-dorado-400 text-lg font-bold uppercase tracking-widest flex items-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z">
@@ -36,10 +36,10 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             <div>
-                <label class="block text-xs font-bold text-gris-carbon uppercase mb-1">Buscar usuario</label>
+                <label class="block text-xs font-bold text-carbon-900 uppercase mb-1">Buscar usuario</label>
                 <div class="relative">
                     <input type="text" name="usuario"
-                        class="block w-full border border-gray-300 rounded-lg pl-3 pr-10 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors"
+                        class="block w-full border border-gray-300 rounded-lg pl-3 pr-10 py-2 text-carbon-900 focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-colors"
                         placeholder="Nombre, correo o ID">
                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -51,9 +51,9 @@
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-gris-carbon uppercase mb-1">Filtrar por Proyecto</label>
+                <label class="block text-xs font-bold text-carbon-900 uppercase mb-1">Filtrar por Proyecto</label>
                 <select name="proyect[]" id="proyect"
-                    class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon bg-white focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors custom-scroll">
+                    class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-carbon-900 bg-white focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-colors custom-scroll">
                     <option value="" disabled selected>Selecciona un proyecto</option>
                     <option value="RESIDENT 1">RESIDENT 1</option>
                     <option value="RESIDENT 2">RESIDENT 2</option>
@@ -76,32 +76,32 @@
 
         <div class="flex items-center gap-2 bg-yellow-50 p-3 rounded-lg border border-dorado/20">
             <input type="checkbox" name="todos" value="1" id="checkTodos"
-                class="w-4 h-4 text-dorado bg-white border-gray-300 rounded focus:ring-dorado">
+                class="w-4 h-4 text-dorado-400 bg-white border-gray-300 rounded focus:ring-dorado">
             <label for="checkTodos" class="text-sm font-bold text-yellow-800 cursor-pointer select-none">
                 Enviar este aviso a todos los usuarios (Omite filtro de proyecto)
             </label>
         </div>
 
         <div>
-            <label class="block text-xs font-bold text-gris-carbon uppercase mb-1">Asunto</label>
+            <label class="block text-xs font-bold text-carbon-900 uppercase mb-1">Asunto</label>
             <input type="text" name="asunto"
-                class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors"
+                class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-carbon-900 focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-colors"
                 placeholder="Ej: Mantenimiento de elevadores">
         </div>
 
         <div>
-            <label class="block text-xs font-bold text-gris-carbon uppercase mb-1">Mensaje</label>
+            <label class="block text-xs font-bold text-carbon-900 uppercase mb-1">Mensaje</label>
             <textarea name="mensaje" rows="4"
-                class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors custom-scroll"
+                class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-carbon-900 focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-colors custom-scroll"
                 placeholder="Escribe el contenido del aviso aquí..."></textarea>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             <div>
-                <label class="block text-xs font-bold text-gris-carbon uppercase mb-1">Prioridad</label>
+                <label class="block text-xs font-bold text-carbon-900 uppercase mb-1">Prioridad</label>
                 <select name="prioridad"
-                    class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-gris-carbon bg-white focus:outline-none focus:border-dorado focus:ring-1 focus:ring-dorado transition-colors">
+                    class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-carbon-900 bg-white focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-colors">
                     <option value="alta">Alta</option>
                     <option value="media" selected>Media</option>
                     <option value="baja">Baja</option>
@@ -109,22 +109,22 @@
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-gris-carbon uppercase mb-2">Canales de envío</label>
+                <label class="block text-xs font-bold text-carbon-900 uppercase mb-2">Canales de envío</label>
                 <div class="flex gap-4">
                     <label class="inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="canales[]" value="interno"
-                            class="w-4 h-4 text-dorado border-gray-300 rounded focus:ring-dorado">
-                        <span class="ml-2 text-sm text-gris-carbon">Interno</span>
+                            class="w-4 h-4 text-dorado-400 border-gray-300 rounded focus:ring-dorado">
+                        <span class="ml-2 text-sm text-carbon-900">Interno</span>
                     </label>
                     <label class="inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="canales[]" value="correo"
-                            class="w-4 h-4 text-dorado border-gray-300 rounded focus:ring-dorado">
-                        <span class="ml-2 text-sm text-gris-carbon">Email</span>
+                            class="w-4 h-4 text-dorado-400 border-gray-300 rounded focus:ring-dorado">
+                        <span class="ml-2 text-sm text-carbon-900">Email</span>
                     </label>
                     <label class="inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="canales[]" value="whatsapp"
-                            class="w-4 h-4 text-dorado border-gray-300 rounded focus:ring-dorado">
-                        <span class="ml-2 text-sm text-gris-carbon">WhatsApp</span>
+                            class="w-4 h-4 text-dorado-400 border-gray-300 rounded focus:ring-dorado">
+                        <span class="ml-2 text-sm text-carbon-900">WhatsApp</span>
                     </label>
                 </div>
             </div>
@@ -132,7 +132,7 @@
 
         <div class="pt-4 border-t border-gray-100">
             <button type="submit"
-                class="w-full md:w-auto md:px-12 float-right bg-dorado text-white font-bold uppercase tracking-widest py-3 rounded-lg shadow-md hover:bg-dorado/90 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
+                class="w-full md:w-auto md:px-12 float-right bg-dorado-400 text-white font-bold uppercase tracking-widest py-3 rounded-lg shadow-md hover:bg-dorado/90 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
                 Enviar Aviso
             </button>
         </div>

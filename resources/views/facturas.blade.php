@@ -6,9 +6,9 @@
 <div class="max-w-6xl mx-auto p-6">
     <header class="mb-10 px-2">
         <div class="flex items-baseline gap-4">
-            <span class="text-dorado text-sm font-serif italic">|</span>
+            <span class="text-dorado-400 text-sm font-serif italic">|</span>
             <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
-                Facturas<span class="font-light text-dorado"></span><span class="text-dorado animate-pulse">_</span>
+                Facturas<span class="font-light text-dorado"></span><span class="text-dorado-400 animate-pulse">_</span>
             </h1>
         </div>
     </header>
@@ -69,7 +69,7 @@
 
                         <td>
                             <a href="{{ route('facturas.descargar', $file->id) }}"
-                                class="inline-block bg-dorado text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-dorado/80 transition shadow-sm">
+                                class="inline-block bg-dorado-400 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-dorado/80 transition shadow-sm">
                                 Descargar XML
                             </a>
                         </td>
@@ -77,7 +77,7 @@
                         <td>
                             @if($file->pdf_path)
                             <a href="{{ route('facturas.descargarPdf', $file->id) }}"
-                                class="inline-block bg-gris-carbon text-dorado px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-gris-carbon/90 transition shadow-sm border border-dorado/30">
+                                class="inline-block bg-carbon-900 text-dorado-400 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-carbon-900/90 transition shadow-sm border border-dorado/30">
                                 Descargar PDF
                             </a>
                             @else
@@ -89,7 +89,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="py-10 text-gris-carbon font-medium text-center italic">
+                        <td colspan="6" class="py-10 text-carbon-900 font-medium text-center italic">
                             No se encontraron facturas
                         </td>
                     </tr>
@@ -98,7 +98,7 @@
             </table>
         </div>
 
-        <div class="bg-gray-50 border-t border-carbon p-4 flex justify-center">
+        <div class="bg-gray-50 border-t border-carbon-200 p-4 flex justify-center">
             {{ $xmlFiles->links('pagination::tailwind') }}
         </div>
     </div>

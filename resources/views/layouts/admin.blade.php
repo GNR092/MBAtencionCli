@@ -146,15 +146,6 @@
         transform: rotate(180deg);
     }
 
-    input:not([type="button"]):not([type="submit"]),
-    select,
-    textarea {
-        color: #000 !important;
-        background-color: rgba(255, 255, 255, 0.95) !important;
-        border-radius: 6px;
-        font-family: 'Montserrat', sans-serif;
-    }
-
     .fade-in-content {
         animation: fadeIn 0.6s ease-out forwards;
     }

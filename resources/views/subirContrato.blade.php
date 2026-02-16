@@ -3,9 +3,9 @@
 @section('content')
 <header class="mb-10 px-2">
     <div class="flex items-baseline gap-4">
-        <span class="text-dorado text-sm font-serif italic">|</span>
+        <span class="text-dorado-400 text-sm font-serif italic">|</span>
         <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
-            Contratos<span class="font-light text-dorado"></span><span class="text-dorado animate-pulse">_</span>
+            Contratos<span class="font-light text-dorado"></span><span class="text-dorado-400 animate-pulse">_</span>
         </h1>
     </div>
 </header>
@@ -90,7 +90,7 @@ setTimeout(() => {
 
                         <td>
                             <button onclick="openModalEditar({{ $contrato->id }})"
-                                class="inline-flex items-center justify-center bg-dorado hover:bg-dorado/80 text-white w-8 h-8 rounded-lg transition shadow-sm border border-dorado/50">
+                                class="inline-flex items-center justify-center bg-dorado-400 hover:bg-dorado/80 text-white w-8 h-8 rounded-lg transition shadow-sm border border-dorado/50">
                                 <img src="/images/update.png" class="w-4 h-4 invert brightness-0" alt="editar">
                             </button>
                         </td>
@@ -104,7 +104,7 @@ setTimeout(() => {
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="py-10 text-gris-carbon font-medium italic">
+                        <td colspan="7" class="py-10 text-carbon-900 font-medium italic">
                             No tienes contratos asignados.
                         </td>
                     </tr>
@@ -113,7 +113,7 @@ setTimeout(() => {
             </table>
         </div>
 
-        <div class="bg-gray-50 border-t border-carbon p-4 flex justify-center">
+        <div class="bg-gray-50 border-t border-carbon-200 p-4 flex justify-center">
             {{ $contratos->links('pagination::tailwind') }}
         </div>
     </div>

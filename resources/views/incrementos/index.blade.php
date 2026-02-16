@@ -6,9 +6,9 @@
         {{-- HEADER GIGANTE (Igual a Facturas) --}}
         <header class="mb-10 px-2">
             <div class="flex items-baseline gap-4">
-                <span class="text-dorado text-sm font-serif italic">|</span>
+                <span class="text-dorado-400 text-sm font-serif italic">|</span>
                 <h1 class="text-white text-6xl md:text-8xl font-extralight tracking-[-0.02em] leading-none">
-                    Incrementos<span class="font-light text-dorado"></span><span class="text-dorado animate-pulse">_</span>
+                    Incrementos<span class="font-light text-dorado"></span><span class="text-dorado-400 animate-pulse">_</span>
                 </h1>
             </div>
         </header>
@@ -37,10 +37,10 @@
                     <tbody>
                     @foreach($incrementos as $inc)
                         <tr>
-                            <td class="font-bold text-gris-carbon">
+                            <td class="font-bold text-carbon-900">
                                 {{ $inc->contract->nombre ?? 'Contrato '.$inc->contract->id }}
                             </td>
-                            <td class="text-dorado font-bold font-mono text-lg">
+                            <td class="text-dorado-400 font-bold font-mono text-lg">
                                 ${{ number_format($inc->importe_base, 2) }}
                             </td>
                             <td class="text-xs uppercase tracking-wider">
