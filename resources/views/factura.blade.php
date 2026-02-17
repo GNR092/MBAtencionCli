@@ -97,24 +97,29 @@
 
                     <div class="relative group">
                         <label class="block text-xs font-bold text-carbon-900 uppercase mb-2">Archivos XML</label>
-                        <div
+                        <div id="dropzone"
                             class="w-full h-48 rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 flex flex-col justify-center items-center group-hover:border-dorado-400 group-hover:bg-dorado/5 transition-all duration-300 cursor-pointer overflow-hidden relative">
 
-                            <div
-                                class="mb-3 p-3 rounded-full bg-white shadow-sm group-hover:scale-110 transition-transform duration-300 relative z-10">
-                                <svg style="width: 32px; height: 32px;" class="text-dorado" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                                    </path>
-                                </svg>
+                            <div id="dropzone_text" class="text-center">
+                                <div
+                                    class="mb-3 p-3 rounded-full bg-white shadow-sm group-hover:scale-110 transition-transform duration-300 relative z-10 inline-block">
+                                    <svg style="width: 32px; height: 32px;" class="text-dorado" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <p class="text-sm font-bold text-carbon-900 uppercase tracking-wider mb-1 relative z-10">
+                                    Arrastra tus archivos aquí</p>
+                                <p class="text-xs text-gray-500 relative z-10">Solo archivos .xml permitidos</p>
+                            </div>
+                            
+                            <div id="file_list_container" class="hidden w-full p-4 overflow-y-auto max-h-full">
+                                <!-- File list will be injected here -->
                             </div>
 
-                            <p class="text-sm font-bold text-carbon-900 uppercase tracking-wider mb-1 relative z-10">
-                                Arrastra tus archivos aquí</p>
-                            <p class="text-xs text-gray-500 relative z-10">Solo archivos .xml permitidos</p>
-
-                            <input type="file" name="xml_files[]" accept=".xml" multiple required
+                            <input type="file" id="xml_input" name="xml_files[]" accept=".xml" multiple required
                                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
                         </div>
                     </div>
@@ -197,4 +202,55 @@
         </div>
     </footer>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const xmlInput = document.getElementById('xml_input');
+        const dropzone = document.getElementById('dropzone');
+        const dropzoneText = document.getElementById('dropzone_text');
+        const fileListContainer = document.getElementById('file_list_container');
+
+        xmlInput.addEventListener('change', function() {
+            updateFileList();
+        });
+
+        // Optional: Drag and drop functionality
+        dropzone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dropzone.classList.add('border-dorado-400', 'bg-dorado/5');
+        });
+
+        dropzone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            dropzone.classList.remove('border-dorado-400', 'bg-dorado/5');
+        });
+
+        dropzone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dropzone.classList.remove('border-dorado-400', 'bg-dorado/5');
+            xmlInput.files = e.dataTransfer.files;
+            updateFileList();
+        });
+
+        function updateFileList() {
+            if (xmlInput.files.length > 0) {
+                dropzoneText.classList.add('hidden');
+                fileListContainer.classList.remove('hidden');
+                let fileListHtml = '<ul class="list-none text-center space-y-2">';
+                for (let i = 0; i < xmlInput.files.length; i++) {
+                    fileListHtml += `<li class="text-xs text-carbon-700 bg-dorado-200/20 border border-dorado-400/30 rounded-md px-3 py-2 flex items-center justify-between">
+                        <span class="font-mono">${xmlInput.files[i].name}</span>
+                        <span class="text-gray-500 text-2xs">${(xmlInput.files[i].size / 1024).toFixed(2)} KB</span>
+                    </li>`;
+                }
+                fileListHtml += '</ul>';
+                fileListContainer.innerHTML = fileListHtml;
+            } else {
+                dropzoneText.classList.remove('hidden');
+                fileListContainer.classList.add('hidden');
+                fileListContainer.innerHTML = '';
+            }
+        }
+    });
+</script>
 @endsection

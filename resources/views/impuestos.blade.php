@@ -12,7 +12,7 @@
     </header>
     <!-- Encabezado con título y barra de búsqueda -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-        <form method="GET" action="{{ route('inpuestos') }}" class="relative mx-12 flex items-center gap-2">
+        <form method="GET" action="{{ route('impuestos') }}" class="relative mx-12 flex items-center gap-2">
             @csrf
             <label for="searchInput" class="text-white mx-2">Buscar por:</label>
 
@@ -36,7 +36,7 @@
             </button>
 
             <!-- Botón limpiar filtros -->
-            <a href="{{ route('inpuestos.limpiar') }}"
+            <a href="{{ route('impuestos.limpiar') }}"
                 class="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded mx-2">
                 LIMPIAR
             </a>
@@ -134,7 +134,7 @@
                 Defina las opciones para la descarga
             </h2>
             <div>
-                <form action="{{ route('inpuestos.export') }}" method="POST">
+                <form action="{{ route('impuestos.export') }}" method="POST">
                     @csrf
                     <!--fecha de inicio-->
                     <div class="mb-6 mt-2">

@@ -92,7 +92,7 @@
                     <p class="px-4 mb-2 mt-4 text-xs font-semibold tracking-wider text-gray-400 uppercase sidebar-text">Finanzas y Contabilidad</p>
                     <a href="/cuentas-por-pagar" class="flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-300 hover:bg-[#d8c495]/20 hover:text-[#d8c495] text-gray-300">Cuentas por pagar</a>
                     <a href="/facturas" class="flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-300 hover:bg-[#d8c495]/20 hover:text-[#d8c495] text-gray-300">Facturas</a>
-                    <a href="/inpuestos" class="flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-300 hover:bg-[#d8c495]/20 hover:text-[#d8c495] text-gray-300">Inpuestos</a>
+                    <a href="/impuestos" class="flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-300 hover:bg-[#d8c495]/20 hover:text-[#d8c495] text-gray-300">impuestos</a>
 
                     <p class="px-4 mb-2 mt-6 text-xs font-semibold tracking-wider text-gray-400 uppercase sidebar-text">Gestión Empresarial y Legal</p>
                     <a href="/lista-de-inversionistas" class="flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-300 hover:bg-[#d8c495]/20 hover:text-[#d8c495] text-gray-300">Lista de inversionistas</a>

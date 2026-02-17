@@ -15,11 +15,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Auth; // Import Auth facade
+
 
 class CfdiValidatorController extends BaseController
 {
@@ -114,7 +116,7 @@ class CfdiValidatorController extends BaseController
         $user = Auth::user();
         $userP = UserProyecto::where('id_user', $user->id)->get();
         $idsProyectos = $userP->pluck('id_proyecto');
-        $proyectos = $user->proyectos()->get();
+        $proyectos = $user->proyectos;
 
         if ($request->expectsJson()) {
             $html = view('factura', compact('batch', 'isDeadlinePassed', 'success', 'user'))->render();
@@ -127,121 +129,63 @@ class CfdiValidatorController extends BaseController
     //Sube y valida archivos XML, Los inválidos no se guardan,Los válidos se guardan en disco y BD.
     public function uploadXmlFiles(Request $request)
     {
-        $request->validate([
-            'xml_files' => 'required|array|max:' . $this->maxBatchSize,
-            'xml_files.*' => 'required|file|mimes:xml|max:10240',
-            'user_email' => 'required|email',
-            'proyect' => 'required|string'
-        ]);
-
-        $sessionId = $request->session()->getId();
-        $deadline = $this->getNextQuincenaDeadline();
-
-        $proyecto = $request->input('proyect');
-
-        $batch = XmlBatch::firstOrCreate(
-            ['session_id' => $sessionId],
-            [
-                'total_files' => 0,
-                'valid_files' => 0,
-                'uploaded_pdfs' => 0,
-                'uuid_mapping' => [],
-                'user_email' => $request->user_email,
-                'deadline' => $deadline
-            ]
-        );
-
-        $errors = [];
-        $uuidMapping = $batch->uuid_mapping ?? [];
-
-        $user = Auth::user();
+        try {
+            $request->validate([
+                //'xml_files' => 'required|array|max:' . $this->maxBatchSize,
+                'xml_files.*' => 'required|file|mimes:xml|max:10240',
+                'user_email' => 'required|email',
+                'proyect' => 'required|string'
+            ]);
 
 
+            $sessionId = $request->session()->getId();
+            $deadline = $this->getNextQuincenaDeadline();
 
-        foreach ($request->file('xml_files') as $file) {
-            $filename = $file->getClientOriginalName();
-            $tempPath = $file->getPathname();
+            $proyecto = $request->input('proyect');
 
-            $validationResult = $this->xmlValidationService->validateXml($tempPath, $filename);
+            $errors = [];
+            $uuidMapping = $batch->uuid_mapping ?? [];
 
-            Storage::put('validation_results.txt', json_encode($validationResult, JSON_PRETTY_PRINT));
+            $user = Auth::user();
 
-            if (!$validationResult['valid']) {
-                $flatErrors = collect($validationResult['errors'])->flatten();
-                foreach ($flatErrors as $errorMsg) {
-                    $errors[] = "Archivo {$filename}: {$errorMsg}";
+            $xmlUserData = [];
+
+            foreach ($request->file('xml_files') as $file) {
+                $filename = $file->getClientOriginalName();
+                $tempPath = $file->getPathname();
+
+                $validationResult = $this->xmlValidationService->validateXml($tempPath, $filename);
+
+                //Storage::put('validation_results.txt', json_encode($validationResult, JSON_PRETTY_PRINT));
+
+                if (!$validationResult['valid']) {
+                    $flatErrors = collect($validationResult['errors'])->flatten();
+                    foreach ($flatErrors as $errorMsg) {
+                        $errors[] = "Archivo {$filename}: {$errorMsg}";
+                    }
+                    continue;
                 }
-                continue;
+
+                if (($uuid = $validationResult['uuid'] ?? null) && isset($uuidMapping[$uuid])) {
+                    $errors[] = "Archivo {$filename}: UUID duplicado {$validationResult['uuid']}";
+                    continue;
+                }
+
+
+                $filePath = $file->store('xml_files', 'tmp');
+                $xmlUserData[] = [
+                    'select_project' => $proyecto,
+                    'xmlData'      => $validationResult,
+                    'file_path'    => $filePath,
+                ];
             }
+            session()->put('factura_data', $xmlUserData);
 
-            if (($uuid = $validationResult['uuid'] ?? null) && isset($uuidMapping[$uuid])) {
-                $errors[] = "Archivo {$filename}: UUID duplicado {$validationResult['uuid']}";
-                continue;
-            }
-
-
-            $filePath = $file->store('xml_files', 'public');
-
-
-            $xmlFile = XmlFile::create([
-                'batch_id' => $batch->id,
-                'filename' => $filename,
-                'uuid' => $validationResult['uuid'] ?? null,
-                'is_valid' => true,
-                'validation_errors' => json_encode($validationResult['errors']),
-                'emisor_name' => $validationResult['emisor_name'],
-                'receptor_name' => $validationResult['receptor_name'],
-                //cambiar el valiudation resul por la comparativa de proyectos que se hizo arriba
-                'id_proyecto' => $proyecto,
-                'file_path' => $filePath,
-                'departamento' => $validationResult['departamento'],
-                //verificar si el id del usuario existe en la dba de factura
-                'id_user' => $user->id,
-                'mes' => $validationResult['periodo_pago'],
-            ]);
-
-
-
-            Impuesto::create([
-                //tipo factor y regimen fiscal no aparecen en impuestos
-                //checar que el regimrn fiscal u el tipo de factor aparescan
-                'tipoFactor' => $validationResult['tipoFactor'] ?? null,
-                'regimenFiscal' => $validationResult['regimenFiscal'] ?? null,
-                'importeBase' => $validationResult['valorUnitario'] ?? 0,
-                'tasaCuota' => $validationResult['tasaCuota'] ?? 0,
-                'isr' => $validationResult['isr'] ?? 0,
-                'xml_file_id' => $xmlFile->id,
-            ]);
-
-
-            if ($validationResult['uuid']) {
-                $uuidMapping[$validationResult['uuid']] = $filename;
-                $batch->increment('valid_files');
-            }
-
-
-            FileLog::create([
-                'filename' => $filename,
-                'file_type' => 'xml',
-                'uuid' => $validationResult['uuid'],
-                'is_valid' => true,
-                'emisor_name' => $validationResult['emisor_name'],
-                'receptor_name' => $validationResult['receptor_name'],
-                'metadata' => ['validation_errors' => []]
-            ]);
+            return redirect()->route('user.factura.view', ['index' => 0]);
+        } catch (\Exception $e) {
+            Log::error("Error uploading XML files: " . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-
-        $batch->update([
-            'total_files' => $batch->xmlFiles()->count(),
-            'uuid_mapping' => $uuidMapping
-        ]);
-
-        if (!empty($errors)) {
-            return response()->json(['errors' => ['xml_files' => $errors]], 422);
-        }
-
-        return response()->json(['success' => 'XMLs procesados correctamente'], 200);
     }
 
     //Reinicia el lote actual
@@ -271,65 +215,72 @@ class CfdiValidatorController extends BaseController
             'pdf_file' => 'required|file|mimes:pdf|max:20480',
         ]);
 
-        $sessionId = $request->session()->getId();
+        try {
+            $sessionId = $request->session()->getId();
 
 
-        $batch = XmlBatch::where('session_id', $sessionId)->first();
+            $batch = XmlBatch::where('session_id', $sessionId)->first();
 
-        if (!$batch || $batch->valid_files === 0) {
+            if (!$batch || $batch->valid_files === 0) {
+                return redirect()->back()->withErrors([
+                    'pdf' => 'No existen XML válidos para asociar el PDF'
+                ]);
+            }
+
+
+            $pdfPath = $request->file('pdf_file')->store('pdf_files', 'public');
+
+
+            $pdfUuid = $this->pdfUuidExtractionService
+                ->extractUuidFromPdf(storage_path('app/public/' . $pdfPath));
+
+            if (!$pdfUuid) {
+                return redirect()->back()->withErrors([
+                    'pdf' => 'No se pudo extraer un UUID válido del PDF'
+                ]);
+            }
+
+
+            if (!isset($batch->uuid_mapping[$pdfUuid])) {
+                return redirect()->back()->withErrors([
+                    'pdf' => 'El UUID del PDF no coincide con ningún XML cargado'
+                ]);
+            }
+
+
+            $xmlFile = XmlFile::where('batch_id', $batch->id)
+                ->where('uuid', $pdfUuid)
+                ->first();
+
+            if (!$xmlFile) {
+                return redirect()->back()->withErrors([
+                    'pdf' => 'No se encontró el XML correspondiente al UUID'
+                ]);
+            }
+
+
+            $xmlFile->update([
+                'pdf_path' => $pdfPath,
+            ]);
+
+
+            $batch->increment('uploaded_pdfs');
+
+
+            FileLog::create([
+                'filename' => basename($pdfPath),
+                'file_type' => 'pdf',
+                'uuid' => $pdfUuid,
+                'is_valid' => true,
+                'metadata' => [],
+            ]);
+
+            return redirect()->back()->with('success', 'PDF asociado correctamente al XML');
+        } catch (\Exception $e) {
+            \Log::error("Error uploading PDF file: " . $e->getMessage());
             return redirect()->back()->withErrors([
-                'pdf' => 'No existen XML válidos para asociar el PDF'
+                'pdf' => 'Ocurrió un error inesperado al procesar el archivo PDF.'
             ]);
         }
-
-
-        $pdfPath = $request->file('pdf_file')->store('pdf_files', 'public');
-
-
-        $pdfUuid = $this->pdfUuidExtractionService
-            ->extractUuidFromPdf(storage_path('app/public/' . $pdfPath));
-
-        if (!$pdfUuid) {
-            return redirect()->back()->withErrors([
-                'pdf' => 'No se pudo extraer un UUID válido del PDF'
-            ]);
-        }
-
-
-        if (!isset($batch->uuid_mapping[$pdfUuid])) {
-            return redirect()->back()->withErrors([
-                'pdf' => 'El UUID del PDF no coincide con ningún XML cargado'
-            ]);
-        }
-
-
-        $xmlFile = XmlFile::where('batch_id', $batch->id)
-            ->where('uuid', $pdfUuid)
-            ->first();
-
-        if (!$xmlFile) {
-            return redirect()->back()->withErrors([
-                'pdf' => 'No se encontró el XML correspondiente al UUID'
-            ]);
-        }
-
-
-        $xmlFile->update([
-            'pdf_path' => $pdfPath,
-        ]);
-
-
-        $batch->increment('uploaded_pdfs');
-
-
-        FileLog::create([
-            'filename' => basename($pdfPath),
-            'file_type' => 'pdf',
-            'uuid' => $pdfUuid,
-            'is_valid' => true,
-            'metadata' => [],
-        ]);
-
-        return redirect()->back()->with('success', 'PDF asociado correctamente al XML');
     }
 }

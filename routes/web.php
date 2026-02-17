@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\LogoController;
 use App\Http\Controllers\AnuncioController;
 use App\Http\Controllers\RegimenFiscalController;
 use App\Http\Controllers\ProyectoController;
+use App\Http\Controllers\Factura\UserFactController;
 
 
 
@@ -48,6 +49,11 @@ Route::middleware([AuthUser::class.':usuario'])->group(function () {
     Route::post('/upload-pdf', [CfdiValidatorController::class, 'uploadPdf'])->name('upload-pdf');
     Route::post('/reset-batch', [CfdiValidatorController::class, 'resetBatch'])->name('reset-batch');
     Route::post('/validar-xml', [CfdiValidatorController::class, 'store'])->name('validar-xml');
+    // Route::post('/user-factura', [UserFactController::class, 'verFactura'])->name('user.facturas');
+    Route::get('/user-factura/{index?}',[UserFactController::class, 'showInvoice'])->name('user.factura.view');
+    Route::post('/user-factura/{index}/confirm',[UserFactController::class, 'confirmFactura'])->name('user.factura.confirm');
+    Route::post('/user-factura/new',[UserFactController::class, 'nuevaFactura'])->name('user.factura.nueva');
+    
 
     //ruta de notificaciones
     Route::get('/notificaciones', [AvisoController::class, 'index'])->name('notificaciones.index');
@@ -142,9 +148,9 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     route::get ('/facturas/limpiar',[UploadFactura::class,'limpiar'])->name('facturas.limpiar');
 
     //ruta de impuestos
-    Route::get('/inpuestos', [ImpuestoController::class,'index'])->name('inpuestos');
-    Route::get('/inpuestos/limpiar',[ImpuestoController::class,'limpiar'])->name('inpuestos.limpiar');
-    Route::post('/inpuestos/export', [ImpuestoController::class, 'export'])->name('inpuestos.export');
+    Route::get('/impuestos', [ImpuestoController::class,'index'])->name('impuestos');
+    Route::get('/impuestos/limpiar',[ImpuestoController::class,'limpiar'])->name('impuestos.limpiar');
+    Route::post('/impuestos/export', [ImpuestoController::class, 'export'])->name('impuestos.export');
 
     Route::resource('incrementos', IncrementoImporteController::class);
 

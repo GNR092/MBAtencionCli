@@ -231,7 +231,7 @@
                                     por pagar</a>
                                 <a href="/facturas"
                                     class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Facturas</a>
-                                <a href="/inpuestos"
+                                <a href="/impuestos"
                                     class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Impuestos</a>
                             </div>
                         </div>

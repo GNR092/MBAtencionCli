@@ -117,7 +117,7 @@ class ImpuestoController extends Controller
         $xmlFiles = $query->paginate(6)->appends($request->query());
 
     
-        return view('inpuestos', compact('xmlFiles', 'totalISR', 'totalBase'));
+        return view('impuestos', compact('xmlFiles', 'totalISR', 'totalBase'));
     }
 
 
@@ -125,7 +125,7 @@ class ImpuestoController extends Controller
     public function limpiar()
     {
         session()->forget(['search', 'categoria']);
-        return redirect()->route('inpuestos');
+        return redirect()->route('impuestos');
     }
 
     /* ================= FUNCIÓN PARA REUTILIZAR FILTROS ================= */
