@@ -42,7 +42,7 @@ class AdminChatController extends Controller
         ]);
     }
 
-    public function getMessages($userId)
+    public function getMessages(Request $request, $userId)
     {
         $currentAdminId = Auth::id() ?? (Session::has('user') ? Session::get('user')->id : null);
         
@@ -50,21 +50,23 @@ class AdminChatController extends Controller
             return response()->json(['error' => 'Unauthenticated'], 401);
         }
 
+        $lastId = $request->query('last_id');
         $allAdminIds = User::where('role', 'administrador')->pluck('id')->toArray();
 
-        $messages = Message::with('sender:id,name,role')
-            ->where(function ($query) use ($userId, $allAdminIds) {
-                
-                
-                $query->where('sender_id', $userId)
+        $query = Message::with('sender:id,name,role')
+            ->where(function ($q) use ($userId, $allAdminIds) {
+                $q->where('sender_id', $userId)
                     ->whereIn('receiver_id', array_merge([0], $allAdminIds));
-            })->orWhere(function ($query) use ($userId, $allAdminIds) {
-                
-                $query->whereIn('sender_id', $allAdminIds)
+            })->orWhere(function ($q) use ($userId, $allAdminIds) {
+                $q->whereIn('sender_id', $allAdminIds)
                     ->where('receiver_id', $userId);
-            })
-            ->orderBy('created_at', 'asc')
-            ->get();
+            });
+
+        if ($lastId) {
+            $query->where('id', '>', $lastId);
+        }
+
+        $messages = $query->orderBy('created_at', 'asc')->get();
 
         
         

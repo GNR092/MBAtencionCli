@@ -171,16 +171,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let currentChatUserId = null;
     let messagePollingInterval = null;
+    let lastId = 0;
+    let isTabActive = true;
+    let isFetching = false;
+    const renderedMessageIds = new Set();
+
+    
+    document.addEventListener('visibilitychange', () => {
+        isTabActive = !document.hidden;
+        if (!isTabActive) stopPolling();
+        else if (adminChatModal && !adminChatModal.classList.contains('hidden')) startPolling();
+    });
+
+    function startPolling() {
+        stopPolling();
+        if (isTabActive && currentChatUserId) {
+            messagePollingInterval = setInterval(() => fetchAdminMessages(currentChatUserId), 3000);
+        }
+    }
+
+    function stopPolling() {
+        if (messagePollingInterval) {
+            clearInterval(messagePollingInterval);
+            messagePollingInterval = null;
+        }
+    }
 
     
     document.querySelectorAll('.start-chat-btn').forEach(button => {
         button.addEventListener('click', function() {
             currentChatUserId = this.dataset.userId;
             const userName = this.dataset.userName;
+            lastId = 0;
+            renderedMessageIds.clear();
 
             chattingWithName.textContent = `Chat con: ${userName}`;
+            adminChatMessagesDiv.innerHTML = '<div class="text-center text-gray-400 text-sm mt-4">Cargando mensajes...</div>';
 
-            
             adminChatModal.classList.remove('hidden');
             adminChatModal.classList.add('flex');
 
@@ -188,12 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
             sendAdminChatBtn.disabled = false;
 
             fetchAdminMessages(currentChatUserId);
-
-            if (messagePollingInterval) {
-                clearInterval(messagePollingInterval);
-            }
-            messagePollingInterval = setInterval(() => fetchAdminMessages(currentChatUserId),
-                5000);
+            startPolling();
         });
     });
 
@@ -203,11 +225,10 @@ document.addEventListener('DOMContentLoaded', function() {
             adminChatModal.classList.add('hidden');
             adminChatModal.classList.remove('flex');
 
-            if (messagePollingInterval) {
-                clearInterval(messagePollingInterval);
-            }
-            messagePollingInterval = null;
+            stopPolling();
             currentChatUserId = null;
+            lastId = 0;
+            renderedMessageIds.clear();
             adminChatMessagesDiv.innerHTML = '';
             adminChatInput.disabled = true;
             sendAdminChatBtn.disabled = true;
@@ -231,15 +252,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function displayAdminMessages(messages) {
         if (!adminChatMessagesDiv) return;
 
-        adminChatMessagesDiv.innerHTML = '';
-        if (messages.length === 0) {
-            adminChatMessagesDiv.innerHTML =
-                '<div class="text-center text-gray-400 italic py-4 opacity-70">Inicia la conversación.</div>';
-            return;
-        }
-
         messages.forEach(message => {
             if (!message.sender) return;
+            if (renderedMessageIds.has(message.id)) return;
+            renderedMessageIds.add(message.id);
 
             const messageWrapper = document.createElement('div');
             const messageBubble = document.createElement('div');
@@ -274,9 +290,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     
     async function fetchAdminMessages(userId) {
-        if (!userId) return;
+        if (!userId || isFetching) return;
+        isFetching = true;
         try {
-            const response = await fetch(`/admin/chat/messages/${userId}`, {
+            const url = `/admin/chat/messages/${userId}?last_id=${lastId}`;
+            const response = await fetch(url, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-TOKEN': csrfToken
@@ -291,9 +309,17 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!response.ok) throw new Error('Failed to fetch admin messages');
 
             const messages = await response.json();
-            displayAdminMessages(messages);
+            if (messages.length > 0) {
+                if (lastId === 0) adminChatMessagesDiv.innerHTML = '';
+                displayAdminMessages(messages);
+                lastId = messages[messages.length - 1].id;
+            } else if (lastId === 0) {
+                adminChatMessagesDiv.innerHTML = '<div class="text-center text-gray-400 text-sm mt-4">Inicia la conversación.</div>';
+            }
         } catch (error) {
             console.error('Error fetching admin messages:', error);
+        } finally {
+            isFetching = false;
         }
     }
 
@@ -324,7 +350,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!response.ok) throw new Error('Failed to send admin message');
 
             adminChatInput.value = '';
-            fetchAdminMessages(currentChatUserId);
+            await fetchAdminMessages(currentChatUserId);
+            startPolling();
         } catch (error) {
             console.error('Error sending admin message:', error);
         }

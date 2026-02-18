@@ -232,48 +232,94 @@
                 const messagesDiv = document.getElementById('chatMessages');
                 const input = document.getElementById('chatInput');
                 const sendBtn = document.getElementById('sendChatBtn');
+                
+                let lastId = 0;
+                let pollingInterval = null;
+                let isTabActive = true;
+                let isFetching = false;
+                const renderedMessageIds = new Set();
 
                 
                 const csrfMeta = document.querySelector('meta[name="csrf-token"]');
                 const csrf = csrfMeta ? csrfMeta.getAttribute('content') : '';
 
+                
+                document.addEventListener('visibilitychange', () => {
+                    isTabActive = !document.hidden;
+                    if (!isTabActive) stopPolling();
+                    else if (modal && !modal.classList.contains('hidden')) startPolling();
+                });
+
                 if (openBtn && modal) {
                     openBtn.onclick = (e) => {
                         e.preventDefault();
-
-                        
-                        
                         modal.classList.remove('hidden');
                         modal.style.display = 'flex';
-
+                        
+                        if (lastId === 0) {
+                            messagesDiv.innerHTML = '<div class="text-center text-gray-400 text-sm mt-4">Cargando mensajes...</div>';
+                            renderedMessageIds.clear();
+                        }
+                        
                         fetchMessages();
+                        startPolling();
                         setTimeout(() => input.focus(), 100);
                     };
 
                     closeBtn.onclick = () => {
-                        
                         modal.classList.add('hidden');
                         modal.style.display = 'none';
+                        stopPolling();
                     };
 
+                    function startPolling() {
+                        stopPolling();
+                        if (isTabActive) {
+                            pollingInterval = setInterval(fetchMessages, 3000);
+                        }
+                    }
+
+                    function stopPolling() {
+                        if (pollingInterval) {
+                            clearInterval(pollingInterval);
+                            pollingInterval = null;
+                        }
+                    }
+
                     async function fetchMessages() {
+                        if (isFetching) return;
+                        isFetching = true;
                         try {
-                            const res = await fetch('{{ route('chat.getMessages') }}', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                            const url = `{{ route('chat.getMessages') }}?last_id=${lastId}`;
+                            const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
                             
                             if (res.status === 401 || res.status === 419) {
                                 window.location.reload();
                                 return;
                             }
                             
-                            if (res.ok) displayMessages(await res.json());
+                            if (res.ok) {
+                                const msgs = await res.json();
+                                if (msgs.length > 0) {
+                                    if (lastId === 0) messagesDiv.innerHTML = '';
+                                    displayMessages(msgs);
+                                    lastId = msgs[msgs.length - 1].id;
+                                } else if (lastId === 0) {
+                                    messagesDiv.innerHTML = '<div class="text-center text-gray-400 text-sm mt-4">No hay mensajes previos.</div>';
+                                }
+                            }
                         } catch (error) {
                             console.error('Error fetching messages:', error);
+                        } finally {
+                            isFetching = false;
                         }
                     }
 
                     function displayMessages(msgs) {
-                        messagesDiv.innerHTML = '';
                         msgs.forEach(m => {
+                            if (renderedMessageIds.has(m.id)) return;
+                            renderedMessageIds.add(m.id);
+
                             const el = document.createElement('div');
                             const isSender = m.sender_id === {{ Js::from($user->id) }};
                             Object.assign(el.style, {
@@ -308,7 +354,11 @@
                                 return;
                             }
 
-                            if (res.ok) { input.value = ''; await fetchMessages(); }
+                            if (res.ok) { 
+                                input.value = ''; 
+                                await fetchMessages();
+                                startPolling(); 
+                            }
                         } catch(e) {
                             console.error("Error sending", e);
                         } finally {

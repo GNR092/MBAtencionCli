@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Session;
 
 class UserChatController extends Controller
 {
-    public function getMessages()
+    public function getMessages(Request $request)
     {
         $userId = Auth::id() ?? (Session::has('user') ? Session::get('user')->id : null);
         
@@ -18,19 +18,22 @@ class UserChatController extends Controller
             return response()->json(['error' => 'Unauthenticated'], 401);
         }
 
+        $lastId = $request->query('last_id');
         $adminIds = \App\Models\User::where('role', 'administrador')->pluck('id')->toArray();
 
-        $messages = \App\Models\Message::where(function ($query) use ($userId, $adminIds) {
-            
-            $query->where('sender_id', $userId)
+        $query = \App\Models\Message::where(function ($q) use ($userId, $adminIds) {
+            $q->where('sender_id', $userId)
                 ->whereIn('receiver_id', $adminIds);
-        })->orWhere(function ($query) use ($userId, $adminIds) {
-            
-            $query->whereIn('sender_id', $adminIds)
+        })->orWhere(function ($q) use ($userId, $adminIds) {
+            $q->whereIn('sender_id', $adminIds)
                 ->where('receiver_id', $userId);
-        })
-            ->orderBy('created_at', 'asc')
-            ->get();
+        });
+
+        if ($lastId) {
+            $query->where('id', '>', $lastId);
+        }
+
+        $messages = $query->orderBy('created_at', 'asc')->get();
 
         return response()->json($messages);
     }
