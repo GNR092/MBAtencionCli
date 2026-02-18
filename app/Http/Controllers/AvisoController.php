@@ -20,27 +20,21 @@ class AvisoController extends Controller
      */
     public function unreadCount(Request $request)
     {
-        $userSession = session('user');
-        if (!$userSession) {
-            return response()->json(['count' => 0], 401); 
-        }
-
-        $user = User::find($userSession->id);
-
+        $user = Auth::user();
         if (!$user) {
-            return response()->json(['count' => 0], 404); 
+            return response()->json(['count' => 0], 401); 
         }
 
         return response()->json(['count' => $user->unreadNotifications->count()]);
     }
 
-    public function delete( $id){
-        $user = session('user'); 
-        if (!$user) {
+    public function delete($id)
+    {
+        $usuario = Auth::user();
+        if (!$usuario) {
             return redirect('/inicio-de-sesion');
         }
 
-        $usuario = User::find($user->id);
         $notificacion = $usuario->notifications()->where('id', $id)->first();
 
         if ($notificacion) {
@@ -48,18 +42,15 @@ class AvisoController extends Controller
         }
 
         return redirect()->back()->with('success', 'Notificación borrada.');
-
-
     }
     
     public function index(Request $request)
     {
-        $user = session('user'); 
-        if (!$user) {
+        $usuario = Auth::user();
+        if (!$usuario) {
             return redirect('/inicio-de-sesion');
         }
 
-        $usuario = User::find($user->id);
         $nuevas = $usuario->unreadNotifications;
         $antiguas = $usuario->readNotifications;
 
@@ -76,15 +67,14 @@ class AvisoController extends Controller
     
     public function markAsRead(Request $request, $id) 
     {
-        $user = session('user'); 
-        if (!$user) {
+        $usuario = Auth::user();
+        if (!$usuario) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Unauthorized'], 401);
             }
             return redirect('/inicio-de-sesion');
         }
 
-        $usuario = User::find($user->id);
         $notificacion = $usuario->notifications()->where('id', $id)->first();
 
         if (!$notificacion) { 

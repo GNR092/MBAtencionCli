@@ -10,7 +10,7 @@ class PasswordCheckController extends Controller
 {
     public function check(Request $request)
     {
-        $user = Session::get('user');
+        $user = Auth::user();
 
         if (!$user) {
             return response()->json(['message' => 'No autenticado'], 401);

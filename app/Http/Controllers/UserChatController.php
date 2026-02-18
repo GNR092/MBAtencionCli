@@ -12,7 +12,12 @@ class UserChatController extends Controller
 {
     public function getMessages()
     {
-        $userId = Session::get('user')->id;
+        $userId = Auth::id() ?? (Session::has('user') ? Session::get('user')->id : null);
+        
+        if (!$userId) {
+            return response()->json(['error' => 'Unauthenticated'], 401);
+        }
+
         $adminIds = \App\Models\User::where('role', 'administrador')->pluck('id')->toArray();
 
         $messages = \App\Models\Message::where(function ($query) use ($userId, $adminIds) {
@@ -35,7 +40,11 @@ class UserChatController extends Controller
         try {
             $request->validate(['message' => 'required|string|max:2000']);
 
-            $userId = Session::has('user') ? Session::get('user')->id : auth()->id();
+            $userId = Auth::id() ?? (Session::has('user') ? Session::get('user')->id : null);
+
+            if (!$userId) {
+                return response()->json(['error' => 'Unauthenticated'], 401);
+            }
 
             
             $firstAdmin = \App\Models\User::where('role', 'administrador')->first();

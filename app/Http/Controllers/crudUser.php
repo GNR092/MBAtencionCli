@@ -19,7 +19,7 @@ class crudUser extends Controller
     {
         $proyectos = Proyecto::all();
         $regimenesFiscales = RegimenFiscal::all();
-        $currentUser = Session::get('user');
+        $currentUser = Auth::user();
 
         $query = User::where('role', 'usuario')
             ->with([
@@ -87,7 +87,7 @@ class crudUser extends Controller
         ]);
 
 
-        $admin = Session::get('user');
+        $admin = Auth::user();
         if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
@@ -106,7 +106,7 @@ class crudUser extends Controller
 
     public function showEditForm($id)
     {
-        $admin = Session::get('user');
+        $admin = Auth::user();
 
 
         if (!$admin || $admin->role !== 'administrador') {
@@ -127,7 +127,7 @@ class crudUser extends Controller
 
     public function eliminar(Request $request)
     {
-        $admin = Session::get('user');
+        $admin = Auth::user();
 
         if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
@@ -163,7 +163,7 @@ class crudUser extends Controller
 
     public function editar(Request $request)
     {
-        $admin = Session::get('user');
+        $admin = Auth::user();
         if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
@@ -227,7 +227,7 @@ class crudUser extends Controller
 
     public function store(Request $request)
     {
-        $admin = Session::get('user');
+        $admin = Auth::user();
         if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }

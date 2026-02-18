@@ -351,7 +351,7 @@ private function recalcularCuenta($idCuenta)
     -------------------------------------------------- */
 public function Index(Request $request)
 {
-        $user = Session::get('user');
+        $user = Auth::user();
         if (!$user) return redirect('/inicio-de-sesion');
 
         
@@ -425,7 +425,7 @@ public function Index(Request $request)
 
 public function graficaAnualNoPagados($year)
 {
-    $user = Session::get('user');
+    $user = Auth::user();
     if (!$user) return response()->json([]);
 
     

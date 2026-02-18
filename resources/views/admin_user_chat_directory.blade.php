@@ -282,6 +282,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRF-TOKEN': csrfToken
                 }
             });
+            
+            if (response.status === 401 || response.status === 419) {
+                window.location.reload();
+                return;
+            }
+
             if (!response.ok) throw new Error('Failed to fetch admin messages');
 
             const messages = await response.json();
@@ -309,6 +315,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     message: messageText
                 })
             });
+
+            if (response.status === 401 || response.status === 419) {
+                window.location.reload();
+                return;
+            }
 
             if (!response.ok) throw new Error('Failed to send admin message');
 

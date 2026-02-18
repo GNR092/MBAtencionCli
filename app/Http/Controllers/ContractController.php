@@ -8,13 +8,14 @@ use App\Models\Contract;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
-use App\Services\PdfReaderService; 
+use App\Services\PdfReaderService;
+use Illuminate\Support\Facades\Auth;
 
 class ContractController extends Controller
 {
     public function index(Request $request)
     {
-        $user = Session::get('user');
+        $user = Auth::user();
         if (!$user) {
             return redirect('/inicio-de-sesion');
         }
@@ -99,7 +100,7 @@ class ContractController extends Controller
             'password' => 'required|string',
         ]);
 
-        $admin = Session::get('user');
+        $admin = Auth::user();
 
         
         if (!$admin || $admin->role !== 'administrador') {
@@ -126,7 +127,7 @@ class ContractController extends Controller
         ]);
 
         
-        $admin = Session::get('user');
+        $admin = Auth::user();
         if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
@@ -145,7 +146,7 @@ class ContractController extends Controller
   
     public function editar($id)
     {
-        $admin = Session::get('user');
+        $admin = Auth::user();
 
         
         if (!$admin || $admin->role !== 'administrador') {
@@ -261,7 +262,7 @@ class ContractController extends Controller
 
     public function delete(Request $request)
     {
-        $admin = Session::get('user');
+        $admin = Auth::user();
 
         if (!$admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
@@ -275,7 +276,7 @@ class ContractController extends Controller
         $contratoId = $request->input('id');
 
         
-        $contrato = contract::find($contratoId);
+        $contrato = Contract::find($contratoId);
 
         if (!$contrato) {
             return back()->with('error', 'Contrato no encontrado.');
@@ -289,7 +290,7 @@ class ContractController extends Controller
 
     public function crear()
     {
-        $admin = Session::get('user');
+        $admin = Auth::user();
 
         
         if (!$admin || $admin->role !== 'administrador') {
@@ -312,7 +313,7 @@ class ContractController extends Controller
 
     public function show()
     {
-        $user = Session::get('user');
+        $user = Auth::user();
         if (!$user) {
             return redirect('/inicio-de-sesion');
         }
@@ -362,7 +363,7 @@ class ContractController extends Controller
 
     public function descargar($id)
     {
-        $user = Session::get('user');
+        $user = Auth::user();
         if (!$user) {
             return redirect('/inicio-de-sesion');
         }
@@ -385,7 +386,7 @@ class ContractController extends Controller
 
     public function getProjectsForUser(User $user)
     {
-        $admin = Session::get('user');
+        $admin = Auth::user();
 
         if (!$admin || $admin->role !== 'administrador') {
             abort(403, 'Unauthorized action.');

@@ -12,6 +12,9 @@ class AuthUser
     {
         
         if (!Auth::check()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['error' => 'Unauthenticated.'], 401);
+            }
             return redirect('/inicio-de-sesion');
         }
 
@@ -19,6 +22,9 @@ class AuthUser
 
         
         if ($role && $user->role !== $role) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['error' => 'Unauthorized.'], 403);
+            }
             return redirect('/inicio-de-sesion');
         }
 

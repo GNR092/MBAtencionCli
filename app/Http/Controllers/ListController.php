@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session; 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class ListController extends Controller
 {
@@ -20,7 +21,7 @@ class ListController extends Controller
 
     public function index(Request $request)
     {
-        $user = Session::get('user');
+        $user = Auth::user();
 
         if (!$user) {
             return redirect('/inicio-de-sesion');

@@ -14,6 +14,7 @@ use Carbon\CarbonPeriod;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\cuentasExport;
 use App\Models\IncrementoImporte;
+use Illuminate\Support\Facades\Auth;
 
 
 class CuentasPorPagar extends Controller
@@ -199,7 +200,7 @@ elseif ($cuenta->monto_pagado == $saldoNeto) {
 inicialmente, aunque no haya XML / factura cargada aún.*/
     public function index(Request $request)
     {
-        $user = Session::get('user');
+        $user = Auth::user();
         if (!$user) return redirect('/inicio-de-sesion');
 
         $this->calculodesaldos();

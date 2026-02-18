@@ -52,7 +52,8 @@ Route::middleware([AuthUser::class.':usuario'])->group(function () {
     // Route::post('/user-factura', [UserFactController::class, 'verFactura'])->name('user.facturas');
     Route::get('/user-factura/{index?}',[UserFactController::class, 'showInvoice'])->name('user.factura.view');
     Route::post('/user-factura/{index}/confirm',[UserFactController::class, 'confirmFactura'])->name('user.factura.confirm');
-    Route::post('/user-factura/new',[UserFactController::class, 'nuevaFactura'])->name('user.factura.nueva');
+    Route::get('/user-factura/new',[UserFactController::class, 'nuevaFactura'])->name('user.factura.nueva');
+    Route::delete('/user-factura/{index}/delete',[UserFactController::class, 'deleteFactura'])->name('user.factura.delete');
     
 
     //ruta de notificaciones

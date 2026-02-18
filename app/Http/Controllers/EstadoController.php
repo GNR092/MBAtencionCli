@@ -21,7 +21,7 @@ class EstadoController extends Controller
 public function Index(Request $request)
 {
     
-    $user = Session::get('user');
+    $user = Auth::user();
     if (!$user) {
         return redirect('/inicio-de-sesion');
     }
@@ -159,7 +159,7 @@ private function aplicarFiltros(&$query, Request $request)
 }
 
 public function graficaAnualPagados($year){
-        $user = Session::get('user');
+        $user = Auth::user();
     if (!$user) return response()->json([]);
 
     

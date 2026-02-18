@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Message;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
 
 class AdminChatController extends Controller
 {
@@ -43,7 +44,12 @@ class AdminChatController extends Controller
 
     public function getMessages($userId)
     {
-        $currentAdminId = Session::get('user')->id;
+        $currentAdminId = Auth::id() ?? (Session::has('user') ? Session::get('user')->id : null);
+        
+        if (!$currentAdminId) {
+            return response()->json(['error' => 'Unauthenticated'], 401);
+        }
+
         $allAdminIds = User::where('role', 'administrador')->pluck('id')->toArray();
 
         $messages = Message::with('sender:id,name,role')
@@ -72,18 +78,29 @@ class AdminChatController extends Controller
 
     public function sendMessage(Request $request, $userId)
     {
-        $request->validate([
-            'message' => 'required|string|max:2000',
-        ]);
+        try {
+            $request->validate([
+                'message' => 'required|string|max:2000',
+            ]);
 
-        $adminId = Session::get('user')->id;
+            $adminId = Auth::id() ?? (Session::has('user') ? Session::get('user')->id : null);
 
-        $message = Message::create([
-            'sender_id' => $adminId,
-            'receiver_id' => $userId, 
-            'message' => $request->input('message'),
-        ]);
+            if (!$adminId) {
+                return response()->json(['error' => 'Unauthenticated'], 401);
+            }
 
-        return response()->json($message);
+            $message = Message::create([
+                'sender_id' => $adminId,
+                'receiver_id' => $userId, 
+                'message' => $request->input('message'),
+            ]);
+
+            return response()->json($message);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al enviar mensaje',
+                'detalle' => $e->getMessage()
+            ], 500);
+        }
     }
 }

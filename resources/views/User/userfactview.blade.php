@@ -12,7 +12,16 @@
         </a>
     </div>
 
-    {{-- Navegación y Confirmación --}}
+    {{-- Mensaje de advertencia si el proyecto no coincide --}}
+    @if(isset($projectMismatch) && $projectMismatch)
+    <div class="bg-red-800/20 border border-red-700/50 rounded-xl p-4 text-red-300">
+        <p class="font-bold">Advertencia: El proyecto asociado a esta factura no coincide.</p>
+        <p class="text-sm">Esta factura está vinculada al proyecto <span class="font-mono">{{ $parsedProjectId ?? 'N/A' }}</span> según su descripción,
+            pero el proyecto seleccionado es <span class="font-mono">{{ $selectedProjectId ?? 'N/A' }}</span>. Por favor, elimina esta factura o regresa para seleccionar el proyecto correcto.</p>
+    </div>
+    @endif
+
+    {{-- Navegación y Confirmación/Eliminación --}}
     <div class="flex items-center justify-between mt-4">
         <div class="flex items-center space-x-4">
             @if($index > 0)
@@ -27,17 +36,30 @@
                 </a>
             @endif
         </div>
-        <form action="{{ route('user.factura.confirm', ['index' => $index]) }}" method="POST">
-            @csrf
-            <button type="submit" class="bg-dorado-200 text-carbon-900 font-bold py-2 px-6 rounded-lg hover:bg-[#c2ae84] transition">
-                Confirmar Factura
-            </button>
-        </form>
+        <div class="flex space-x-2">
+            @if(isset($projectMismatch) && $projectMismatch)
+                <form action="{{ route('user.factura.delete', ['index' => $index]) }}" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition"
+                            onclick="return confirm('¿Estás seguro de que deseas eliminar esta factura? Esta acción no se puede deshacer.')">
+                        Eliminar Factura
+                    </button>
+                </form>
+            @endif
+            <form action="{{ route('user.factura.confirm', ['index' => $index]) }}" method="POST">
+                @csrf
+                <button type="submit" class="bg-dorado-200 text-carbon-900 font-bold py-2 px-6 rounded-lg hover:bg-[#c2ae84] transition {{ (isset($projectMismatch) && $projectMismatch) ? 'opacity-50 cursor-not-allowed' : '' }}"
+                        {{ (isset($projectMismatch) && $projectMismatch) ? 'disabled' : '' }}>
+                    Confirmar Factura
+                </button>
+            </form>
+        </div>
     </div>
 
     {{-- Datos Generales del Comprobante --}}
     <div class="bg-carbon-900 border border-white/10 rounded-xl p-6 space-y-4">
-        <h2 class="text-lg font-semibold text-dorado-200 tracking-wide uppercase border-b border-white/10 pb-3">
+        <h2 class="text-lg font-semibold text-dorado-200 tracking-widest uppercase border-b border-white/10 pb-3">
             Datos del Comprobante
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
@@ -131,6 +153,7 @@
                         <th class="py-3 px-2">Descripcion</th>
                         <th class="py-3 px-2 text-center">Cantidad</th>
                         <th class="py-3 px-2">Unidad</th>
+                        <th class="py-3 px-2">Objeto Imp.</th>
                         <th class="py-3 px-2 text-right">Valor Unitario</th>
                         <th class="py-3 px-2 text-right">Importe</th>
                     </tr>
@@ -142,6 +165,7 @@
                         <td class="py-3 px-2 text-white max-w-xs">{{ $concepto['descripcion'] }}</td>
                         <td class="py-3 px-2 text-white text-center">{{ $concepto['cantidad'] }}</td>
                         <td class="py-3 px-2 text-white">{{ $concepto['unidad'] }}</td>
+                        <td class="py-3 px-2 text-white">{{ $concepto['objeto_imp'] }}</td>
                         <td class="py-3 px-2 text-white text-right">${{ number_format($concepto['valor_unitario'], 2) }}</td>
                         <td class="py-3 px-2 text-dorado-200  font-semibold text-right">${{ number_format($concepto['importe'], 2) }}</td>
                     </tr>
@@ -149,7 +173,7 @@
                     {{-- Impuestos del concepto --}}
                     @if(!empty($concepto['traslados']) || !empty($concepto['retenciones']))
                     <tr class="bg-white/2">
-                        <td colspan="6" class="py-2 px-4">
+                        <td colspan="7" class="py-2 px-4">
                             <div class="flex flex-wrap gap-4 text-xs text-white/50">
                                 @foreach($concepto['traslados'] ?? [] as $traslado)
                                 <span>
@@ -174,7 +198,7 @@
                     {{-- Cuenta Predial --}}
                     @if(!empty($concepto['cuenta_predial']))
                     <tr class="bg-white/2">
-                        <td colspan="6" class="py-1 px-4 text-xs text-white/40">
+                        <td colspan="7" class="py-1 px-4 text-xs text-white/40">
                             Folio Predial: <span class="text-white/60 font-mono">{{ $concepto['cuenta_predial'] }}</span>
                         </td>
                     </tr>

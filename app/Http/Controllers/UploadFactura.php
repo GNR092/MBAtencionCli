@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use App\Models\XmlFile;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth; 
 
 class UploadFactura extends Controller
 {
@@ -17,7 +18,8 @@ class UploadFactura extends Controller
      */
     public function index(Request $request)
     {
-        $user = Session::get('user');
+        // $user = Session::get('user');
+        $user = Auth::user();
         if (!$user) {
             return redirect('/inicio-de-sesion');
         }
@@ -104,7 +106,7 @@ class UploadFactura extends Controller
      */
     public function descargar($id)
     {
-        $user = Session::get('user');
+        $user = Auth::user();
         if (!$user) {
             return redirect('/inicio-de-sesion');
         }
@@ -136,7 +138,7 @@ class UploadFactura extends Controller
      */
     public function descargarPdf($id)
     {
-        $user = Session::get('user');
+        $user = Auth::user();
         if (!$user) {
             return redirect('/inicio-de-sesion');
         }

@@ -8,6 +8,7 @@ use App\Models\XmlFile;
 use App\Exports\XmlFilesExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\XmlValidationService;
+use Illuminate\Support\Facades\Auth;
 
 class ImpuestoController extends Controller
 {
@@ -54,7 +55,7 @@ class ImpuestoController extends Controller
     {
 
     
-        $user = Session::get('user');
+        $user = Auth::user();
         if (!$user) {
             return redirect('/inicio-de-sesion');
         }

@@ -6,15 +6,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class UserViewController extends Controller
 {
     public function index()
     {
-        
-        $sessionUser = Session::get('user');
-        $userId = $sessionUser ? $sessionUser->id : null;
-        $user = $userId ? User::find($userId) : null;
+        $user = Auth::user();
 
         
         if (!$user) {
@@ -65,7 +63,10 @@ class UserViewController extends Controller
             'foto' => 'required|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $user = User::find(Session::get('user')->id);
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login.form')->withErrors('Sesión caducada.');
+        }
 
         if ($request->hasFile('foto')) {
             if ($user->foto) { 

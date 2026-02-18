@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\XmlFile; // Using XmlFile model
 use Illuminate\Support\Facades\Storage; // For file access
 use App\Models\Proyecto;
+use Illuminate\Support\Facades\Log;
+use App\Services\DescripcionParser;
 
 class UserFactController extends Controller
 {
@@ -21,7 +23,8 @@ class UserFactController extends Controller
         $totalFacturas = count($allFacturasData);
 
         if ($index < 0 || $index >= $totalFacturas) {
-            return redirect()->route('user.factura.nueva');
+            session()->forget('factura_data');
+            return redirect()->route('facturacion');
         }
 
         $currentFacturaData = $allFacturasData[$index];
@@ -37,10 +40,21 @@ class UserFactController extends Controller
         $factura['idproyect'] = $proyecto->id_proyecto ?? null;
         $factura['nombre_proyecto'] = $proyecto->nombre_proyecto ?? 'Proyecto Desconocido';
 
+        $AllProyects = Proyecto::all()->toArray();
+        $parser = new DescripcionParser();
 
-        return view('User.UserFactView', compact('factura', 'totalFacturas', 'index'));
+        $des = $factura['conceptos'][0]['descripcion'];
+        $parsedProject = $parser->parsearDescripcion($des, $AllProyects);
+        $parsedProjectId = $parsedProject['id_proyecto'] ?? null;
+        $selectedProjectId = $currentFacturaData['select_project'];
+
+        $projectMismatch = false;
+        if ($parsedProjectId !== null && (int)$parsedProjectId !== (int)$selectedProjectId) {
+            $projectMismatch = true;
+        }
+
+        return view('User.UserFactView', compact('factura', 'totalFacturas', 'index', 'projectMismatch', 'parsedProjectId', 'selectedProjectId'));
     }
-
 
     private function MapingFacturas(array $xmlData): array
     {
@@ -90,6 +104,7 @@ class UserFactController extends Controller
                 'unidad'          => $concept['Unidad'] ?? 'N/A',
                 'valor_unitario'  => (float) ($concept['ValorUnitario'] ?? 0),
                 'importe'         => (float) ($concept['Importe'] ?? 0),
+                'objeto_imp'      => $concept['ObjetoImp'] ?? 'N/A',
                 'traslados'       => [],
                 'retenciones'     => [],
                 'cuenta_predial'  => $concept['CuentaPredial']['Numero'] ?? null,
@@ -162,7 +177,30 @@ class UserFactController extends Controller
         if (!empty($allFacturasData)) {
             // Ajustar el índice si la factura eliminada no era la última
             $nextIndex = ($index < count($allFacturasData)) ? $index : count($allFacturasData) - 1;
-            return redirect()->route('user.facturas.view', ['index' => $nextIndex]);
+            return redirect()->route('user.factura.view', ['index' => $nextIndex]);
+        } else {
+            session()->forget('factura_data');
+            return view('User.FacturaSuccess');
+        }
+    }
+
+    public function deleteFactura(Request $request, $index)
+    {
+        $allFacturasData = session()->get('factura_data', []);
+
+        if (empty($allFacturasData) || $index < 0 || $index >= count($allFacturasData)) {
+            return redirect()->back()->withErrors(['message' => 'Factura no encontrada o índice inválido para eliminar.']);
+        }
+
+        // Eliminar la factura de la sesión
+        array_splice($allFacturasData, $index, 1);
+        session()->put('factura_data', $allFacturasData);
+
+        // Redirigir a la siguiente factura o a una página de éxito si no hay más
+        if (!empty($allFacturasData)) {
+            // Ajustar el índice si la factura eliminada no era la última
+            $nextIndex = ($index < count($allFacturasData)) ? $index : count($allFacturasData) - 1;
+            return redirect()->route('user.factura.view', ['index' => $nextIndex]);
         } else {
             session()->forget('factura_data');
             return view('User.FacturaSuccess');

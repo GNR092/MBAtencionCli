@@ -259,6 +259,12 @@
                     async function fetchMessages() {
                         try {
                             const res = await fetch('{{ route('chat.getMessages') }}', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                            
+                            if (res.status === 401 || res.status === 419) {
+                                window.location.reload();
+                                return;
+                            }
+                            
                             if (res.ok) displayMessages(await res.json());
                         } catch (error) {
                             console.error('Error fetching messages:', error);
@@ -296,6 +302,12 @@
                                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'X-Requested-With': 'XMLHttpRequest' },
                                 body: JSON.stringify({ message: text })
                             });
+
+                            if (res.status === 401 || res.status === 419) {
+                                window.location.reload();
+                                return;
+                            }
+
                             if (res.ok) { input.value = ''; await fetchMessages(); }
                         } catch(e) {
                             console.error("Error sending", e);
