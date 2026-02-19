@@ -107,30 +107,28 @@ class UploadFactura extends Controller
     public function descargar($id)
     {
         $user = Auth::user();
-        if (!$user) {
-            return redirect('/inicio-de-sesion');
-        }
+        if (!$user) return redirect('/inicio-de-sesion');
 
         $xmlFile = XmlFile::find($id);
-
-        if (!$xmlFile) {
-            return back()->with('error', 'Archivo no encontrado.');
-        }
-
+        if (!$xmlFile) return back()->with('error', 'Archivo no encontrado.');
 
         $filePath = $xmlFile->file_path;
 
-        if (basename($filePath) === $filePath) {
-            $fullPath = public_path('storage/xml_files/' . $filePath);
+        if (Storage::exists($filePath)) {
+            $fullPath = Storage::path($filePath);
+        } elseif (Storage::disk('tmp')->exists($filePath)) {
+            $fullPath = Storage::disk('tmp')->path($filePath);
+        } elseif (Storage::disk('tmp')->exists('xml_files/' . basename($filePath))) {
+            $fullPath = Storage::disk('tmp')->path('xml_files/' . basename($filePath));
         } else {
-            $fullPath = public_path('storage/' . $filePath);
+            return back()->with('error', 'El archivo físico no existe.');
         }
 
-        if (!file_exists($fullPath)) {
-            return back()->with('error', 'El archivo físico no existe: ' . $fullPath);
-        }
-
-        return response()->download($fullPath, basename($fullPath));
+        return response()->streamDownload(function () use ($fullPath) {
+            $stream = fopen($fullPath, 'rb');
+            fpassthru($stream);
+            fclose($stream);
+        }, basename($filePath), ['Content-Type' => 'application/xml']);
     }
 
     /**

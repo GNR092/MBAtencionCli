@@ -34,11 +34,13 @@ public function Index(Request $request)
         ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
         ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
         ->leftJoin('users', 'contract.user_id', '=', 'users.id')
+        ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
+        ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
         ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id')
         ->select(
             'cuentasporpagar.*',
             'users.name as name',
-            'xml_files.proyectos as proyectos',
+            DB::raw('COALESCE(proyectos.nombre_proyecto, contract.proyecto) as proyecto'),
             'contract.importe_bruto_renta as importeBase',
         )
         ->where('users.id', $user->id)
@@ -201,41 +203,38 @@ public function graficaAnualPagados($year){
 
 public function descargarPdf(Request $request)
 {
-    $id = $request->id_usuario;
+    $usuario = Auth::user();
+    if (!$usuario) return redirect('/inicio-de-sesion');
 
-    
-    $usuario = User::findOrFail($id);
-
-    
-    $desde = $request->desde;
+    $desde = $request->desde; // formato YYYY-MM
     $hasta = $request->hasta;
 
-    
     $query = Cuentas::with('contract')
         ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
         ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
+        ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
+        ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
         ->select(
             'cuentasporpagar.*',
-            'xml_files.proyectos as proyecto',
+            DB::raw('COALESCE(proyectos.nombre_proyecto, contract.proyecto) as proyecto'),
             'contract.importe_bruto_renta as importeBase'
         )
-        ->where('contract.user_id', $id);
+        ->where('contract.user_id', $usuario->id)
+        ->where('cuentasporpagar.estado', 'pagado');
 
-    
     if ($desde) {
-        $query->whereDate('cuentasporpagar.created_at', '>=', $desde);
+        $query->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(cuentasporpagar.mesesdepago, '$.mes')) >= ?", [$desde]);
     }
 
     if ($hasta) {
-        $query->whereDate('cuentasporpagar.created_at', '<=', $hasta);
+        $query->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(cuentasporpagar.mesesdepago, '$.mes')) <= ?", [$hasta]);
     }
 
-    $cuentas = $query->orderBy('cuentasporpagar.created_at', 'asc')->get();
+    $cuentas = $query->orderByRaw("JSON_UNQUOTE(JSON_EXTRACT(cuentasporpagar.mesesdepago, '$.mes')) ASC")->get();
 
-    
     $pdf = Pdf::loadView('pdf.estadodecuenta', [
         'usuario' => $usuario,
-        'cuentas' => $cuentas
+        'cuentas' => $cuentas,
     ]);
 
     return $pdf->download('EstadoDeCuenta-' . $usuario->name . '.pdf');

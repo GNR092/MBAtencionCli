@@ -134,7 +134,8 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
 
 
     //rutas de envio de avisos
-    Route::get('/enviar-avisos', fn() => view('enviarAvisos'));
+    Route::get('/enviar-avisos', [AvisoController::class, 'showForm'])->name('avisos.form');
+    Route::get('/api/usuarios/buscar', [AvisoController::class, 'buscarUsuarios'])->name('avisos.buscarUsuarios');
 
     Route::post('/avisos', [AvisoController::class, 'store'])->name('avisos.store');
     //lista de inversionistas

@@ -14,8 +14,12 @@
 
         if (response.ok) {
             data.show = false;
-            let url = "/contratos/descargar/" + data.docId;
-            window.location.href = url;
+            const a = document.createElement('a');
+            a.href = "/contratos/descargar/" + data.docId;
+            a.download = '';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
         } else {
             let text = await response.text(); 
             try {

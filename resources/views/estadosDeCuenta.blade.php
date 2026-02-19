@@ -131,34 +131,13 @@
                                 </td>
 
                                 <td class="font-bold text-carbon-900 uppercase">
-                                    {{ $cuenta->proyectos }}
+                                    {{ $cuenta->proyecto ?? '—' }}
                                 </td>
 
                                 <td class="text-center">
-                                    @if($cuenta->estado === 'parcial')
-                                    <div class="relative inline-block">
-                                        <select
-                                            class="estado-select appearance-none bg-white border border-dorado-400 text-dorado-400 text-[10px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-full outline-none cursor-pointer focus:ring-2 focus:ring-dorado/20 hover:bg-dorado/5 transition-colors pr-8"
-                                            data-id="{{ $cuenta->id_cuentas_por_pagar }}">
-                                            <option value="parcial" selected>Parcial</option>
-                                            <option value="pagado">Pagado</option>
-                                        </select>
-                                        <div
-                                            class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-dorado">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 9l-7 7-7-7"></path>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    @else
-                                    <span class="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border
-                                        {{ $cuenta->estado === 'pendiente'
-                                            ? 'bg-red-100 text-red-700 border-red-200'
-                                            : 'bg-dorado/10 text-dorado-400 border-dorado/20' }}">
+                                    <span class="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-dorado/10 text-dorado-400 border-dorado/20">
                                         {{ ucfirst($cuenta->estado) }}
                                     </span>
-                                    @endif
                                 </td>
 
                                 <td class="text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
@@ -229,7 +208,6 @@
                     class="text-dorado-400 font-bold">Descarga</span></h2>
             <form action="{{ route('estadoCuenta.descargarPdf') }}" method="POST" class="space-y-12">
                 @csrf
-                <input type="hidden" name="id_usuario" value="{{ $usuario->id }}">
                 <div class="group">
                     <label
                         class="block text-[9px] uppercase tracking-[0.3em] text-dorado-400 mb-4 opacity-60 font-bold">Desde</label>

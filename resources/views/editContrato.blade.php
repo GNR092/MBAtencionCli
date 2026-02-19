@@ -1,6 +1,12 @@
 @extends('layouts.admin')
 
 @section('content')
+<div class="mb-4">
+    <a href="{{ route('contratos.show') }}"
+        class="inline-flex items-center gap-2 text-sm text-[#d8c495] hover:text-white transition-colors">
+        ← Volver a contratos
+    </a>
+</div>
 <h1 class="text-center text-black text-3xl p-4">Editar Contrato</h1>
 
 <div class="flex justify-center py-4">
@@ -14,7 +20,7 @@
         <!-- Nombre del archivo actual -->
         <div class="mb-4">
             <p class="text-white mb-2">Archivo actual:</p>
-            <p class="bg-gray-100 rounded px-3 py-2">{{ $contractToEdit->nombre }}</p>
+            <p class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200 text-black">{{ $contractToEdit->nombre }}</p>
         </div>
 
         <!-- Campo para subir nuevo archivo -->
@@ -43,22 +49,12 @@
             <select name="proyect" id="proyect"
                 class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200 text-black"
                 required>
-                <option value="" disabled selected>Selecciona proyecto</option>
-                <option value="RESIDENT 1">RESIDENT 1</option>
-                <option value="RESIDENT 2">RESIDENT 2</option>
-                <option value="CAMPUS RECIDENCIA">CAMPUS RECIDENCIA</option>
-                <option value="TMZN 122">TMZN 122</option>
-                <option value="GRAND TEMOZON">GRAND TEMOZÓN</option>
-                <option value="MB RESORT MERIDA">MB RESORT MÉRIDA</option>
-                <option value="Princess Village">Princess Village</option>
-                <option value="Royal Square Plaza">Royal Square Plaza</option>
-                <option value="RUM">RUM</option>
-                <option value="Avenue Temozon">Avenue Temozón</option>
-                <option value="MB Resort Orlando">MB Resort Orlando</option>
-                <option value="MB Wellness Resort">MB Wellness Resort</option>
-                <option value="Aldea Borboleta I">Aldea Borboleta I</option>
-                <option value="Aldea Borboleta II">Aldea Borboleta II </option>
-                <option value="Aldea Borboleta III">Aldea Borboleta III</option>
+                <option value="" disabled>Selecciona proyecto</option>
+                @foreach($proyectos as $proyecto)
+                <option value="{{ $proyecto->id_proyecto }}" {{ $currentProyectoId == $proyecto->id_proyecto ? 'selected' : '' }}>
+                    {{ $proyecto->nombre_proyecto }}
+                </option>
+                @endforeach
             </select>
         </div>
 
@@ -68,7 +64,7 @@
             <label class="text-white">Importe Bruto *</label>
             <input type="text" name="importe_bruto_renta" id="importe_bruto_renta"
                 value="{{ old('importe_bruto_renta', $contractToEdit->importe_bruto_renta) }}"
-                class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200"
+                class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200 text-black"
                 onblur="formatearImporte(this)" required>
         </div>
         <!-- Estado -->

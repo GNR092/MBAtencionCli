@@ -5,12 +5,12 @@
     <div class="flex items-baseline gap-4">
         <span class="text-dorado-400 text-sm font-serif italic">|</span>
         <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
-            Contratos<span class="font-light text-dorado"></span><span class="text-dorado-400 animate-pulse">_</span>
+            Contratos<span class="font-light text-dorado-400"></span><span class="text-dorado-400 animate-pulse">_</span>
         </h1>
     </div>
 </header>
 @if(session('success'))
-<div id="alert-success" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+<div id="alert-success" class="bg-green-800/80 border border-green-400/30 text-green-300 px-4 py-3 rounded-xl mb-4 text-sm">
     {{ session('success') }}
 </div>
 <script>
@@ -19,39 +19,37 @@ setTimeout(() => {
 }, 4000);
 </script>
 @endif
-<div class="max-w-6xl mx-auto p-6 bg-[#0b0b0b] rounded-2xl shadow-lg">
+<div class="max-w-6xl mx-auto p-6 bg-[#112134]/60 backdrop-blur-md rounded-xl border border-[#d8c495]/20">
 
     <!-- Encabezado con título y barra de búsqueda -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
         <form method="post" action="{{ route('contratos.search') }}" class="relative mx-12 flex items-center gap-2">
             @csrf
-            <label for="searchInput" class="text-white">Buscar por:</label>
+            <label for="searchInput" class="text-white/70 text-sm">Buscar por:</label>
 
             <input type="text" id="searchInput" name="search" placeholder="Buscar..." value="{{ $search }}"
-                class="w-full sm:w-64 px-4 py-2 rounded-lg border border-gray-400 bg-[#eee]">
+                class="w-full sm:w-64 px-4 py-2 rounded-lg border border-[#d8c495]/30 bg-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#d8c495]">
 
             <select name="categoria" id="categoria"
-                class="bg-[#eee] p-3 rounded-lg mx-2 border border-gray-400 text-black">
+                class="bg-[#0d1f30] p-3 rounded-lg mx-2 border border-[#d8c495]/30 text-white">
                 <option value="id" {{ $categoria == 'id' ? 'selected' : '' }}>Contrato</option>
                 <option value="name" {{ $categoria == 'name' ? 'selected' : '' }}>Usuario</option>
             </select>
 
-            <button type="submit" class="bg-[#d8c495] hover:bg-[#c9a143] text-black px-4 py-2 rounded mx-2">
+            <button type="submit" class="bg-[#d8c495] hover:bg-[#b8a374] text-[#112134] px-4 py-2 rounded mx-2 font-bold text-sm uppercase tracking-wider">
                 BUSCAR
             </button>
 
             <a href="{{ route('contratos.clean') }}"
-                class="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded mx-2">
+                class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded mx-2 text-sm">
                 LIMPIAR
             </a>
 
             <!-- BOTÓN NUEVO CONTRATO -->
-            <button type="button" id="openModalBtn" class="bg-green-300 hover:bg-green-400 text-black px-4 py-2 rounded mx-2">
+            <button type="button" id="openModalBtn" class="bg-[#d8c495]/20 hover:bg-[#d8c495]/30 text-[#d8c495] border border-[#d8c495]/40 px-4 py-2 rounded mx-2 text-sm font-bold">
                 Agregar
             </button>
         </form>
-
-
     </div>
 
     <!-- Tabla de contratos -->
@@ -83,7 +81,7 @@ setTimeout(() => {
                         <td>
                             <span
                                 class="px-2 py-1 text-[10px] font-bold uppercase rounded-full tracking-wider
-                            {{ $contrato->estado === 'activo' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                            {{ $contrato->estado === 'activo' ? 'bg-green-900/40 text-green-400 border border-green-400/30' : 'bg-red-900/40 text-red-400 border border-red-400/30' }}">
                                 {{ ucfirst($contrato->estado) }}
                             </span>
                         </td>
@@ -104,7 +102,7 @@ setTimeout(() => {
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="py-10 text-carbon-900 font-medium italic">
+                        <td colspan="7" class="py-10 text-white/30 font-medium italic">
                             No tienes contratos asignados.
                         </td>
                     </tr>
@@ -113,53 +111,52 @@ setTimeout(() => {
             </table>
         </div>
 
-        <div class="bg-gray-50 border-t border-carbon-200 p-4 flex justify-center">
+        <div class="border-t border-[#d8c495]/10 p-4 flex justify-center">
             {{ $contratos->links('pagination::tailwind') }}
         </div>
     </div>
 
 
 </div>
-<!-- Modal editar  contrato -->
+<!-- Modal editar contrato -->
 <div id="confirmModalEditar"
-    class=" bg-white/30 backdrop-blur-sm fixed inset-0 bg-opacity-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-lg shadow-lg p-6 w-96">
-        <h2 class="text-lg font-bold mb-4">Confirmar contraseña</h2>
+    class="bg-black/60 backdrop-blur-sm fixed inset-0 flex items-center justify-center hidden">
+    <div class="bg-[#112134] border border-[#d8c495]/20 rounded-xl shadow-lg p-6 w-96">
+        <h2 class="text-[#d8c495] font-bold uppercase tracking-widest text-sm mb-4">Confirmar contraseña</h2>
         <form method="POST" action="{{ route('contratos.confirmPasswordEdit') }}">
             @csrf
             <input type="hidden" name="user_id" id="userIdInput" />
 
-            <label for="password" class="block text-sm mb-2">Contraseña de administrador:</label>
+            <label for="password" class="block text-xs font-bold uppercase tracking-[0.2em] text-white/50 mb-2">Contraseña de administrador:</label>
             <input type="password" name="password" required
-                class="w-full px-3 py-2 border border-gray-400 rounded mb-4">
+                class="w-full px-3 py-2 border border-[#d8c495]/30 rounded-lg bg-white/5 text-white mb-4 focus:outline-none focus:border-[#d8c495]">
             <div class="flex justify-end gap-2">
                 <button type="button" onclick="closeModalEditar()"
-                    class="bg-gray-300 px-4 py-2 rounded">Cancelar</button>
-                <button type="submit" class="bg-[#d8c495] hover:bg-[#c9a143] px-4 py-2 rounded">Confirmar</button>
+                    class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded">Cancelar</button>
+                <button type="submit" class="bg-[#d8c495] hover:bg-[#b8a374] text-[#112134] font-bold px-4 py-2 rounded">Confirmar</button>
             </div>
-
         </form>
     </div>
 </div>
-<!-- MODAL DE CONFIRMACIÓN -->
+<!-- MODAL DE CONFIRMACIÓN (Nuevo contrato) -->
 <div id="confirmModal"
-    class="bg-white/30 backdrop-blur-sm fixed inset-0 bg-opacity-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-lg shadow-lg p-6 w-96">
-        <h2 class="text-lg font-bold mb-4 text-center">Confirmar contraseña</h2>
+    class="bg-black/60 backdrop-blur-sm fixed inset-0 flex items-center justify-center hidden">
+    <div class="bg-[#112134] border border-[#d8c495]/20 rounded-xl shadow-lg p-6 w-96">
+        <h2 class="text-[#d8c495] font-bold uppercase tracking-widest text-sm mb-4 text-center">Confirmar contraseña</h2>
         <form method="POST" action="{{ route('contratos.confirmPassword') }}">
             @csrf
             <div class="mb-4">
-                <label for="password" class="block text-gray-700 mb-2">Contraseña del administrador:</label>
+                <label for="password" class="block text-xs font-bold uppercase tracking-[0.2em] text-white/50 mb-2">Contraseña del administrador:</label>
                 <input type="password" name="password" id="password"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+                    class="w-full px-3 py-2 border border-[#d8c495]/30 rounded-lg bg-white/5 text-white focus:outline-none focus:border-[#d8c495]"
                     required>
             </div>
             <div class="flex justify-end space-x-3">
                 <button type="button" id="closeModalBtn"
-                    class="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded">
+                    class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded">
                     Cancelar
                 </button>
-                <button type="submit" class="bg-[#033a7c] hover:bg-[#022b5a] text-white px-4 py-2 rounded">
+                <button type="submit" class="bg-[#d8c495] hover:bg-[#b8a374] text-[#112134] font-bold px-4 py-2 rounded">
                     Confirmar
                 </button>
             </div>
@@ -168,22 +165,21 @@ setTimeout(() => {
 </div>
 <!--modal para eliminar contrato-->
 <div id="confrimDeleteModal"
-    class=" bg-white/30 backdrop-blur-sm fixed inset-0 bg-opacity-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-lg shadow-lg p-6 w-96">
-        <h2 class="text-lg font-bold mb-4">Confirmar contraseña</h2>
+    class="bg-black/60 backdrop-blur-sm fixed inset-0 flex items-center justify-center hidden">
+    <div class="bg-[#112134] border border-[#d8c495]/20 rounded-xl shadow-lg p-6 w-96">
+        <h2 class="text-[#d8c495] font-bold uppercase tracking-widest text-sm mb-4">Confirmar contraseña</h2>
         <form method="POST" action="{{ route('contratos.delete') }}">
             @csrf
             <input type="hidden" name="id" id="userIdInputDelete" />
 
-            <label for="password" class="block text-sm mb-2">Contraseña de administrador:</label>
+            <label for="password" class="block text-xs font-bold uppercase tracking-[0.2em] text-white/50 mb-2">Contraseña de administrador:</label>
             <input type="password" name="password" required
-                class="w-full px-3 py-2 border border-gray-400 rounded mb-4">
+                class="w-full px-3 py-2 border border-[#d8c495]/30 rounded-lg bg-white/5 text-white mb-4 focus:outline-none focus:border-[#d8c495]">
             <div class="flex justify-end gap-2">
                 <button type="button" onclick="closeModalDelete()"
-                    class="bg-gray-300 px-4 py-2 rounded">Cancelar</button>
-                <button type="submit" class="bg-[#d8c495] hover:bg-[#c9a143] px-4 py-2 rounded">Confirmar</button>
+                    class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded">Cancelar</button>
+                <button type="submit" class="bg-[#d8c495] hover:bg-[#b8a374] text-[#112134] font-bold px-4 py-2 rounded">Confirmar</button>
             </div>
-
         </form>
     </div>
 </div>

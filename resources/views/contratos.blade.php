@@ -110,7 +110,7 @@
                                 </td>
 
                                 <td class="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                                    {{ $contrato->proyecto }}
+                                    {{ $contrato->proyecto ?? '—' }}
                                 </td>
 
                                 <td class="text-center font-medium text-carbon-900">
@@ -157,35 +157,63 @@
         </div>
     </div>
 
-    {{-- Modal de Seguridad (Alpine.js) --}}
-    <div x-show="show" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center p-6"
-        style="display: none;">
-        <div class="absolute inset-0 bg-black/95 backdrop-blur-xl" @click="show=false"></div>
-        <div class="bg-carbon-900 border border-white/10 w-full max-w-md relative z-10 shadow-3xl p-12 md:p-16">
-            <h2 class="text-white text-3xl font-extralight uppercase tracking-tighter mb-8">Validación de<br><span
-                    class="text-dorado-400 font-bold">Seguridad</span></h2>
+    {{-- Modal de Seguridad --}}
+    <div x-show="show"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         style="display: none;">
 
-            <div class="space-y-8">
-                <div class="group">
-                    <label
-                        class="block text-[9px] uppercase tracking-[0.3em] text-dorado-400 mb-4 opacity-60 font-bold">Contraseña
-                        de Usuario</label>
-                    <input type="password" x-model="password" placeholder="••••••••"
-                        class="w-full bg-transparent border-b border-white/10 py-4 text-xl text-white outline-none focus:border-dorado-400 transition-all">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="show=false"></div>
+
+        <div class="relative z-10 w-full max-w-sm bg-[#111] border border-dorado-400/20 rounded-2xl shadow-2xl overflow-hidden">
+
+            {{-- Franja superior dorada --}}
+            <div class="h-1 w-full bg-linear-to-r from-dorado-400/0 via-dorado-400 to-dorado-400/0"></div>
+
+            <div class="px-8 py-10">
+                {{-- Icono + título --}}
+                <div class="flex flex-col items-center mb-8 text-center">
+                    <div class="w-12 h-12 rounded-full border border-dorado-400/30 flex items-center justify-center mb-4 bg-dorado-400/5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-dorado-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/>
+                        </svg>
+                    </div>
+                    <h2 class="text-white text-xl font-semibold tracking-wide">Confirmar identidad</h2>
+                    <p class="text-white/40 text-xs mt-1 tracking-wider">Ingresa tu contraseña para continuar</p>
                 </div>
 
-                <p x-show="error" x-text="error"
-                    class="text-red-500/80 text-[10px] tracking-widest uppercase font-bold italic"></p>
+                {{-- Input contraseña --}}
+                <div class="mb-2">
+                    <div class="relative">
+                        <input type="password"
+                               x-model="password"
+                               @keydown.enter="checkPassword"
+                               x-ref="passwordInput"
+                               x-init="$watch('show', v => v && $nextTick(() => $refs.passwordInput.focus()))"
+                               placeholder="Contraseña"
+                               class="w-full bg-white/5 border border-white/10 focus:border-dorado-400/60 rounded-lg px-4 py-3 text-white placeholder-white/20 outline-none transition-all text-sm">
+                    </div>
+                </div>
 
-                <div class="flex flex-col gap-4 pt-4">
-                    <button
-                        class="w-full bg-dorado-400 text-black text-[10px] tracking-[0.3em] uppercase font-bold py-5 hover:bg-white transition-all duration-700"
-                        @click="checkPassword">
-                        Confirmar Acceso
+                {{-- Error --}}
+                <div class="h-6 mb-4">
+                    <p x-show="error" x-text="error" x-transition
+                       class="text-red-400 text-[11px] tracking-wide text-center"></p>
+                </div>
+
+                {{-- Botones --}}
+                <div class="flex flex-col gap-3">
+                    <button @click="checkPassword"
+                            class="w-full bg-dorado-400 hover:bg-dorado-300 text-black text-xs font-bold tracking-[0.2em] uppercase py-3 rounded-lg transition-all duration-200 shadow-lg shadow-dorado-400/20">
+                        Descargar documento
                     </button>
-                    <button
-                        class="w-full text-white/40 text-[9px] tracking-[0.3em] uppercase font-bold py-3 hover:text-white transition-all"
-                        @click="show=false">
+                    <button @click="show=false; password=''; error=''"
+                            class="w-full text-white/30 hover:text-white/70 text-xs tracking-widest uppercase py-2 transition-all">
                         Cancelar
                     </button>
                 </div>
@@ -194,5 +222,5 @@
     </div>
 </div>
 
-<script src="js/checkContratos.js"></script>
+<script src="{{ asset('js/checkContratos.js') }}"></script>
 @endsection

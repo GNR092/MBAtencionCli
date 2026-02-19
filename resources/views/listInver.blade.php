@@ -15,26 +15,26 @@
     <!-- Encabezado con título y barra de búsqueda -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
         <form method="GET" action="{{ route('listInver') }}" class="relative mx-12 flex items-center gap-2">
-            <label for="searchInput" class="text-white mx-2">Buscar por:</label>
+            <label for="searchInput" class="text-white/70 mx-2 text-sm">Buscar por:</label>
 
             <!-- Input de búsqueda -->
             <input type="text" id="searchInput" name="search" value="{{ request('search') }}" placeholder="Buscar..."
-                class="w-full sm:w-64 px-4 py-2 rounded-lg border border-gray-400 bg-[#eee]">
+                class="w-full sm:w-64 px-4 py-2 rounded-lg border border-[#d8c495]/30 bg-white/10 text-white placeholder-white/30 focus:outline-none focus:border-[#d8c495]">
 
             <!-- Categoría -->
-            <select name="categoria" id="categoria" class="bg-[#eee] p-3 rounded-lg mx-2 text-black">
+            <select name="categoria" id="categoria" class="bg-[#0d1f30] p-3 rounded-lg mx-2 border border-[#d8c495]/30 text-white">
                 <option value="proyectos" {{ request('categoria') == 'proyectos' ? 'selected' : '' }}>Proyectos</option>
                 <option value="nombre" {{ request('categoria') == 'nombre' ? 'selected' : '' }}>Nombre inversor</option>
                 <option value="factura" {{ request('categoria') == 'factura' ? 'selected' : '' }}>ID Factura</option>
             </select>
 
             <!-- Botón -->
-            <button type="submit" class="bg-[#d8c495] hover:bg-[#c9a143] text-black px-4 py-2 rounded mx-2">
+            <button type="submit" class="bg-[#d8c495] hover:bg-[#b8a374] text-[#112134] px-4 py-2 rounded mx-2 font-bold text-sm uppercase tracking-wider">
                 BUSCAR
             </button>
 
             <a href="{{ route('listInver.limpiar') }}"
-                class="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded mx-2">
+                class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded mx-2 text-sm">
                 LIMPIAR
             </a>
         </form>
@@ -55,14 +55,14 @@
                 <tbody id="tableBody">
                     @forelse($xmlFiles as $file)
                     <tr>
-                        <td class="font-bold">{{ $file->batch_id }}</td>
-                        <td>Proyecto_ficticio</td>
+                        <td class="font-bold">{{ $file->id }}</td>
+                        <td>{{ $file->nombre_proyecto ?? '—' }}</td>
                         <td>{{ $file->created_at }}</td>
                         <td>{{ $file->emisor_name }}</td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="py-10 text-carbon-900 font-medium italic">
+                        <td colspan="4" class="py-10 text-white/30 font-medium italic">
                             No se encontraron facturas
                         </td>
                     </tr>
@@ -71,7 +71,7 @@
             </table>
         </div>
 
-        <div class="bg-gray-50 border-t border-carbon-200 p-4 flex justify-center">
+        <div class="border-t border-[#d8c495]/10 p-4 flex justify-center">
             {{ $xmlFiles->links('pagination::tailwind') }}
         </div>
     </div>

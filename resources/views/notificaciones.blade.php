@@ -30,10 +30,9 @@
     </header>
 
     {{-- Tabla --}}
-    <div class="w-full px-4 mb-20 flex justify-center">
+    <div class="w-full px-2 mb-20">
 
-        {{-- TARJETA WIDGET (Ancho fijo max-w-lg) --}}
-        <div class="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-carbon-200 overflow-hidden flex flex-col">
+        <div class="w-full bg-white rounded-2xl shadow-2xl border border-carbon-200 overflow-hidden flex flex-col">
 
             {{-- HEADER: Pestañas EXPANDIDAS (Ocupan el 100% exacto) --}}
             <div class="flex w-full bg-carbon-900 border-b-4 border-dorado">
@@ -53,42 +52,39 @@
                 </button>
             </div>
 
-            {{-- AREA DE CONTENIDO (Altura mínima para llenar el bloque visualmente) --}}
-            <div class="flex-grow bg-white min-h-[450px] relative">
+            {{-- AREA DE CONTENIDO --}}
+            <div class="bg-white h-[580px] relative overflow-hidden">
 
                 {{-- CONTENIDO: NUEVAS --}}
                 <div id="New" class="tabcontent w-full h-full absolute inset-0 overflow-y-auto custom-scroll block">
                     <ul class="divide-y divide-gray-100 min-h-full">
                         @forelse($nuevas as $n)
-                        <li class="group p-6 hover:bg-gray-50 transition-colors duration-200">
-                            <div class="flex flex-col gap-4 text-center w-full">
-
-                                {{-- Header Notificación --}}
-                                <div class="w-full">
-                                    <h3
-                                        class="text-carbon-900 text-sm font-bold uppercase tracking-wide leading-tight mb-2 break-words">
+                        <li class="group relative p-6 hover:bg-amber-50/40 transition-colors duration-200">
+                            <span class="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full bg-dorado-400 opacity-80"></span>
+                            <div class="pl-4 flex flex-col gap-3">
+                                <div class="flex items-start justify-between gap-3">
+                                    <h3 class="text-carbon-900 text-[11px] font-black uppercase tracking-widest leading-tight flex-1">
                                         {{ $n->data['asunto'] }}
                                     </h3>
-                                    <span
-                                        class="inline-block px-3 py-1 bg-dorado/10 text-dorado-400 text-[9px] tracking-widest uppercase font-bold rounded-full">
-                                        {{ $n->created_at->format('d/m/Y • H:i') }}
+                                    <span class="shrink-0 text-[9px] text-dorado-400 tracking-widest uppercase font-semibold bg-dorado/10 border border-dorado/20 px-2 py-1 rounded-full whitespace-nowrap">
+                                        {{ $n->created_at->diffForHumans() }}
                                     </span>
                                 </div>
-
-                                {{-- Mensaje --}}
-                                <p class="text-gray-600 text-xs font-medium leading-relaxed px-2 break-words">
+                                <p class="text-gray-500 text-[11px] leading-relaxed">
                                     {{ $n->data['mensaje'] }}
                                 </p>
-
-                                {{-- Botón Full Width --}}
-                                <form method="POST" action="{{ route('notifications.read', $n->id) }}"
-                                    class="w-full mt-2">
-                                    @csrf
-                                    <button type="submit"
-                                        class="w-full bg-dorado-400 text-white text-[10px] tracking-[0.2em] uppercase font-bold py-3 rounded-lg shadow-md hover:bg-[#b58714] transition-all transform hover:-translate-y-0.5">
-                                        Leer Notificación
-                                    </button>
-                                </form>
+                                <div class="flex items-center justify-between pt-1">
+                                    <span class="text-[9px] text-gray-300 uppercase tracking-widest">
+                                        {{ $n->created_at->format('d/m/Y · H:i') }}
+                                    </span>
+                                    <form method="POST" action="{{ route('notifications.read', $n->id) }}">
+                                        @csrf
+                                        <button type="submit"
+                                            class="text-[9px] tracking-[0.2em] uppercase font-bold text-dorado-400 hover:text-white hover:bg-dorado-400 border border-dorado-400/50 px-4 py-1.5 rounded-lg transition-all duration-200">
+                                            Marcar leída
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </li>
                         @empty
@@ -118,25 +114,27 @@
                 <div id="Before" class="tabcontent w-full h-full absolute inset-0 overflow-y-auto custom-scroll hidden">
                     <ul class="divide-y divide-gray-100 min-h-full">
                         @forelse($antiguas as $n)
-                        <li class="p-5 hover:bg-gray-50 transition-colors duration-200 w-full">
-                            <div class="flex items-center justify-between gap-4 w-full">
-                                <div class="flex items-start gap-3 text-left flex-1">
-                                    <div class="w-2 h-2 rounded-full bg-gray-300 mt-1 shrink-0"></div>
-                                    <div class="w-full">
-                                        <h3
-                                            class="text-carbon-900 text-xs font-bold uppercase leading-tight break-words">
-                                            {{ $n->data['asunto'] }}</h3>
-                                        <span
-                                            class="text-[9px] text-gray-400 uppercase tracking-widest block mt-1">{{ $n->created_at->format('d/m/Y') }}</span>
+                        <li class="group relative p-5 hover:bg-gray-50 transition-colors duration-200">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex items-start gap-3 flex-1 min-w-0">
+                                    <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0"></span>
+                                    <div class="min-w-0">
+                                        <h3 class="text-carbon-900 text-[11px] font-bold uppercase tracking-wide leading-tight">
+                                            {{ $n->data['asunto'] }}
+                                        </h3>
+                                        <p class="text-gray-400 text-[10px] leading-relaxed mt-1 line-clamp-2">
+                                            {{ $n->data['mensaje'] }}
+                                        </p>
+                                        <span class="text-[9px] text-gray-300 uppercase tracking-widest mt-1 block">
+                                            {{ $n->created_at->format('d/m/Y · H:i') }}
+                                        </span>
                                     </div>
                                 </div>
-
-                                <form method="POST" action="{{ route('notifications.delete', $n->id) }}"
-                                    class="shrink-0">
+                                <form method="POST" action="{{ route('notifications.delete', $n->id) }}" class="shrink-0">
                                     @csrf @method('DELETE')
                                     <button type="submit"
-                                        class="text-red-500 text-[9px] tracking-widest uppercase font-bold hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg transition-all border border-transparent hover:border-red-100">
-                                        Eliminar
+                                        class="opacity-0 group-hover:opacity-100 text-[9px] tracking-widest uppercase font-bold text-red-400 hover:text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-all border border-transparent hover:border-red-100">
+                                        ✕
                                     </button>
                                 </form>
                             </div>

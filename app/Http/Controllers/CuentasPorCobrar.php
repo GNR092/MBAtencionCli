@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -370,12 +369,14 @@ public function Index(Request $request)
             ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
             ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
             ->leftJoin('users', 'contract.user_id', '=', 'users.id')
+            ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
+            ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
             ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id')
             ->select(
                 'cuentasporpagar.*',
                 'users.name as name',
                 'contract.importe_bruto_renta as importeBase',
-                'contract.proyecto as proyecto',
+                DB::raw('COALESCE(proyectos.nombre_proyecto, contract.proyecto) as proyecto'),
             )
             ->where('users.id', $user->id)
             ->where('cuentasporpagar.estado', '!=', 'pagado')

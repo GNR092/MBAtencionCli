@@ -3,12 +3,14 @@
 
 @section('content')
 
-<h1 class="text-center text-black text-3xl p-4"> CONTRATOS</h1>
+<div class="mb-4">
+    <a href="{{ route('contratos.show') }}"
+        class="inline-flex items-center gap-2 text-sm text-[#d8c495] hover:text-white transition-colors">
+        ← Volver a contratos
+    </a>
+</div>
+<h1 class="text-center text-dorado-400 text-3xl p-4"> CONTRATOS</h1>
 <div class="flex justify-center py-4">
-
-    @php
-    $user = session('user');
-    @endphp
 
     <form action="/subir-archivo" method="POST" enctype="multipart/form-data"
         class="bg-[#2f2f2f] p-6 rounded-2xl shadow-lg w-full max-w-md">
@@ -25,12 +27,12 @@
 
         <div class="mb-6">
             <!-- Select solo para admin -->
-            @if($user && $user->role === 'administrador')
+            @if($admin->role === 'administrador')
             <label for="myInput" class="text-white">Asignar a usuario:</label>
 
             <!-- Input de búsqueda -->
             <input type="text" id="myInput" placeholder="Buscar usuario..."
-                class="bg-white rounded-lg px-4 py-2 w-full">
+                class="bg-white  text-black rounded-lg px-4 py-2 w-full">
 
             <!-- Lista de usuarios -->
             <ul id="myUL" class="absolute w-64 bg-white rounded-lg mt-1 shadow-md max-h-60 overflow-y-auto hidden z-50">
@@ -69,7 +71,7 @@
                     Importe Bruto *
                 </label>
                 <input type="text" name="importe_bruto_renta" id="importe_bruto_renta" placeholder="$0.00"
-                    class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200"
+                    class="p-1 mt-1 block w-full border text-black border-gray-300 rounded-md shadow-sm bg-gray-200"
                     value="{{ old('importe_bruto_renta') }}" required onblur="formatearImporte(this)">
                 <small class="text-white">Ejemplo: $1,500,000.50</small>
             </div>
@@ -79,7 +81,7 @@
                     Fecha de inicio*
                 </label>
                 <input type="date" name="fecha_inicio" id="fecha_inicio" placeholder="dd/mm/aaaa"
-                    class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200"
+                    class="p-1 mt-1 block w-full border text-black border-gray-300 rounded-md shadow-sm bg-gray-200"
                     value="{{ old('fecha_inicio') }}" required>
             </div>
             <!--fecha de terminacion -->
@@ -88,7 +90,7 @@
                     Fecha de terminacion*
                 </label>
                 <input type="date" name="fecha_terminacion" id="fecha_terminacion" placeholder="dd/mm/aaaa"
-                    class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200"
+                    class="p-1 mt-1 block w-full border text-black border-gray-300 rounded-md shadow-sm bg-gray-200"
                     value="{{ old('fecha_terminacion') }}" required>
             </div>
             <!-- Estado del contrato -->

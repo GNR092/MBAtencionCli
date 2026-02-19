@@ -3,7 +3,7 @@
 @section('content')
     <div class="max-w-6xl mx-auto p-6">
 
-        {{-- HEADER GIGANTE (Igual a Facturas) --}}
+        {{-- HEADER GIGANTE --}}
         <header class="mb-10 px-2">
             <div class="flex items-baseline gap-4">
                 <span class="text-dorado-400 text-sm font-serif italic">|</span>
@@ -16,12 +16,12 @@
         {{-- BARRA DE ACCIONES --}}
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-end mb-8 px-2">
             <a href="{{ route('incrementos.create') }}"
-               class="bg-[#d8c495] hover:bg-[#c9a143] text-black text-sm font-bold px-6 py-3 rounded shadow-md transition-all hover:scale-105">
+               class="bg-[#d8c495] hover:bg-[#b8a374] text-[#112134] text-sm font-bold px-6 py-3 rounded-lg transition-all uppercase tracking-wider">
                 + NUEVO INCREMENTO
             </a>
         </div>
 
-        {{-- TABLA DORADA --}}
+        {{-- TABLA --}}
         <div class="tabla-dorada-container">
             <div class="overflow-x-auto custom-scroll">
                 <table class="tabla-dorada">
@@ -35,9 +35,9 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($incrementos as $inc)
+                    @forelse($incrementos as $inc)
                         <tr>
-                            <td class="font-bold text-carbon-900">
+                            <td class="font-bold">
                                 {{ $inc->contract->nombre ?? 'Contrato '.$inc->contract->id }}
                             </td>
                             <td class="text-dorado-400 font-bold font-mono text-lg">
@@ -53,14 +53,20 @@
                                 <form action="{{ route('incrementos.destroy', $inc->id) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="bg-red-50 text-red-600 border border-red-200 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-red-100 transition"
+                                    <button class="text-[10px] tracking-widest uppercase font-bold text-red-400 hover:text-white hover:bg-red-500 border border-red-400/50 px-4 py-1.5 rounded-lg transition-all"
                                             onclick="return confirm('¿Eliminar incremento?')">
                                         Eliminar
                                     </button>
                                 </form>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="5" class="py-16 text-center text-white/30 text-xs uppercase tracking-widest font-bold">
+                                No hay incrementos registrados
+                            </td>
+                        </tr>
+                    @endforelse
                     </tbody>
                 </table>
             </div>

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Http;
 use App\Mail\AvisoMail;
 use App\Models\User;
+use App\Models\Proyecto;
 use App\Notifications\AvisoInterno;
 use Illuminate\Notifications\DatabaseNotification;
 
@@ -96,6 +97,28 @@ class AvisoController extends Controller
     }
 
     
+    public function showForm()
+    {
+        $proyectos = Proyecto::orderBy('nombre_proyecto')->get();
+        return view('enviarAvisos', compact('proyectos'));
+    }
+
+    public function buscarUsuarios(Request $request)
+    {
+        $q = $request->input('q', '');
+
+        if (strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $usuarios = User::where('name', 'like', "%{$q}%")
+            ->orWhere('email', 'like', "%{$q}%")
+            ->limit(10)
+            ->get(['id', 'name', 'email']);
+
+        return response()->json($usuarios);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -104,22 +127,21 @@ class AvisoController extends Controller
             'mensaje'     => 'required|string',
             'canales'     => 'required|array',
             'proyect'     => 'nullable|array',
-            'proyect.*'   => 'in:RESIDENT 1,RESIDENT 2,CAMPUS RECIDENCIA,TMZN 122,GRAND TEMOZON,MB RESORT MERIDA,Princess Village,Royal Square Plaza,RUM,Avenue Temozon,MB Resort Orlando,MB Wellness Resort,Aldea Borboleta I,Aldea Borboleta II,Aldea Borboleta III',
+            'proyect.*'   => 'exists:proyectos,id_proyecto',
             'canales.*'   => 'in:interno,correo,whatsapp',
         ]);
 
-        
+
         if ($request->boolean('todos')) {
             $usuarios = User::all();
             if ($usuarios->isEmpty()) {
                 return back()->withErrors(['usuarios' => 'No hay usuarios para enviar.']);
             }
         } elseif ($request->filled('proyect')) {
-            
-            $usuarios = User::where(function ($q) use ($request) {
-                foreach ($request->proyect as $p) {
-                    $q->orWhereJsonContains('proyect', $p);
-                }
+
+            $proyectIds = $request->proyect;
+            $usuarios = User::whereHas('proyectos', function ($q) use ($proyectIds) {
+                $q->whereIn('proyectos.id_proyecto', $proyectIds);
             })->get();
 
             if ($usuarios->isEmpty()) {

@@ -2,21 +2,6 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-        <!-- LOGO -->
-    <img src="/public/uploads/Logo-Png.png" 
-         alt="Logo"
-         style="width: 200px; height: auto;">
-
-    <!-- TÍTULO A LA DERECHA -->
-    <div style="text-align: right; font-size: 12px; line-height: 16px;">
-        <div style="font-size: 18px; font-weight: bold;">Estado de Cuenta</div>
-        <div style="font-size: 13px;">Libretón Básico Cuenta Digital</div>
-        <div style="font-size: 11px;">PÁGINA 1 / 1</div>
-    </div>
-
-    </div>
-
     <style>
         
         body {
@@ -39,6 +24,15 @@
     </style>
 </head>
 <body>
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+    <img src="{{ public_path('uploads/Logo-Png.png') }}" alt="Logo" style="width: 200px; height: auto;">
+    <div style="text-align: right; font-size: 12px; line-height: 16px;">
+        <div style="font-size: 18px; font-weight: bold;">Estado de Cuenta</div>
+        <div style="font-size: 13px;">MB Signature Properties</div>
+        <div style="font-size: 11px;">Fecha: {{ now()->format('d/m/Y') }}</div>
+    </div>
+</div>
+
 <!-- CONTENEDOR PARA ALINEAR TODA LA TABLA A LA DERECHA -->
 <div style="width: 100%; display: flex; justify-content: flex-end; margin-left: 40%;">
     <!-- TABLA DE INFORMACIÓN — ESTILO BBVA -->
@@ -88,8 +82,8 @@
     foreach ($cuentas as $c) {
 
         
-        if (!is_null($c->saldo_pendiente)) {
-            $totalCargos += (float) $c->saldo_pendiente;
+        if (!is_null($c->saldo_neto)) {
+            $totalCargos += (float) $c->saldo_neto;
         }
 
         

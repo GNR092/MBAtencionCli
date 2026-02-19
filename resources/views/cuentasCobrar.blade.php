@@ -3,7 +3,7 @@
 @section('content')
 <div class="w-full flex flex-col min-h-screen">
 
-    {{-- Header Minimalista (Proporciones Exactas de Referencia) --}}
+    {{-- Header Minimalista --}}
     <nav class="flex justify-between items-center mb-16 px-2">
         <a href="{{ route('user.dashboard') }}"
             class="group flex items-center gap-4 text-[10px] tracking-[0.4em] uppercase text-white/40 hover:text-dorado-400 transition-all duration-700">
@@ -16,7 +16,7 @@
         </span>
     </nav>
 
-    {{-- Hero Section (Proporciones Exactas de Referencia) --}}
+    {{-- Hero Section --}}
     <header class="mb-20 px-2">
         <div class="flex items-baseline gap-4">
             <span class="text-dorado-400 text-sm font-serif italic">03</span>
@@ -34,36 +34,34 @@
     <div class="w-full px-2 mb-20">
         <div class="flex flex-col gap-8 bg-transparent">
 
-            {{-- BLOQUE 1: SECCIÓN BUSCADOR (Tarjeta Blanca) --}}
-            <div class="bg-white rounded-2xl shadow-xl border border-carbon-200 p-8 md:p-10">
+            {{-- BLOQUE 1: BUSCADOR --}}
+            <div class="bg-[#112134]/60 backdrop-blur-md rounded-xl border border-[#d8c495]/20 p-8 md:p-10">
                 <form method="GET" action="{{ route('cuentasCobrar') }}"
                     class="flex flex-col lg:flex-row items-end gap-6">
                     @csrf
 
                     <div class="flex-1 w-full">
-                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-carbon-900 mb-3 ">
+                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
                             Buscar Inversionista
                         </label>
                         <div class="relative w-full">
                             <input type="text" name="search" value="{{ request('search') }}" placeholder="ESCRIBIR..."
-                                class="w-full bg-gray-50 border border-gray-300 rounded-lg py-4 pl-4 pr-4 text-xl text-carbon-900 font-light focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-all uppercase tracking-tight placeholder-gray-300">
+                                class="w-full bg-white/5 border border-[#d8c495]/30 rounded-lg py-4 pl-4 pr-4 text-xl text-white font-light focus:outline-none focus:border-[#d8c495] focus:ring-1 focus:ring-[#d8c495]/30 transition-all uppercase tracking-tight placeholder-white/20">
                         </div>
                     </div>
 
                     <div class="w-full lg:w-64">
-                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-carbon-900 mb-3">
+                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
                             Filtrar por
                         </label>
                         <div class="relative">
                             <select name="categoria"
-                                class="w-full bg-gray-50 border border-gray-300 rounded-lg py-4 pl-4 pr-10 text-lg text-carbon-900 font-light focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 appearance-none cursor-pointer transition-all">
+                                class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg py-4 pl-4 pr-10 text-lg text-white font-light focus:outline-none focus:border-[#d8c495] appearance-none cursor-pointer transition-all">
                                 <option value="mes" {{ request('categoria') == 'mes' ? 'selected' : '' }}>MES</option>
-                                <option value="estado" {{ request('categoria') == 'estado' ? 'selected' : '' }}>ESTADO
-                                </option>
+                                <option value="estado" {{ request('categoria') == 'estado' ? 'selected' : '' }}>ESTADO</option>
                                 <option value="id" {{ request('categoria') == 'id' ? 'selected' : '' }}>ID</option>
                             </select>
-                            <div
-                                class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
+                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-[#d8c495]/50">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M19 9l-7 7-7-7"></path>
@@ -74,20 +72,20 @@
 
                     <div class="flex gap-4 w-full lg:w-auto">
                         <button type="submit"
-                            class="bg-carbon-900 text-white text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:bg-dorado-400 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
+                            class="bg-[#d8c495] hover:bg-[#b8a374] text-[#112134] text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg transition-all duration-300">
                             Buscar
                         </button>
 
                         <a href="{{ route('cuentasCobrar.limpiar') }}"
-                            class="flex items-center justify-center border border-gray-300 text-gray-500 text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:border-carbon-900 hover:text-carbon-900 transition-all duration-300">
+                            class="flex items-center justify-center border border-[#d8c495]/30 text-[#d8c495]/60 text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:border-[#d8c495] hover:text-[#d8c495] transition-all duration-300">
                             Limpiar
                         </a>
                     </div>
                 </form>
             </div>
 
-            {{-- BLOQUE 2: TABLA (Tarjeta Blanca Independiente) --}}
-            <div class="tabla-dorada-container bg-white rounded-2xl shadow-xl border border-carbon-200 overflow-hidden">
+            {{-- BLOQUE 2: TABLA --}}
+            <div class="tabla-dorada-container overflow-hidden">
                 <div class="overflow-x-auto custom-scroll">
                     <table class="tabla-dorada">
                         <thead>
@@ -103,34 +101,34 @@
                         <tbody>
                             @forelse($cuentas as $cuenta)
                             <tr>
-                                <td class="text-left pl-6 font-bold text-gray-400">
+                                <td class="text-left pl-6 font-bold text-[#d8c495]/50">
                                     #{{ $cuenta->id_cuentas_por_pagar }}
                                 </td>
-                                <td class="font-bold text-carbon-900 uppercase">
+                                <td class="font-bold uppercase">
                                     {{ $cuenta->name }}
                                 </td>
-                                <td class="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                <td class="text-xs font-medium text-white/50 uppercase tracking-wide">
                                     {{ $cuenta->proyecto }}
                                 </td>
                                 <td class="text-center">
                                     <span class="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border
                                     {{ $cuenta->estado === 'parcial'
                                         ? 'bg-dorado/10 text-dorado-400 border-dorado/20'
-                                        : 'bg-red-100 text-red-700 border-red-200 ' }}">
+                                        : 'bg-red-900/40 text-red-400 border-red-400/30' }}">
                                         {{ ucfirst($cuenta->estado) }}
                                     </span>
                                 </td>
                                 <td class="text-right font-bold text-dorado-400 font-mono">
                                     ${{ number_format($cuenta->saldo_neto, 2) }}
                                 </td>
-                                <td class="text-right pr-6 font-bold text-carbon-900 font-mono">
+                                <td class="text-right pr-6 font-bold font-mono">
                                     ${{ number_format($cuenta->saldo_pendiente, 2) }}
                                 </td>
                             </tr>
                             @empty
                             <tr>
                                 <td colspan="6"
-                                    class="py-16 text-center text-gray-400 text-xs uppercase tracking-widest font-bold">
+                                    class="py-16 text-center text-white/30 text-xs uppercase tracking-widest font-bold">
                                     No se encontraron registros
                                 </td>
                             </tr>
@@ -138,27 +136,31 @@
                         </tbody>
                     </table>
                 </div>
+
+                <div class="border-t border-[#d8c495]/10 p-4 flex justify-center">
+                    {{ $cuentas->links('pagination::tailwind') }}
+                </div>
             </div>
 
-            {{-- BLOQUE 3: FOOTER (Tarjeta Blanca Independiente) --}}
+            {{-- BLOQUE 3: FOOTER --}}
             <div>
                 <button onclick="openModal()"
-                    class="w-full md:w-auto bg-dorado-400 text-white text-sm tracking-[0.2em] uppercase font-bold px-20 py-10 rounded-lg hover:bg-[#b58714] transition-all duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-0.5">
+                    class="w-full md:w-auto bg-[#d8c495] hover:bg-[#b8a374] text-[#112134] text-sm tracking-[0.2em] uppercase font-bold px-20 py-10 rounded-lg transition-all duration-300 shadow-md hover:shadow-xl">
                     Visualizar Gráficas
                 </button>
 
-                <div class="pagination-custom text-gray-600">
+                <div class="pagination-custom text-white/40">
                     {{ $cuentas->links('pagination::tailwind') }}
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Modal de Gráficas (Estilizado) --}}
+    {{-- Modal de Gráficas --}}
     <div id="chartsmModal" class="fixed inset-0 z-50 flex items-center justify-center hidden p-6">
         <div class="absolute inset-0 bg-black/95 backdrop-blur-xl" onclick="closeModal()"></div>
         <div
-            class="bg-carbon-900 border border-white/5 w-full max-w-5xl h-auto max-h-[90vh] overflow-y-auto relative z-10 shadow-3xl">
+            class="bg-[#112134] border border-[#d8c495]/20 w-full max-w-5xl h-auto max-h-[90vh] overflow-y-auto relative z-10 shadow-3xl rounded-xl">
             <div class="p-12 md:p-20">
                 <div class="flex justify-between items-start mb-16">
                     <h2 class="text-white text-5xl font-extralight uppercase tracking-tighter">Reporte<br><span
@@ -173,11 +175,11 @@
                         <select id="filtroYear" onchange="cargarGraficaAnual()"
                             class="bg-transparent border-b border-white/10 py-2 text-2xl text-white outline-none">
                             @for($y = 2023; $y <= now()->year; $y++)
-                                <option value="{{ $y }}" class="bg-carbon-900">{{ $y }}</option>
+                                <option value="{{ $y }}" class="bg-[#112134]">{{ $y }}</option>
                                 @endfor
                         </select>
                     </div>
-                    <div class="bg-black/40 p-10 border border-white/5">
+                    <div class="bg-black/40 p-10 border border-white/5 rounded-lg">
                         <canvas id="graficaAnual"></canvas>
                     </div>
                 </div>
@@ -221,20 +223,12 @@ async function cargarGraficaAnual() {
             responsive: true,
             scales: {
                 y: {
-                    ticks: {
-                        color: 'rgba(255,255,255,0.4)'
-                    },
-                    grid: {
-                        color: 'rgba(255,255,255,0.05)'
-                    }
+                    ticks: { color: 'rgba(255,255,255,0.4)' },
+                    grid: { color: 'rgba(255,255,255,0.05)' }
                 },
                 x: {
-                    ticks: {
-                        color: 'rgba(255,255,255,0.4)'
-                    },
-                    grid: {
-                        display: false
-                    }
+                    ticks: { color: 'rgba(255,255,255,0.4)' },
+                    grid: { display: false }
                 }
             }
         }

@@ -1,5 +1,7 @@
 <?php
 namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -21,8 +23,11 @@ class ContractController extends Controller
         }
 
         $query = DB::table('contract')
-            ->where('user_id', $user->id)
-            ->orderBy('created_at', 'asc');
+            ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
+            ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
+            ->select('contract.*', 'proyectos.nombre_proyecto as proyecto')
+            ->where('contract.user_id', $user->id)
+            ->orderBy('contract.created_at', 'asc');
 
         
         $search    = session('search');
@@ -161,12 +166,11 @@ class ContractController extends Controller
 
         
         $contractToEdit = Contract::findOrFail($id);
-
-        
         $users = User::all();
+        $proyectos = \App\Models\Proyecto::orderBy('nombre_proyecto')->get();
+        $currentProyectoId = optional(\App\Models\UserProyecto::find($contractToEdit->id_user_p))->id_proyecto;
 
-        
-        return view('editContrato', compact('admin', 'contractToEdit', 'users'));
+        return view('editContrato', compact('admin', 'contractToEdit', 'users', 'proyectos', 'currentProyectoId'));
     }
     
     public function actualizar(Request $request, $id)
@@ -195,14 +199,17 @@ class ContractController extends Controller
         // Handle file update
         $path = $contrato->contenido;
         if ($request->hasFile('archivo')) {
-            // Delete old file
+            $archivo = $request->file('archivo');
+
+            // Eliminar archivo anterior
             if (Storage::exists($contrato->contenido)) {
                 Storage::delete($contrato->contenido);
             }
-            // Store new file
-            $path = $request->file('archivo')->store('contracts');
-            $contrato->nombre = $request->file('archivo')->getClientOriginalName();
-            $contrato->tipo = $request->file('archivo')->getMimeType();
+
+            // Guardar nuevo en ruta organizada por usuario
+            $path = $this->storeContractFile($archivo, $userId);
+            $contrato->nombre = $archivo->getClientOriginalName();
+            $contrato->tipo   = $archivo->getMimeType();
         }
 
         // Update contract fields
@@ -227,37 +234,59 @@ class ContractController extends Controller
             'fecha_terminacion' => 'required|date',
         ]);
 
-        // Store the file and get the path
-        $path = $request->file('archivo')->store('contracts');
-
-        $userId = $request->input('user_id');
+        $userId     = $request->input('user_id');
         $proyectoId = $request->input('proyect');
+        $archivo    = $request->file('archivo');
 
-        // Find the user_proyectos pivot record
+        // Guardar en ruta organizada por usuario: contracts/{user_id}/{timestamp}_{nombre}
+        $path = $this->storeContractFile($archivo, $userId);
+
         $userProyecto = \App\Models\UserProyecto::where('id_user', $userId)
             ->where('id_proyecto', $proyectoId)
             ->first();
 
         if (!$userProyecto) {
-            // Handle error: the selected user is not associated with the selected project
+            Storage::delete($path);
             return back()->with('error', 'Error: El usuario seleccionado no está asignado a este proyecto.');
         }
 
         Contract::create([
-            'user_id'   => $userId,
-            'nombre'    => $request->file('archivo')->getClientOriginalName(),
-            'tipo'      => $request->file('archivo')->getMimeType(),
-            'contenido' => $path, // Store the path
-            'id_user_p' => $userProyecto->id_user_p, // Store the relationship ID
-            'folio'     => $this->generarFolio(),
-            'fecha'     => now(),
-            'estado'    => $this->generarEstado($request),
+            'user_id'            => $userId,
+            'nombre'             => $archivo->getClientOriginalName(),
+            'tipo'               => $archivo->getMimeType(),
+            'contenido'          => $path,
+            'id_user_p'          => $userProyecto->id_user_p,
+            'folio'              => $this->generarFolio(),
+            'fecha'              => now(),
+            'estado'             => $this->generarEstado($request),
             'importe_bruto_renta'=> str_replace(['$', ','], '', $request->input('importe_bruto_renta')),
-            'fecha_inicio'=> $request->input('fecha_inicio'),
-            'fecha_terminacion'=> $request->input('fecha_terminacion'),
+            'fecha_inicio'       => $request->input('fecha_inicio'),
+            'fecha_terminacion'  => $request->input('fecha_terminacion'),
         ]);
 
         return back()->with('success', '✅ Archivo enviado correctamente.');
+    }
+
+    public function crear()
+    {
+        $admin = Auth::user();
+
+        
+        if (!$admin || $admin->role !== 'administrador') {
+            return redirect('/inicio-de-sesion');
+        }
+
+        
+        if (!session('validated_admin_contract')) {
+            return redirect()->route('contratos.show')->with('error', '⚠️ Debes confirmar tu contraseña antes de crear un contrato.');
+        }
+
+        
+        session()->forget('validated_admin_contract');
+
+        $users     = User::all();
+        $proyectos = $admin->proyectos;
+        return view('adContrato', compact('users', 'proyectos', 'admin'));
     }
 
     public function delete(Request $request)
@@ -287,30 +316,6 @@ class ContractController extends Controller
         return back()->with('success', 'Contrato eliminado correctamente.');
     }
     
-
-    public function crear()
-    {
-        $admin = Auth::user();
-
-        
-        if (!$admin || $admin->role !== 'administrador') {
-            return redirect('/inicio-de-sesion');
-        }
-
-        
-        if (!session('validated_admin_contract')) {
-            return redirect()->route('contratos.show')->with('error', '⚠️ Debes confirmar tu contraseña antes de crear un contrato.');
-        }
-
-        
-        session()->forget('validated_admin_contract');
-
-        $users = User::all();
-        $proyectos = $admin->proyectos;
-        return view('adContrato', compact('users', 'proyectos'));
-    }
-
-
     public function show()
     {
         $user = Auth::user();
@@ -375,13 +380,21 @@ class ContractController extends Controller
             abort(403, 'No tienes permiso para descargar este archivo.');
         }
     
-        // Check if the file exists in storage
         if (!Storage::exists($contrato->contenido)) {
             abort(404, 'Archivo no encontrado.');
         }
-    
-        // Return the file for download
-        return Storage::download($contrato->contenido, $contrato->nombre);
+
+        $path = Storage::path($contrato->contenido);
+        $name = $contrato->nombre;
+
+        return response()->streamDownload(function () use ($path) {
+            $stream = fopen($path, 'rb');
+            fpassthru($stream);
+            fclose($stream);
+        }, $name, [
+            'Content-Type'   => 'application/pdf',
+            'Content-Length' => filesize($path),
+        ]);
     }
 
     public function getProjectsForUser(User $user)
@@ -393,6 +406,23 @@ class ContractController extends Controller
         }
 
         return response()->json($user->proyectos);
+    }
+
+    /**
+     * Guarda el PDF en una ruta organizada por usuario:
+     *   contracts/{user_id}/{YYYYMMDDHHMMSS}_{nombre_original}
+     *
+     * Esto permite:
+     *   - Respaldar contratos por usuario:  contracts/{user_id}/
+     *   - Descargar con Storage::download() sin cambios en descargar()
+     *
+     * @return string  Ruta relativa almacenada en 'contenido'
+     */
+    private function storeContractFile(\Illuminate\Http\UploadedFile $file, int $userId): string
+    {
+        $safeName = now()->format('YmdHis') . '_' . $file->getClientOriginalName();
+
+        return Storage::putFileAs("contracts/{$userId}", $file, $safeName);
     }
 
     private function generarFolio()

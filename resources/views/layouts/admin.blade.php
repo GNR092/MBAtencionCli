@@ -10,6 +10,7 @@
 
     {{-- Assets y Fuentes --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
         rel="stylesheet">
 
