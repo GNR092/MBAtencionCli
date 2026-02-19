@@ -8,7 +8,7 @@
             Todas las facturas han sido procesadas y confirmadas correctamente.
         </p>
         <div class="pt-4">
-            <a href="{{ route('facturacion') }}"
+            <a href="{{ route('user.facturacion') }}"
                class="text-sm text-white/50 hover:text-white border border-white/10 rounded-lg px-6 py-3 transition-colors duration-300">
                 &larr; Volver a la página de facturación
             </a>

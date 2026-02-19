@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class EstadoController extends Controller
 {

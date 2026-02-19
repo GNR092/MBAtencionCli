@@ -22,9 +22,6 @@ class AppServiceProvider extends ServiceProvider
     {
      View::composer('*', function ($view) {
         $currentUser = auth()->user();
-        if (!$currentUser && session('user')) {
-            $currentUser = User::find(session('user')->id);
-        }
 
         $unreadCount = $currentUser ? $currentUser->unreadNotifications()->count() : 0;
 
@@ -32,8 +29,6 @@ class AppServiceProvider extends ServiceProvider
             'hasNotifications' => $unreadCount > 0,
             'unreadNotificationsCount' => $unreadCount,
         ]);
-
-        
     });
     }
 

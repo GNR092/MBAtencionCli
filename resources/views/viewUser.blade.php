@@ -93,7 +93,7 @@
             <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
                 @php
                     $opciones = [
-                        ['route' => 'facturacion', 'label' => 'Facturación'],
+                        ['route' => 'user.facturacion', 'label' => 'Facturación'],
                         ['route' => 'notificaciones.index', 'label' => 'Notificaciones'],
                         ['route' => 'cuentasCobrar', 'label' => 'Cuentas Cobrar'],
                         ['route' => 'estadosDeCuenta', 'label' => 'Estados Cuenta'],
@@ -292,9 +292,10 @@
                         try {
                             const url = `{{ route('chat.getMessages') }}?last_id=${lastId}`;
                             const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                            
+
                             if (res.status === 401 || res.status === 419) {
-                                window.location.reload();
+                                stopPolling();
+                                window.location.href = '/inicio-de-sesion';
                                 return;
                             }
                             
@@ -350,14 +351,15 @@
                             });
 
                             if (res.status === 401 || res.status === 419) {
-                                window.location.reload();
+                                stopPolling();
+                                window.location.href = '/inicio-de-sesion';
                                 return;
                             }
 
-                            if (res.ok) { 
-                                input.value = ''; 
+                            if (res.ok) {
+                                input.value = '';
                                 await fetchMessages();
-                                startPolling(); 
+                                startPolling();
                             }
                         } catch(e) {
                             console.error("Error sending", e);

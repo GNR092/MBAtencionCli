@@ -6,8 +6,8 @@
     {{-- Encabezado --}}
     <div class="flex items-center justify-between">
         <h1 class="text-2xl font-light text-dorado-400 tracking-widest uppercase">Detalle de Factura</h1>
-        <a href="{{ route('user.factura.reset') }}" 
-           class="text-sm text-white/50 hover:text-white border border-white/10 rounded-lg px-4 py-2 transition">
+        <a href="{{ route('user.factura.reset') }}"
+            class="text-sm text-white/50 hover:text-white border border-white/10 rounded-lg px-4 py-2 transition">
             &larr; Regresar
         </a>
     </div>
@@ -15,10 +15,16 @@
     {{-- Mensaje de advertencia si el proyecto no coincide --}}
     @if(isset($projectMismatch) && $projectMismatch)
     <div class="bg-red-800/20 border border-red-700/50 rounded-xl p-4 text-red-300">
-        <p class="font-bold">Advertencia: El proyecto asociado a esta factura no coincide o no se detectó en la descripción.</p>
-        <p class="text-sm">Proyecto detectado en la descripción: <span class="font-bold uppercase tracking-widest text-dorado-200">{{ $parsedProjectName ?? 'No detectado' }}</span></p>
-        <p class="text-sm">Proyecto seleccionado: <span class="font-bold uppercase tracking-widest text-dorado-200">{{ $selectedProjectName ?? 'N/A' }}</span></p>
-        <p class="text-xs mt-2 text-white/60 italic">Por favor, elimine esta factura o regrese para seleccionar el proyecto correcto si la descripción es diferente.</p>
+        <p class="font-bold">Advertencia: El proyecto asociado a esta factura no coincide o no se detectó en la
+            descripción.</p>
+        <p class="text-sm">Proyecto detectado en la descripción: <span
+                class="font-bold uppercase tracking-widest text-dorado-200">{{ $parsedProjectName ?? 'No detectado' }}</span>
+        </p>
+        <p class="text-sm">Proyecto seleccionado: <span
+                class="font-bold uppercase tracking-widest text-dorado-200">{{ $selectedProjectName ?? 'N/A' }}</span>
+        </p>
+        <p class="text-xs mt-2 text-white/60 italic">Por favor, elimine esta factura o regrese para seleccionar el
+            proyecto correcto si la descripción es diferente.</p>
     </div>
     @endif
 
@@ -26,7 +32,8 @@
     @if(isset($userMismatch) && $userMismatch)
     <div class="bg-orange-800/20 border border-orange-700/50 rounded-xl p-4 text-orange-300">
         <p class="font-bold">Advertencia: El emisor de la factura no coincide con su nombre de usuario.</p>
-        <p class="text-sm">El emisor de esta factura es <span class="font-mono">{{ $factura['emisor_nombre'] }}</span>, pero usted está autenticado como <span class="font-mono">{{ $user->name }}</span>. 
+        <p class="text-sm">El emisor de esta factura es <span class="font-mono">{{ $factura['emisor_nombre'] }}</span>,
+            pero usted está autenticado como <span class="font-mono">{{ $user->name }}</span>.
             Por favor, asegúrese de que la factura sea correcta o elimínela.</p>
     </div>
     @endif
@@ -35,35 +42,38 @@
     <div class="flex items-center justify-between mt-4">
         <div class="flex items-center space-x-4">
             @if($index > 0)
-                <a href="{{ route('user.factura.view', ['index' => $index - 1]) }}" class="text-sm text-white/50 hover:text-white border border-white/10 rounded-lg px-4 py-2 transition">
-                    &larr; Anterior
-                </a>
+            <a href="{{ route('user.factura.view', ['index' => $index - 1]) }}"
+                class="text-sm text-white/50 hover:text-white border border-white/10 rounded-lg px-4 py-2 transition">
+                &larr; Anterior
+            </a>
             @endif
             <span class="text-white text-lg font-semibold">Factura {{ $index + 1 }} de {{ $totalFacturas }}</span>
-            @if($index < $totalFacturas - 1)
-                <a href="{{ route('user.factura.view', ['index' => $index + 1]) }}" class="text-sm text-white/50 hover:text-white border border-white/10 rounded-lg px-4 py-2 transition">
-                    Siguiente &rarr;
+            @if($index < $totalFacturas - 1) <a href="{{ route('user.factura.view', ['index' => $index + 1]) }}"
+                class="text-sm text-white/50 hover:text-white border border-white/10 rounded-lg px-4 py-2 transition">
+                Siguiente &rarr;
                 </a>
-            @endif
+                @endif
         </div>
         <div class="flex space-x-2">
             @if((isset($projectMismatch) && $projectMismatch) || (isset($userMismatch) && $userMismatch))
-                <form action="{{ route('user.factura.delete', ['index' => $index]) }}" method="POST">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition"
-                            onclick="return confirm('¿Estás seguro de que deseas eliminar esta factura? Esta acción no se puede deshacer.')">
-                        Eliminar Factura
-                    </button>
-                </form>
+            <form action="{{ route('user.factura.delete', ['index' => $index]) }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <button type="submit"
+                    class="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition"
+                    onclick="return confirm('¿Estás seguro de que deseas eliminar esta factura? Esta acción no se puede deshacer.')">
+                    Eliminar Factura
+                </button>
+            </form>
             @endif
             <form action="{{ route('user.factura.confirm', ['index' => $index]) }}" method="POST">
                 @csrf
                 @php
-                    $isInvalid = (isset($projectMismatch) && $projectMismatch) || (isset($userMismatch) && $userMismatch);
+                $isInvalid = (isset($projectMismatch) && $projectMismatch) || (isset($userMismatch) && $userMismatch);
                 @endphp
-                <button type="submit" class="bg-dorado-200 text-carbon-900 font-bold py-2 px-6 rounded-lg hover:bg-[#c2ae84] transition {{ $isInvalid ? 'opacity-50 cursor-not-allowed' : '' }}"
-                        {{ $isInvalid ? 'disabled' : '' }}>
+                <button type="submit"
+                    class="bg-dorado-200 text-carbon-900 font-bold py-2 px-6 rounded-lg hover:bg-[#c2ae84] transition {{ $isInvalid ? 'opacity-50 cursor-not-allowed' : '' }}"
+                    {{ $isInvalid ? 'disabled' : '' }}>
                     Confirmar Factura
                 </button>
             </form>
@@ -122,7 +132,7 @@
                 </div>
                 <div>
                     <span class="block text-white/40 uppercase text-xs tracking-wider">Regimen Fiscal</span>
-                    <span class="text-white">{{ $factura['emisor_regimen'] ?? 'N/A' }}</span>   
+                    <span class="text-white">{{ $factura['emisor_regimen'] ?? 'N/A' }}</span>
                 </div>
             </div>
         </div>
@@ -179,8 +189,10 @@
                         <td class="py-3 px-2 text-white text-center">{{ $concepto['cantidad'] }}</td>
                         <td class="py-3 px-2 text-white">{{ $concepto['unidad'] }}</td>
                         <td class="py-3 px-2 text-white">{{ $concepto['objeto_imp'] }}</td>
-                        <td class="py-3 px-2 text-white text-right">${{ number_format($concepto['valor_unitario'], 2) }}</td>
-                        <td class="py-3 px-2 text-dorado-200  font-semibold text-right">${{ number_format($concepto['importe'], 2) }}</td>
+                        <td class="py-3 px-2 text-white text-right">${{ number_format($concepto['valor_unitario'], 2) }}
+                        </td>
+                        <td class="py-3 px-2 text-dorado-200  font-semibold text-right">
+                            ${{ number_format($concepto['importe'], 2) }}</td>
                     </tr>
 
                     {{-- Impuestos del concepto --}}
@@ -193,7 +205,8 @@
                                     Traslado: {{ $traslado['impuesto'] == '002' ? 'IVA' : $traslado['impuesto'] }}
                                     - {{ $traslado['tipo_factor'] }}
                                     @if($traslado['tipo_factor'] !== 'Exento')
-                                        ({{ $traslado['tasa'] * 100 }}%) = ${{ number_format($traslado['importe'] ?? 0, 2) }}
+                                    ({{ $traslado['tasa'] * 100 }}%) =
+                                    ${{ number_format($traslado['importe'] ?? 0, 2) }}
                                     @endif
                                 </span>
                                 @endforeach
@@ -212,7 +225,8 @@
                     @if(!empty($concepto['cuenta_predial']))
                     <tr class="bg-white/2">
                         <td colspan="7" class="py-1 px-4 text-xs text-white/40">
-                            Folio Predial: <span class="text-white/60 font-mono">{{ $concepto['cuenta_predial'] }}</span>
+                            Folio Predial: <span
+                                class="text-white/60 font-mono">{{ $concepto['cuenta_predial'] }}</span>
                         </td>
                     </tr>
                     @endif
@@ -235,12 +249,13 @@
                 <h3 class="text-sm text-white/40 uppercase tracking-wider">Traslados</h3>
                 @foreach($factura['impuestos_traslados'] ?? [] as $traslado)
                 <div class="flex justify-between text-sm bg-white/5 rounded-lg px-4 py-2">
-                    <span class="text-white">{{ $traslado['impuesto'] == '002' ? 'IVA' : $traslado['impuesto'] }} - {{ $traslado['tipo_factor'] }}</span>
+                    <span class="text-white">{{ $traslado['impuesto'] == '002' ? 'IVA' : $traslado['impuesto'] }} -
+                        {{ $traslado['tipo_factor'] }}</span>
                     <span class="text-white font-mono">
                         @if($traslado['tipo_factor'] === 'Exento')
-                            Exento
+                        Exento
                         @else
-                            ${{ number_format($traslado['importe'] ?? 0, 2) }}
+                        ${{ number_format($traslado['importe'] ?? 0, 2) }}
                         @endif
                     </span>
                 </div>

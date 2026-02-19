@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Factura;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\XmlFile;
+use App\Models\Impuesto;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Proyecto;
 use Illuminate\Support\Facades\Log;
 use App\Services\DescripcionParser;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class UserFactController extends Controller
 {
@@ -37,7 +40,7 @@ class UserFactController extends Controller
         $xmlData = $currentFacturaData['xmlData'];
 
         $factura = $this->MapingFacturas($xmlData);
-        
+
         // Validar que el emisor de la factura coincida con el usuario autenticado
         $user = Auth::user();
         $userMismatch = false;
@@ -169,31 +172,77 @@ class UserFactController extends Controller
         }
 
         $currentFacturaData = $allFacturasData[$index];
+        $xmlData            = $currentFacturaData['xmlData'];
+        $tmpFilePath        = $currentFacturaData['file_path'];
+        $selectedProjectId  = $currentFacturaData['select_project'];
 
-        // Aquí deberías guardar la factura confirmada en la base de datos
-        // Por ejemplo:
-        // $xmlFile = XmlFile::create([
-        //     'uuid' => $currentFacturaData['xmlData']['timbreFiscalDigital']['UUID'],
-        //     'file_path' => $currentFacturaData['file_path'], // Asumiendo que guardaste la ruta del archivo original
-        //     // ... otros campos relevantes
-        // ]);
+        $user    = Auth::user();
+        $factura = $this->MapingFacturas($xmlData);
 
-        // O marcarla como confirmada de alguna manera en la sesión si no se guarda en DB inmediatamente
-        // $allFacturasData[$index]['confirmed'] = true;
+        // Extraer metadatos de la descripción del primer concepto
+        $parser      = new DescripcionParser();
+        $allProyects = Proyecto::all()->toArray();
+        $des         = $factura['conceptos'][0]['descripcion'] ?? '';
+        $parsedData  = $parser->parsearDescripcion($des, $allProyects);
 
-        // Eliminar la factura confirmada de la sesión para que no se muestre de nuevo
+        $departamento = implode(',', $parsedData['departamentos'] ?? []) ?: null;
+        $mes          = $parsedData['fecha']['mes_nombre'] ?? null;
+
+        // Ruta organizada en disco privado: facturas/{user_id}/xml/{año}/{mes}/{archivo}
+        $carbonFecha = $this->parseFechaFactura($factura['fecha']);
+        $filename    = basename($tmpFilePath);
+        $newFilePath = $this->buildXmlStoragePath($user->id, $carbonFecha, $filename);
+
+        try {
+            DB::transaction(function () use (
+                $factura,
+                $user,
+                $selectedProjectId,
+                $tmpFilePath,
+                $newFilePath,
+                $filename,
+                $departamento,
+                $mes,
+                $carbonFecha
+            ) {
+                // Mover XML de almacenamiento temporal al almacenamiento privado organizado
+                $contents = Storage::disk('tmp')->get($tmpFilePath);
+                Storage::disk('local')->put($newFilePath, $contents);
+
+                $xmlFile = XmlFile::create([
+                    'filename'      => $filename,
+                    'id_user'       => $user->id,
+                    'id_proyecto'   => $selectedProjectId ?: null,
+                    'uuid'          => $factura['uuid'] !== 'N/A' ? $factura['uuid'] : null,
+                    'is_valid'      => true,
+                    'fecha_inicio'  => $carbonFecha?->toDateString(),
+                    'emisor_name'   => $factura['emisor_nombre'],
+                    'receptor_name' => $factura['receptor_nombre'],
+                    'file_path'     => $newFilePath,
+                    'departamento'  => $departamento,
+                    'mes'           => $mes,
+                ]);
+
+                $this->saveImpuestos($xmlFile->id, $factura);
+
+                // Eliminar el XML temporal solo si el registro en BD fue exitoso
+                Storage::disk('tmp')->delete($tmpFilePath);
+            });
+        } catch (\Exception $e) {
+            Log::error('Error al confirmar factura [index=' . $index . ']: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['message' => 'Ocurrió un error al guardar la factura. Por favor intenta de nuevo.']);
+        }
+
         array_splice($allFacturasData, $index, 1);
         session()->put('factura_data', $allFacturasData);
 
-        // Redirigir a la siguiente factura o a una página de éxito si no hay más
         if (!empty($allFacturasData)) {
-            // Ajustar el índice si la factura eliminada no era la última
             $nextIndex = ($index < count($allFacturasData)) ? $index : count($allFacturasData) - 1;
             return redirect()->route('user.factura.view', ['index' => $nextIndex]);
-        } else {
-            session()->forget('factura_data');
-            return view('User.FacturaSuccess');
         }
+
+        session()->forget('factura_data');
+        return view('User.FacturaSuccess');
     }
 
     public function deleteFactura(Request $request, $index)
@@ -204,24 +253,99 @@ class UserFactController extends Controller
             return redirect()->back()->withErrors(['message' => 'Factura no encontrada o índice inválido para eliminar.']);
         }
 
-        // Eliminar la factura de la sesión
+        // Limpiar el archivo temporal del disco
+        $tmpFilePath = $allFacturasData[$index]['file_path'] ?? null;
+        if ($tmpFilePath && Storage::disk('tmp')->exists($tmpFilePath)) {
+            Storage::disk('tmp')->delete($tmpFilePath);
+        }
+
         array_splice($allFacturasData, $index, 1);
         session()->put('factura_data', $allFacturasData);
 
-        // Redirigir a la siguiente factura o a una página de éxito si no hay más
         if (!empty($allFacturasData)) {
-            // Ajustar el índice si la factura eliminada no era la última
             $nextIndex = ($index < count($allFacturasData)) ? $index : count($allFacturasData) - 1;
             return redirect()->route('user.factura.view', ['index' => $nextIndex]);
-        } else {
-            session()->forget('factura_data');
-            return view('User.FacturaSuccess');
         }
+
+        session()->forget('factura_data');
+        return view('User.FacturaSuccess');
     }
 
     public function resetFactura()
     {
+        // Limpiar todos los XMLs temporales antes de borrar la sesión
+        $allFacturasData = session()->get('factura_data', []);
+        foreach ($allFacturasData as $facturaData) {
+            $tmpFilePath = $facturaData['file_path'] ?? null;
+            if ($tmpFilePath && Storage::disk('tmp')->exists($tmpFilePath)) {
+                Storage::disk('tmp')->delete($tmpFilePath);
+            }
+        }
+
         session()->forget('factura_data');
         return redirect()->route('facturacion');
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers privados
+    // -------------------------------------------------------------------------
+
+    /**
+     * Construye la ruta de almacenamiento organizada por usuario, año y mes.
+     *
+     * Estructura resultante en el disco 'local' (storage/app/private/):
+     *   facturas/{user_id}/xml/{año}/{mes}/{archivo.xml}
+     *
+     * Esto permite:
+     *   - Respaldar todos los archivos de un usuario con: facturas/{user_id}/
+     *   - Verificar archivos por periodo: facturas/{user_id}/xml/2025/09/
+     */
+    private function buildXmlStoragePath(int $userId, ?Carbon $fecha, string $filename): string
+    {
+        $year  = $fecha?->format('Y') ?? now()->format('Y');
+        $month = $fecha?->format('m') ?? now()->format('m');
+
+        return "facturas/{$userId}/xml/{$year}/{$month}/{$filename}";
+    }
+
+    /**
+     * Parsea la fecha del campo Fecha del CFDI (ISO 8601 o fecha simple).
+     */
+    private function parseFechaFactura(string $fecha): ?Carbon
+    {
+        try {
+            return Carbon::parse($fecha);
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Crea registros de Impuesto para cada traslado de cada concepto.
+     * Si el concepto tiene retención de ISR (código 001), se asocia al mismo registro.
+     */
+    private function saveImpuestos(int $xmlFileId, array $factura): void
+    {
+        $regimenFiscal = $factura['emisor_regimen'];
+
+        foreach ($factura['conceptos'] as $concepto) {
+            $importeBase = $concepto['importe'];
+
+            foreach ($concepto['traslados'] as $traslado) {
+                // ISR: código SAT '001' — retencion aplicable a este concepto
+                $isrImporte = collect($concepto['retenciones'])
+                    ->where('impuesto', '001')
+                    ->sum('importe');
+
+                Impuesto::create([
+                    'xml_file_id'   => $xmlFileId,
+                    'tipoFactor'    => $traslado['tipo_factor'],
+                    'regimenFiscal' => $regimenFiscal,
+                    'importeBase'   => $importeBase,
+                    'tasaCuota'     => $traslado['tasa'],
+                    'isr'           => $isrImporte,
+                ]);
+            }
+        }
     }
 }

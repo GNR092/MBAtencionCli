@@ -205,7 +205,7 @@ class DescripcionParser
     }
 
     /**
-     * Extrae la fecha (mes y anio) de la descripcion.
+     * Extrae la fecha (mes y año) de la descripcion.
      *
      * Patrones detectados en los XMLs:
      * - "SEPTIEMBRE DE 2025"

@@ -302,7 +302,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             if (response.status === 401 || response.status === 419) {
-                window.location.reload();
+                clearInterval(messagePollingInterval);
+                window.location.href = '/inicio-de-sesion';
                 return;
             }
 
@@ -343,7 +344,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (response.status === 401 || response.status === 419) {
-                window.location.reload();
+                clearInterval(messagePollingInterval);
+                window.location.href = '/inicio-de-sesion';
                 return;
             }
 

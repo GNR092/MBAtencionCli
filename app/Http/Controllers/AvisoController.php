@@ -20,7 +20,7 @@ class AvisoController extends Controller
      */
     public function unreadCount(Request $request)
     {
-        $user = Auth::user();
+        $user = $request->user();
         if (!$user) {
             return response()->json(['count' => 0], 401); 
         }
@@ -28,9 +28,9 @@ class AvisoController extends Controller
         return response()->json(['count' => $user->unreadNotifications->count()]);
     }
 
-    public function delete($id)
+    public function delete(Request $request, $id)
     {
-        $usuario = Auth::user();
+        $usuario = $request->user();
         if (!$usuario) {
             return redirect('/inicio-de-sesion');
         }
@@ -46,7 +46,7 @@ class AvisoController extends Controller
     
     public function index(Request $request)
     {
-        $usuario = Auth::user();
+        $usuario = $request->user();
         if (!$usuario) {
             return redirect('/inicio-de-sesion');
         }
@@ -67,7 +67,7 @@ class AvisoController extends Controller
     
     public function markAsRead(Request $request, $id) 
     {
-        $usuario = Auth::user();
+        $usuario = $request->user();
         if (!$usuario) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Unauthorized'], 401);

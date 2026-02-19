@@ -351,7 +351,7 @@ private function recalcularCuenta($idCuenta)
     -------------------------------------------------- */
 public function Index(Request $request)
 {
-        $user = Auth::user();
+        $user = $request->user();
         if (!$user) return redirect('/inicio-de-sesion');
 
         
@@ -423,9 +423,9 @@ public function Index(Request $request)
         return view('cuentasCobrar', compact('cuentas'));
 }
 
-public function graficaAnualNoPagados($year)
+public function graficaAnualNoPagados(Request $request, $year)
 {
-    $user = Auth::user();
+    $user = $request->user();
     if (!$user) return response()->json([]);
 
     
