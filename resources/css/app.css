@@ -99,13 +99,70 @@ body {
     background-color: #eab308;
 }
 
-/* --- CLASE MAESTRA PARA TABLAS ---
-   Agrega esto al final de tu archivo CSS para aplicar el estilo
-   a todas las tablas usando solo la clase "tabla-dorada"
+/* --- CLASE MAESTRA PARA TABLAS (Dark Glassmorphism) ---
+   Usa .tabla-dorada-search para la barra de búsqueda
+   y .tabla-dorada-container + .tabla-dorada para la tabla.
 */
 
+.tabla-dorada-search {
+    background-color: rgb(17 33 52 / 0.6);
+    backdrop-filter: blur(12px);
+    padding: 1rem;
+    border-radius: 1rem;
+    border: 1px solid rgb(216 196 149 / 0.2);
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.tabla-dorada-search label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #d8c495;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.tabla-dorada-search input[type="text"],
+.tabla-dorada-search input[type="date"] {
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgb(216 196 149 / 0.3);
+    background-color: rgb(255 255 255 / 0.1);
+    color: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.tabla-dorada-search input::placeholder {
+    color: rgb(255 255 255 / 0.3);
+}
+
+.tabla-dorada-search input:focus,
+.tabla-dorada-search select:focus {
+    border-color: #d8c495;
+    box-shadow: 0 0 0 2px rgb(216 196 149 / 0.3);
+}
+
+.tabla-dorada-search select {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgb(216 196 149 / 0.3);
+    background-color: #0d1f30;
+    color: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
 .tabla-dorada-container {
-    @apply bg-white rounded-2xl shadow-xl overflow-hidden border border-carbon-200;
+    background-color: rgb(17 33 52 / 0.6);
+    backdrop-filter: blur(12px);
+    border-radius: 1rem;
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3);
+    overflow: hidden;
+    border: 1px solid rgb(216 196 149 / 0.2);
 }
 
 .tabla-dorada {
@@ -113,7 +170,12 @@ body {
 }
 
 .tabla-dorada thead {
-    @apply bg-carbon-900 text-dorado-400 uppercase text-xs tracking-widest border-b-2 border-dorado-400;
+    background-color: #0d1f30;
+    color: #d8c495;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    border-bottom: 2px solid rgb(216 196 149 / 0.4);
 }
 
 .tabla-dorada th {
@@ -121,17 +183,37 @@ body {
 }
 
 .tabla-dorada tbody {
-    @apply divide-y divide-carbon-200;
+    border-color: rgb(216 196 149 / 0.1);
 }
 
 .tabla-dorada tbody tr {
-    @apply text-carbon-900 hover:bg-gray-50 transition duration-200;
+    color: #fff;
+    border-bottom: 1px solid rgb(216 196 149 / 0.1);
+    transition: background-color 0.2s;
+}
+
+.tabla-dorada tbody tr:hover {
+    background-color: rgb(255 255 255 / 0.05);
 }
 
 .tabla-dorada td {
-    @apply px-4 py-4 text-carbon-900;
+    @apply px-4 py-4;
+    color: #fff;
+}
+
+.tabla-dorada tfoot {
+    background-color: #0d1f30;
+    border-top: 1px solid rgb(216 196 149 / 0.2);
 }
 
 .tabla-dorada tfoot tr {
-    @apply font-bold text-carbon-900;
+    font-weight: 700;
+    color: #fff;
+}
+
+.tabla-dorada-footer {
+    border-top: 1px solid rgb(216 196 149 / 0.1);
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
 }

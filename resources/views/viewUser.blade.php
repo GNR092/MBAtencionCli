@@ -95,8 +95,8 @@
                     $opciones = [
                         ['route' => 'user.facturacion', 'label' => 'Facturación'],
                         ['route' => 'notificaciones.index', 'label' => 'Notificaciones'],
-                        ['route' => 'cuentasCobrar', 'label' => 'Cuentas Cobrar'],
-                        ['route' => 'estadosDeCuenta', 'label' => 'Estados Cuenta'],
+                        ['route' => 'cuentas-cobrar.index', 'label' => 'Cuentas Cobrar'],
+                        ['route' => 'estados-cuenta.index', 'label' => 'Estados Cuenta'],
                         ['route' => 'contratos.index', 'label' => 'Contratos'],
                     ];
                 @endphp

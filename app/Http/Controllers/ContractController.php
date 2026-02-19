@@ -87,7 +87,7 @@ class ContractController extends Controller
         ]);
 
         
-        return redirect()->route('contratos.show');
+        return redirect()->route('admin.contratos.index');
     }
 
     public function clean()
@@ -96,7 +96,7 @@ class ContractController extends Controller
         session()->forget(['search', 'categoria']);
 
         
-        return redirect()->route('contratos.show');
+        return redirect()->route('admin.contratos.index');
     }
 
     public function confirmPassword(Request $request)
@@ -118,7 +118,7 @@ class ContractController extends Controller
             session(['validated_admin_contract' => true]);
 
             
-            return redirect()->route('contratos.crear');
+            return redirect()->route('admin.contratos.create');
         }
 
         
@@ -160,7 +160,7 @@ class ContractController extends Controller
 
         
         if (session('validated_edit_contrato') != $id) {
-            return redirect()->route('contratos.show')
+            return redirect()->route('admin.contratos.index')
                             ->withErrors(['auth' => 'Debes confirmar tu contraseña antes de editar este contrato.']);
         }
 
@@ -221,7 +221,7 @@ class ContractController extends Controller
 
         $contrato->save();
 
-        return redirect()->route('contratos.show')->with('success', 'Contrato actualizado correctamente.');
+        return redirect()->route('admin.contratos.index')->with('success', 'Contrato actualizado correctamente.');
     }
     public function subir(Request $request)
     {
@@ -278,7 +278,7 @@ class ContractController extends Controller
 
         
         if (!session('validated_admin_contract')) {
-            return redirect()->route('contratos.show')->with('error', '⚠️ Debes confirmar tu contraseña antes de crear un contrato.');
+            return redirect()->route('admin.contratos.index')->with('error', '⚠️ Debes confirmar tu contraseña antes de crear un contrato.');
         }
 
         

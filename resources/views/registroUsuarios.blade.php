@@ -47,7 +47,7 @@
             </h2>
         </div>
 
-        <form id="registroUsuarios" class="p-6 space-y-5" action="{{ route('registroUsuarios.datos') }}" method="POST">
+        <form id="registroUsuarios" class="p-6 space-y-5" action="{{ route('usuarios.registro.store') }}" method="POST">
             @csrf
 
             <div>

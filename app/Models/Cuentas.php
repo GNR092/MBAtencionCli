@@ -36,14 +36,17 @@ class Cuentas extends Model
     $mes = json_decode($this->mesesdepago)->mes ?? null;
 
     if (!$mes) {
-        return $this->importeBase; 
+        return $this->importeBase;
     }
 
-    
     $incremento = \DB::table('incrementos_importe')
         ->where('id_contract', $this->id_contract)
         ->whereRaw("DATE_FORMAT(fecha_inicio, '%Y-%m') <= ?", [$mes])
-        ->whereRaw("DATE_FORMAT(fecha_fin, '%Y-%m') >= ?", [$mes])
+        ->where(function ($q) use ($mes) {
+            $q->whereNull('fecha_fin')
+              ->orWhereRaw("DATE_FORMAT(fecha_fin, '%Y-%m') >= ?", [$mes]);
+        })
+        ->orderByDesc('fecha_inicio')
         ->value('importe_base');
 
     return $incremento ?? $this->importeBase;

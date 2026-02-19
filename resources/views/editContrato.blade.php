@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="mb-4">
-    <a href="{{ route('contratos.show') }}"
+    <a href="{{ route('admin.contratos.index') }}"
         class="inline-flex items-center gap-2 text-sm text-[#d8c495] hover:text-white transition-colors">
         ← Volver a contratos
     </a>
@@ -10,7 +10,7 @@
 <h1 class="text-center text-black text-3xl p-4">Editar Contrato</h1>
 
 <div class="flex justify-center py-4">
-    <form action="{{ route('contratos.actualizar', $contractToEdit->id) }}" method="POST" enctype="multipart/form-data"
+    <form action="{{ route('admin.contratos.actualizar', $contractToEdit->id) }}" method="POST" enctype="multipart/form-data"
         class="bg-[#2f2f2f] p-6 rounded-2xl shadow-lg w-full max-w-md">
         @csrf
         @method('PUT')

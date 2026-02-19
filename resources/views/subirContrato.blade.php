@@ -23,7 +23,7 @@ setTimeout(() => {
 
     <!-- Encabezado con título y barra de búsqueda -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-        <form method="post" action="{{ route('contratos.search') }}" class="relative mx-12 flex items-center gap-2">
+        <form method="post" action="{{ route('admin.contratos.buscar') }}" class="relative mx-12 flex items-center gap-2">
             @csrf
             <label for="searchInput" class="text-white/70 text-sm">Buscar por:</label>
 
@@ -40,7 +40,7 @@ setTimeout(() => {
                 BUSCAR
             </button>
 
-            <a href="{{ route('contratos.clean') }}"
+            <a href="{{ route('admin.contratos.limpiar') }}"
                 class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded mx-2 text-sm">
                 LIMPIAR
             </a>
@@ -123,7 +123,7 @@ setTimeout(() => {
     class="bg-black/60 backdrop-blur-sm fixed inset-0 flex items-center justify-center hidden">
     <div class="bg-[#112134] border border-[#d8c495]/20 rounded-xl shadow-lg p-6 w-96">
         <h2 class="text-[#d8c495] font-bold uppercase tracking-widest text-sm mb-4">Confirmar contraseña</h2>
-        <form method="POST" action="{{ route('contratos.confirmPasswordEdit') }}">
+        <form method="POST" action="{{ route('admin.contratos.confirmar-editar') }}">
             @csrf
             <input type="hidden" name="user_id" id="userIdInput" />
 
@@ -143,7 +143,7 @@ setTimeout(() => {
     class="bg-black/60 backdrop-blur-sm fixed inset-0 flex items-center justify-center hidden">
     <div class="bg-[#112134] border border-[#d8c495]/20 rounded-xl shadow-lg p-6 w-96">
         <h2 class="text-[#d8c495] font-bold uppercase tracking-widest text-sm mb-4 text-center">Confirmar contraseña</h2>
-        <form method="POST" action="{{ route('contratos.confirmPassword') }}">
+        <form method="POST" action="{{ route('admin.contratos.confirmar') }}">
             @csrf
             <div class="mb-4">
                 <label for="password" class="block text-xs font-bold uppercase tracking-[0.2em] text-white/50 mb-2">Contraseña del administrador:</label>
@@ -168,7 +168,7 @@ setTimeout(() => {
     class="bg-black/60 backdrop-blur-sm fixed inset-0 flex items-center justify-center hidden">
     <div class="bg-[#112134] border border-[#d8c495]/20 rounded-xl shadow-lg p-6 w-96">
         <h2 class="text-[#d8c495] font-bold uppercase tracking-widest text-sm mb-4">Confirmar contraseña</h2>
-        <form method="POST" action="{{ route('contratos.delete') }}">
+        <form method="POST" action="{{ route('admin.contratos.eliminar') }}">
             @csrf
             <input type="hidden" name="id" id="userIdInputDelete" />
 

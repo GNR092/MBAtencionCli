@@ -4,7 +4,7 @@
 @section('content')
 
 <div class="mb-4">
-    <a href="{{ route('contratos.show') }}"
+    <a href="{{ route('admin.contratos.index') }}"
         class="inline-flex items-center gap-2 text-sm text-[#d8c495] hover:text-white transition-colors">
         ← Volver a contratos
     </a>

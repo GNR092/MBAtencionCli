@@ -77,7 +77,7 @@
                                     <span class="text-[9px] text-gray-300 uppercase tracking-widest">
                                         {{ $n->created_at->format('d/m/Y · H:i') }}
                                     </span>
-                                    <form method="POST" action="{{ route('notifications.read', $n->id) }}">
+                                    <form method="POST" action="{{ route('notificaciones.leer', $n->id) }}">
                                         @csrf
                                         <button type="submit"
                                             class="text-[9px] tracking-[0.2em] uppercase font-bold text-dorado-400 hover:text-white hover:bg-dorado-400 border border-dorado-400/50 px-4 py-1.5 rounded-lg transition-all duration-200">
@@ -130,7 +130,7 @@
                                         </span>
                                     </div>
                                 </div>
-                                <form method="POST" action="{{ route('notifications.delete', $n->id) }}" class="shrink-0">
+                                <form method="POST" action="{{ route('notificaciones.eliminar', $n->id) }}" class="shrink-0">
                                     @csrf @method('DELETE')
                                     <button type="submit"
                                         class="opacity-0 group-hover:opacity-100 text-[9px] tracking-widest uppercase font-bold text-red-400 hover:text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-all border border-transparent hover:border-red-100">

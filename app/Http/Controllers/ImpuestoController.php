@@ -126,7 +126,7 @@ class ImpuestoController extends Controller
     public function limpiar()
     {
         session()->forget(['search', 'categoria']);
-        return redirect()->route('impuestos');
+        return redirect()->route('impuestos.index');
     }
 
     /* ================= FUNCIÓN PARA REUTILIZAR FILTROS ================= */

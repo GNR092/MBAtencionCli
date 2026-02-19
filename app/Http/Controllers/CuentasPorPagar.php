@@ -27,11 +27,13 @@ public function export(Request $request)
             ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
             ->leftJoin('users', 'contract.user_id', '=', 'users.id')
             ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id')
+            ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
+            ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
             ->select(
                 'cuentasporpagar.*',
                 'users.name as name',
                 'contract.importe_bruto_renta as importeBase',
-                'contract.proyecto as proyecto'
+                DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'),
             );
 
         
@@ -170,8 +172,8 @@ elseif ($cuenta->monto_pagado > 0 && $cuenta->monto_pagado < $saldoNeto) {
 
 
 
-elseif ($cuenta->monto_pagado == $saldoNeto) {
-    $estado = 'parcial'; 
+elseif ($cuenta->monto_pagado >= $saldoNeto) {
+    $estado = 'pagado';
     $saldoPendiente = 0;
 }
 
@@ -203,6 +205,18 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         $user = Auth::user();
         if (!$user) return redirect('/inicio-de-sesion');
 
+        // Generar cuentas pendientes para todos los contratos activos
+        $cuentasPorCobrar = new \App\Http\Controllers\CuentasPorCobrar();
+        $userIds = \App\Models\Contract::distinct()->pluck('user_id');
+        foreach ($userIds as $uid) {
+            $cuentasPorCobrar->calcularCuentasPorPagar($uid);
+        }
+        // Actualizar con XMLs existentes
+        $xmls = \App\Models\XmlFile::all();
+        foreach ($xmls as $xml) {
+            $cuentasPorCobrar->actualizarConXML($xml);
+        }
+
         $this->calculodesaldos();
 
         $query = Cuentas::with('contract')
@@ -210,14 +224,13 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
             ->leftJoin('users', 'contract.user_id', '=', 'users.id')
             ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id')
+            ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
+            ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
             ->select(
                 'cuentasporpagar.*',
-                'cuentasporpagar.monto_pagado',
-                'cuentasporpagar.saldo_pendiente',
-                'cuentasporpagar.estado',
                 'users.name as name',
                 'contract.importe_bruto_renta as importeBase',
-                'contract.proyecto as proyecto',
+                DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'),
             );
 
 
@@ -254,7 +267,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         $totalPendiente = (clone $query)->sum('cuentasporpagar.saldo_pendiente');
         $totalPagado =(clone $query)->sum('cuentasporpagar.monto_pagado');
         $cuentas = $query->paginate(6)->appends($request->query());
-        $proyectos = Contract::select('proyecto')->distinct()->pluck('proyecto');
+        $proyectos = \App\Models\Proyecto::orderBy('nombre_proyecto')->pluck('nombre_proyecto');
 
 
         return view('viewAdministrador', compact('cuentas','totalPendiente','totalPagado','proyectos'))
@@ -284,7 +297,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
 public function limpiar()
 {
     session()->forget(['search', 'categoria']);
-    return redirect()->route('viewAdministrador');
+    return redirect()->route('cuentas-pagar.index');
 }
 
     /* ================= FUNCIÓN PARA REUTILIZAR FILTROS ================= */
@@ -390,13 +403,15 @@ public function graficaAnualProyecto($year, $proyecto)
 {
     $cuentas = DB::table('cuentasporpagar')
         ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
+        ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
+        ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
         ->select(
             'cuentasporpagar.estado',
             'cuentasporpagar.saldo_neto',
             'cuentasporpagar.mesesdepago',
-            'contract.proyecto'
+            'proyectos.nombre_proyecto as proyecto'
         )
-        ->where('contract.proyecto', $proyecto)
+        ->where('proyectos.nombre_proyecto', $proyecto)
         ->get();
 
     $resultado = [];

@@ -39,7 +39,7 @@
                 <div class="flex flex-col xl:flex-row items-end justify-between gap-8">
 
                     {{-- Formulario de Búsqueda --}}
-                    <form method="GET" action="{{ route('estadosDeCuenta') }}"
+                    <form method="GET" action="{{ route('estados-cuenta.index') }}"
                         class="flex-1 flex flex-col lg:flex-row items-end gap-6 w-full">
                         @csrf
 
@@ -82,7 +82,7 @@
                                 class="bg-carbon-900 text-white text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:bg-dorado-400 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
                                 Buscar
                             </button>
-                            <a href="{{ route('estadosDeCuenta.limpiar') }}"
+                            <a href="{{ route('estados-cuenta.limpiar') }}"
                                 class="flex items-center justify-center border border-gray-300 text-gray-500 text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:border-carbon-900 hover:text-carbon-900 transition-all duration-300">
                                 Limpiar
                             </a>
@@ -206,7 +206,7 @@
         <div class="bg-carbon-900 border border-white/5 w-full max-w-2xl relative z-10 shadow-3xl p-12 md:p-20">
             <h2 class="text-white text-4xl font-extralight uppercase tracking-tighter mb-12">Opciones de<br><span
                     class="text-dorado-400 font-bold">Descarga</span></h2>
-            <form action="{{ route('estadoCuenta.descargarPdf') }}" method="POST" class="space-y-12">
+            <form action="{{ route('estados-cuenta.pdf') }}" method="POST" class="space-y-12">
                 @csrf
                 <div class="group">
                     <label

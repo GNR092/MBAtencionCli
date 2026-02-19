@@ -234,7 +234,7 @@
                 </div>
                 <h3 class="text-lg font-bold text-white uppercase tracking-wider mb-2">Eliminar Usuario</h3>
                 <p class="text-sm text-gray-400 mb-6">Esta acción es irreversible. Ingresa tu contraseña.</p>
-                <form id="formEliminarUsuario" action="{{ route('users.eliminar') }}" method="POST">
+                <form id="formEliminarUsuario" action="{{ route('usuarios.eliminar') }}" method="POST">
                     @csrf
                     <input type="hidden" name="user_id" id="deleteUserIdInput" />
                     <input type="password" name="password" id="delete_password" required placeholder="CONTRASEÑA..."

@@ -110,7 +110,7 @@ public function Index(Request $request)
 
 public function limpiar(){
         session()->forget(['search', 'categoria']);
-        return redirect()->route('estadosDeCuenta');
+        return redirect()->route('estados-cuenta.index');
 }
 
 private function aplicarFiltros(&$query, Request $request)

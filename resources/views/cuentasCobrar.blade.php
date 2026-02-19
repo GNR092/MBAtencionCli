@@ -36,7 +36,7 @@
 
             {{-- BLOQUE 1: BUSCADOR --}}
             <div class="bg-[#112134]/60 backdrop-blur-md rounded-xl border border-[#d8c495]/20 p-8 md:p-10">
-                <form method="GET" action="{{ route('cuentasCobrar') }}"
+                <form method="GET" action="{{ route('cuentas-cobrar.index') }}"
                     class="flex flex-col lg:flex-row items-end gap-6">
                     @csrf
 
@@ -76,7 +76,7 @@
                             Buscar
                         </button>
 
-                        <a href="{{ route('cuentasCobrar.limpiar') }}"
+                        <a href="{{ route('cuentas-cobrar.limpiar') }}"
                             class="flex items-center justify-center border border-[#d8c495]/30 text-[#d8c495]/60 text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:border-[#d8c495] hover:text-[#d8c495] transition-all duration-300">
                             Limpiar
                         </a>

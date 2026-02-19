@@ -18,7 +18,7 @@ class CuentasPorCobrar extends Controller
 public function limpiar()
 {
         session()->forget(['search', 'categoria']);
-        return redirect()->route('cuentasCobrar');
+        return redirect()->route('cuentas-cobrar.index');
 }
 
     /* -------------------------
@@ -81,13 +81,16 @@ private function aplicarFiltros(&$query, Request $request)
 public function calcularCuentasPorPagar($user_id)
 {
         $contracts = Contract::where('user_id', $user_id)
-            ->whereNotNull('fecha_creacion')
-            ->whereNotNull('fecha_terminacion')
+            ->where(function ($q) {
+                $q->whereNotNull('fecha_inicio')->orWhereNotNull('fecha_creacion');
+            })
             ->get();
 
         foreach ($contracts as $contract) {
-            $inicio = Carbon::parse($contract->fecha_creacion)->startOfMonth();
-            $fin = Carbon::parse($contract->fecha_terminacion)->startOfMonth();
+            $fechaStart = $contract->fecha_inicio ?? $contract->fecha_creacion ?? $contract->fecha;
+            $fechaEnd   = $contract->fecha_terminacion ?? now()->format('Y-m-d');
+            $inicio = Carbon::parse($fechaStart)->startOfMonth();
+            $fin    = Carbon::parse($fechaEnd)->startOfMonth();
 
             $periodo = CarbonPeriod::create($inicio, '1 month', $fin);
 

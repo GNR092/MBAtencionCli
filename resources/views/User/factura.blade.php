@@ -47,7 +47,7 @@
             </div>
 
             <div class="p-8"> @if(!$batch || ($batch && $batch->total_files === 0))
-                <form id="xmlForm" method="POST" action="{{ route('upload-xml') }}" enctype="multipart/form-data"
+                <form id="xmlForm" method="POST" action="{{ route('facturacion.subir-xml') }}" enctype="multipart/form-data"
                     class="space-y-8">
                     @csrf
 

@@ -87,7 +87,7 @@ class UploadFactura extends Controller
         session()->forget(['search', 'categoria']);
 
 
-        return redirect()->route('facturas');
+        return redirect()->route('facturas.index');
     }
 
     public function buscar(Request $request)
@@ -99,7 +99,7 @@ class UploadFactura extends Controller
         ]);
 
 
-        return redirect()->route('facturas');
+        return redirect()->route('facturas.index');
     }
     /**
      * Descargar un XML específico

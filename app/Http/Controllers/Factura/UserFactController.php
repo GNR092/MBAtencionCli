@@ -28,7 +28,7 @@ class UserFactController extends Controller
 
         if ($index < 0 || $index >= $totalFacturas) {
             session()->forget('factura_data');
-            return redirect()->route('facturacion');
+            return redirect()->route('facturas.index');
         }
 
         $currentFacturaData = $allFacturasData[$index];
@@ -283,7 +283,7 @@ class UserFactController extends Controller
         }
 
         session()->forget('factura_data');
-        return redirect()->route('facturacion');
+        return redirect()->route('facturas.index');
     }
 
     // -------------------------------------------------------------------------

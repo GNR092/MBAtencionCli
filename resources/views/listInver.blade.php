@@ -14,7 +14,7 @@
 
     <!-- Encabezado con título y barra de búsqueda -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-        <form method="GET" action="{{ route('listInver') }}" class="relative mx-12 flex items-center gap-2">
+        <form method="GET" action="{{ route('inversionistas.index') }}" class="relative mx-12 flex items-center gap-2">
             <label for="searchInput" class="text-white/70 mx-2 text-sm">Buscar por:</label>
 
             <!-- Input de búsqueda -->
@@ -33,7 +33,7 @@
                 BUSCAR
             </button>
 
-            <a href="{{ route('listInver.limpiar') }}"
+            <a href="{{ route('inversionistas.limpiar') }}"
                 class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded mx-2 text-sm">
                 LIMPIAR
             </a>

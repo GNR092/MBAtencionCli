@@ -76,7 +76,7 @@ class crudUser extends Controller
 
     public function limpiar()
     {
-        return redirect()->route('admiUsers');
+        return redirect()->route('usuarios.index');
     }
 
     public function confirmPassword(Request $request)
@@ -115,7 +115,7 @@ class crudUser extends Controller
 
 
         if (session('validated_edit_user') != $id) {
-            return redirect()->route('admiUsers')
+            return redirect()->route('usuarios.index')
                 ->withErrors(['auth' => 'Debes confirmar tu contraseña antes de editar este usuario.']);
         }
 
@@ -220,7 +220,7 @@ class crudUser extends Controller
 
         session()->forget('validated_edit_user');
 
-        return redirect(route('admiUsers') . '#user-' . $id)
+        return redirect(route('usuarios.index') . '#user-' . $id)
             ->with('success', 'Usuario editado correctamente.')
             ->with('highlight_user', $id);
     }
@@ -254,6 +254,6 @@ class crudUser extends Controller
             $user->proyectos()->attach($request->proyect);
         }
 
-        return redirect()->route('admiUsers')->with('success', 'Usuario creado correctamente.');
+        return redirect()->route('usuarios.index')->with('success', 'Usuario creado correctamente.');
     }
 }

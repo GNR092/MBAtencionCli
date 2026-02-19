@@ -382,7 +382,7 @@
                 const meta = document.querySelector('meta[name="csrf-token"]');
                 if (!meta) return;
 
-                fetch('{{ route('notifications.unreadCount') }}', {
+                fetch('{{ route('notificaciones.no-leidas') }}', {
                             method: 'GET',
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',

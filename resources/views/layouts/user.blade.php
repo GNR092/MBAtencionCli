@@ -169,7 +169,7 @@
 
                 if (notificationBellContainer && notificationBadge && notificationDropdown && notificationList) {
                     function fetchUnreadNotificationCount() {
-                        fetch('{{ route('notifications.unreadCount') }}', {
+                        fetch('{{ route('notificaciones.no-leidas') }}', {
                             method: 'GET',
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',

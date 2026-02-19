@@ -16,7 +16,7 @@ class ListController extends Controller
         session()->forget(['search', 'categoria']);
 
         
-        return redirect()->route('listInver');
+        return redirect()->route('inversionistas.index');
     }
 
     public function index(Request $request)
