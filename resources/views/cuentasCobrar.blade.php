@@ -5,7 +5,7 @@
 
     {{-- Header Minimalista (Proporciones Exactas de Referencia) --}}
     <nav class="flex justify-between items-center mb-16 px-2">
-        <a href="/vista-usuario"
+        <a href="{{ route('user.dashboard') }}"
             class="group flex items-center gap-4 text-[10px] tracking-[0.4em] uppercase text-white/40 hover:text-dorado-400 transition-all duration-700">
             <span class="text-lg group-hover:-translate-x-2 transition-transform duration-500">←</span>
             <span>Volver al Panel</span>

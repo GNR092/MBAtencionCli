@@ -42,17 +42,17 @@ Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
 Route::middleware([AuthUser::class.':usuario'])->group(function () {
-    Route::get('/vista-usuario', [UserViewController::class, 'index']);
+    Route::get('/user/dashboard', [UserViewController::class, 'index'])->name('user.dashboard');
     //rutas de factura
-    Route::get('/facturacion', [CfdiValidatorController::class, 'index'])->name('facturacion');
+    Route::get('/user/facturacion', [CfdiValidatorController::class, 'index'])->name('user.facturacion');
     Route::post('/upload-xml', [CfdiValidatorController::class, 'uploadXmlFiles'])->name('upload-xml');
     Route::post('/upload-pdf', [CfdiValidatorController::class, 'uploadPdf'])->name('upload-pdf');
     Route::post('/reset-batch', [CfdiValidatorController::class, 'resetBatch'])->name('reset-batch');
     Route::post('/validar-xml', [CfdiValidatorController::class, 'store'])->name('validar-xml');
     // Route::post('/user-factura', [UserFactController::class, 'verFactura'])->name('user.facturas');
+    Route::get('/user-factura/reset',[UserFactController::class, 'resetFactura'])->name('user.factura.reset');
     Route::get('/user-factura/{index?}',[UserFactController::class, 'showInvoice'])->name('user.factura.view');
     Route::post('/user-factura/{index}/confirm',[UserFactController::class, 'confirmFactura'])->name('user.factura.confirm');
-    Route::get('/user-factura/new',[UserFactController::class, 'nuevaFactura'])->name('user.factura.nueva');
     Route::delete('/user-factura/{index}/delete',[UserFactController::class, 'deleteFactura'])->name('user.factura.delete');
     
 

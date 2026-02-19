@@ -4,11 +4,12 @@ namespace App\Http\Controllers\Factura;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\XmlFile; // Using XmlFile model
-use Illuminate\Support\Facades\Storage; // For file access
+use App\Models\XmlFile;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Proyecto;
 use Illuminate\Support\Facades\Log;
 use App\Services\DescripcionParser;
+use Illuminate\Support\Facades\Auth;
 
 class UserFactController extends Controller
 {
@@ -36,6 +37,14 @@ class UserFactController extends Controller
         $xmlData = $currentFacturaData['xmlData'];
 
         $factura = $this->MapingFacturas($xmlData);
+        
+        // Validar que el emisor de la factura coincida con el usuario autenticado
+        $user = Auth::user();
+        $userMismatch = false;
+        if (mb_strtolower(trim($factura['emisor_nombre'])) !== mb_strtolower(trim($user->name))) {
+            $userMismatch = true;
+        }
+
         $proyecto = Proyecto::find($currentFacturaData['select_project']);
         $factura['idproyect'] = $proyecto->id_proyecto ?? null;
         $factura['nombre_proyecto'] = $proyecto->nombre_proyecto ?? 'Proyecto Desconocido';
@@ -45,15 +54,18 @@ class UserFactController extends Controller
 
         $des = $factura['conceptos'][0]['descripcion'];
         $parsedProject = $parser->parsearDescripcion($des, $AllProyects);
-        $parsedProjectId = $parsedProject['id_proyecto'] ?? null;
+        $parsedProjectInfo = $parsedProject['proyecto'] ?? null;
+        $parsedProjectId = $parsedProjectInfo['id_proyecto'] ?? null;
+        $parsedProjectName = $parsedProjectInfo['nombre_proyecto'] ?? 'No detectado';
         $selectedProjectId = $currentFacturaData['select_project'];
+        $selectedProjectName = $proyecto->nombre_proyecto ?? 'N/A';
 
         $projectMismatch = false;
-        if ($parsedProjectId !== null && (int)$parsedProjectId !== (int)$selectedProjectId) {
+        if ($parsedProjectId === null || (int)$parsedProjectId !== (int)$selectedProjectId) {
             $projectMismatch = true;
         }
 
-        return view('User.UserFactView', compact('factura', 'totalFacturas', 'index', 'projectMismatch', 'parsedProjectId', 'selectedProjectId'));
+        return view('User.UserFactView', compact('factura', 'totalFacturas', 'index', 'projectMismatch', 'parsedProjectId', 'parsedProjectName', 'selectedProjectId', 'selectedProjectName', 'userMismatch', 'user'));
     }
 
     private function MapingFacturas(array $xmlData): array
@@ -207,10 +219,9 @@ class UserFactController extends Controller
         }
     }
 
-    public function nuevaFactura()
+    public function resetFactura()
     {
         session()->forget('factura_data');
-
         return redirect()->route('facturacion');
     }
 }

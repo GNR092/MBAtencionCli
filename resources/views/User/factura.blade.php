@@ -5,7 +5,7 @@
 
     {{-- Header Minimalista (INTACTO) --}}
     <nav class="flex justify-between items-center mb-16 px-2">
-        <a href="/vista-usuario"
+        <a href="{{ route('user.dashboard') }}"
             class="group flex items-center gap-4 text-[10px] tracking-[0.4em] uppercase text-white/40 hover:text-dorado-400 transition-all duration-700">
             <span class="text-lg group-hover:-translate-x-2 transition-transform duration-500">←</span>
             <span>Volver al Panel</span>
@@ -210,11 +210,12 @@
         const dropzoneText = document.getElementById('dropzone_text');
         const fileListContainer = document.getElementById('file_list_container');
 
+        let dt = new DataTransfer();
+
         xmlInput.addEventListener('change', function() {
-            updateFileList();
+            addFiles(this.files);
         });
 
-        // Optional: Drag and drop functionality
         dropzone.addEventListener('dragover', function(e) {
             e.preventDefault();
             dropzone.classList.add('border-dorado-400', 'bg-dorado/5');
@@ -228,22 +229,48 @@
         dropzone.addEventListener('drop', function(e) {
             e.preventDefault();
             dropzone.classList.remove('border-dorado-400', 'bg-dorado/5');
-            xmlInput.files = e.dataTransfer.files;
-            updateFileList();
+            addFiles(e.dataTransfer.files);
         });
 
+        function addFiles(newFiles) {
+            for (let i = 0; i < newFiles.length; i++) {
+                let alreadyExists = false;
+                for (let j = 0; j < dt.files.length; j++) {
+                    if (dt.files[j].name === newFiles[i].name) {
+                        alreadyExists = true;
+                        break;
+                    }
+                }
+                if (!alreadyExists) {
+                    dt.items.add(newFiles[i]);
+                }
+            }
+            xmlInput.files = dt.files;
+            updateFileList();
+        }
+
+        window.removeFile = function(index) {
+            dt.items.remove(index);
+            xmlInput.files = dt.files;
+            updateFileList();
+        };
+
         function updateFileList() {
-            if (xmlInput.files.length > 0) {
+            if (dt.files.length > 0) {
                 dropzoneText.classList.add('hidden');
                 fileListContainer.classList.remove('hidden');
-                let fileListHtml = '<ul class="list-none text-center space-y-2">';
-                for (let i = 0; i < xmlInput.files.length; i++) {
-                    fileListHtml += `<li class="text-xs text-carbon-700 bg-dorado-200/20 border border-dorado-400/30 rounded-md px-3 py-2 flex items-center justify-between">
-                        <span class="font-mono">${xmlInput.files[i].name}</span>
-                        <span class="text-gray-500 text-2xs">${(xmlInput.files[i].size / 1024).toFixed(2)} KB</span>
+                let fileListHtml = '<ul class="list-none space-y-2 w-full">';
+                for (let i = 0; i < dt.files.length; i++) {
+                    fileListHtml += `<li class="text-xs text-carbon-700 bg-dorado-200/20 border border-dorado-400/30 rounded-md px-3 py-2 flex items-center gap-2">
+                        <span class="font-mono truncate flex-1">${dt.files[i].name}</span>
+                        <span class="text-gray-500 shrink-0">${(dt.files[i].size / 1024).toFixed(2)} KB</span>
+                        <button type="button" onclick="removeFile(${i})"
+                            class="shrink-0 w-5 h-5 flex items-center justify-center rounded-full text-red-400 hover:text-white hover:bg-red-500 transition-all duration-200 font-bold leading-none z-30 relative"
+                            title="Eliminar archivo">✕</button>
                     </li>`;
                 }
                 fileListHtml += '</ul>';
+                fileListHtml += '<p class="text-center text-[10px] text-gray-400 mt-3 tracking-wider uppercase">Haz clic para agregar más archivos</p>';
                 fileListContainer.innerHTML = fileListHtml;
             } else {
                 dropzoneText.classList.remove('hidden');

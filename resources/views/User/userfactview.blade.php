@@ -6,7 +6,7 @@
     {{-- Encabezado --}}
     <div class="flex items-center justify-between">
         <h1 class="text-2xl font-light text-dorado-400 tracking-widest uppercase">Detalle de Factura</h1>
-        <a href="{{ route('user.factura.nueva') }}" onclick="return confirm('Si regresas, se borrarán las facturas subidas. ¿Deseas continuar?')"
+        <a href="{{ route('user.factura.reset') }}" 
            class="text-sm text-white/50 hover:text-white border border-white/10 rounded-lg px-4 py-2 transition">
             &larr; Regresar
         </a>
@@ -15,9 +15,19 @@
     {{-- Mensaje de advertencia si el proyecto no coincide --}}
     @if(isset($projectMismatch) && $projectMismatch)
     <div class="bg-red-800/20 border border-red-700/50 rounded-xl p-4 text-red-300">
-        <p class="font-bold">Advertencia: El proyecto asociado a esta factura no coincide.</p>
-        <p class="text-sm">Esta factura está vinculada al proyecto <span class="font-mono">{{ $parsedProjectId ?? 'N/A' }}</span> según su descripción,
-            pero el proyecto seleccionado es <span class="font-mono">{{ $selectedProjectId ?? 'N/A' }}</span>. Por favor, elimina esta factura o regresa para seleccionar el proyecto correcto.</p>
+        <p class="font-bold">Advertencia: El proyecto asociado a esta factura no coincide o no se detectó en la descripción.</p>
+        <p class="text-sm">Proyecto detectado en la descripción: <span class="font-bold uppercase tracking-widest text-dorado-200">{{ $parsedProjectName ?? 'No detectado' }}</span></p>
+        <p class="text-sm">Proyecto seleccionado: <span class="font-bold uppercase tracking-widest text-dorado-200">{{ $selectedProjectName ?? 'N/A' }}</span></p>
+        <p class="text-xs mt-2 text-white/60 italic">Por favor, elimine esta factura o regrese para seleccionar el proyecto correcto si la descripción es diferente.</p>
+    </div>
+    @endif
+
+    {{-- Mensaje de advertencia si el usuario no coincide --}}
+    @if(isset($userMismatch) && $userMismatch)
+    <div class="bg-orange-800/20 border border-orange-700/50 rounded-xl p-4 text-orange-300">
+        <p class="font-bold">Advertencia: El emisor de la factura no coincide con su nombre de usuario.</p>
+        <p class="text-sm">El emisor de esta factura es <span class="font-mono">{{ $factura['emisor_nombre'] }}</span>, pero usted está autenticado como <span class="font-mono">{{ $user->name }}</span>. 
+            Por favor, asegúrese de que la factura sea correcta o elimínela.</p>
     </div>
     @endif
 
@@ -37,7 +47,7 @@
             @endif
         </div>
         <div class="flex space-x-2">
-            @if(isset($projectMismatch) && $projectMismatch)
+            @if((isset($projectMismatch) && $projectMismatch) || (isset($userMismatch) && $userMismatch))
                 <form action="{{ route('user.factura.delete', ['index' => $index]) }}" method="POST">
                     @csrf
                     @method('DELETE')
@@ -49,8 +59,11 @@
             @endif
             <form action="{{ route('user.factura.confirm', ['index' => $index]) }}" method="POST">
                 @csrf
-                <button type="submit" class="bg-dorado-200 text-carbon-900 font-bold py-2 px-6 rounded-lg hover:bg-[#c2ae84] transition {{ (isset($projectMismatch) && $projectMismatch) ? 'opacity-50 cursor-not-allowed' : '' }}"
-                        {{ (isset($projectMismatch) && $projectMismatch) ? 'disabled' : '' }}>
+                @php
+                    $isInvalid = (isset($projectMismatch) && $projectMismatch) || (isset($userMismatch) && $userMismatch);
+                @endphp
+                <button type="submit" class="bg-dorado-200 text-carbon-900 font-bold py-2 px-6 rounded-lg hover:bg-[#c2ae84] transition {{ $isInvalid ? 'opacity-50 cursor-not-allowed' : '' }}"
+                        {{ $isInvalid ? 'disabled' : '' }}>
                     Confirmar Factura
                 </button>
             </form>

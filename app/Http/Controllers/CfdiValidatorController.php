@@ -119,11 +119,11 @@ class CfdiValidatorController extends BaseController
         $proyectos = $user->proyectos;
 
         if ($request->expectsJson()) {
-            $html = view('factura', compact('batch', 'isDeadlinePassed', 'success', 'user'))->render();
+            $html = view('User.factura', compact('batch', 'isDeadlinePassed', 'success', 'user'))->render();
             return response()->json(['html' => $html]);
         }
 
-        return view('factura', compact('batch', 'isDeadlinePassed', 'success', 'user', 'proyectos'));
+        return view('User.factura', compact('batch', 'isDeadlinePassed', 'success', 'user', 'proyectos'));
     }
 
     //Sube y valida archivos XML, Los inválidos no se guardan,Los válidos se guardan en disco y BD.
