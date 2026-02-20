@@ -38,6 +38,15 @@
     </div>
     @endif
 
+    {{-- Advertencia: UUID duplicado --}}
+    @if(isset($uuidExists) && $uuidExists)
+    <div class="bg-yellow-800/20 border border-yellow-600 rounded-xl p-4 text-yellow-200">
+        <p class="font-bold">Advertencia: Este UUID ya existe en la base de datos.</p>
+        <p class="text-sm">El UUID <span class="font-mono text-yellow-100">{{ $factura['uuid'] }}</span> ya fue registrado previamente.
+            Elimine esta factura para evitar duplicados.</p>
+    </div>
+    @endif
+
     {{-- Navegación y Confirmación/Eliminación --}}
     <div class="flex items-center justify-between mt-4">
         <div class="flex items-center space-x-4">
@@ -55,7 +64,7 @@
                 @endif
         </div>
         <div class="flex space-x-2">
-            @if((isset($projectMismatch) && $projectMismatch) || (isset($userMismatch) && $userMismatch))
+            @if((isset($projectMismatch) && $projectMismatch) || (isset($userMismatch) && $userMismatch) || (isset($uuidExists) && $uuidExists))
             <form action="{{ route('user.factura.delete', ['index' => $index]) }}" method="POST">
                 @csrf
                 @method('DELETE')
@@ -69,7 +78,7 @@
             <form action="{{ route('user.factura.confirm', ['index' => $index]) }}" method="POST">
                 @csrf
                 @php
-                $isInvalid = (isset($projectMismatch) && $projectMismatch) || (isset($userMismatch) && $userMismatch);
+                $isInvalid = (isset($projectMismatch) && $projectMismatch) || (isset($userMismatch) && $userMismatch) || (isset($uuidExists) && $uuidExists);
                 @endphp
                 <button type="submit"
                     class="bg-dorado-200 text-carbon-900 font-bold py-2 px-6 rounded-lg hover:bg-[#c2ae84] transition {{ $isInvalid ? 'opacity-50 cursor-not-allowed' : '' }}"

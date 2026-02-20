@@ -146,7 +146,7 @@ class ContractController extends Controller
         session(['validated_edit_contrato' => $request->user_id]);
 
         
-        return redirect()->route('contratos.editar', $request->user_id);
+        return redirect()->route('admin.contratos.editar', $request->user_id);
     }
   
     public function editar($id)
@@ -328,7 +328,9 @@ class ContractController extends Controller
         
         $query = DB::table('contract')
             ->join('users', 'contract.user_id', '=', 'users.id')
-            ->select('contract.*', 'users.name as user_name')
+            ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
+            ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
+            ->select('contract.*', 'users.name as user_name', DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'))
             ->orderBy('contract.created_at', 'asc');
 
             

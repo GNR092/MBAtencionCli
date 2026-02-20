@@ -65,26 +65,25 @@
                             <td class="text-left font-medium">{{ $cuenta->name }}</td>
                             <td class="text-white/80">{{ $cuenta->proyecto }}</td>
                             <td>
-                                @if($cuenta->estado === 'parcial')
-                                <select
-                                    class="estado-select bg-yellow-900/40 border border-yellow-400/50 rounded-lg px-2 py-1 text-xs text-yellow-300 outline-none focus:ring-2 focus:ring-[#d8c495]"
+                                <select class="estado-select bg-[#0d1f30] border border-white/20 rounded-lg px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-[#d8c495]
+                                    @if($cuenta->estado === 'pendiente') text-red-300
+                                    @elseif($cuenta->estado === 'parcial') text-yellow-300
+                                    @elseif($cuenta->estado === 'pagado') text-green-300
+                                    @elseif($cuenta->estado === 'vencido') text-orange-300
+                                    @else text-white/70 @endif"
                                     data-id="{{ $cuenta->id_cuentas_por_pagar }}">
-                                    <option value="parcial" selected>Parcial</option>
-                                    <option value="pagado">Pagado</option>
+                                    <option value="pendiente" {{ $cuenta->estado === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                                    <option value="parcial" {{ $cuenta->estado === 'parcial' ? 'selected' : '' }}>Parcial</option>
+                                    <option value="pagado" {{ $cuenta->estado === 'pagado' ? 'selected' : '' }}>Pagado</option>
+                                    <option value="vencido" {{ $cuenta->estado === 'vencido' ? 'selected' : '' }}>Vencido</option>
                                 </select>
-                                @else
-                                <span class="px-3 py-1 text-[10px] font-black rounded-full uppercase
-                                    {{ $cuenta->estado === 'pendiente' ? 'bg-red-900/40 text-red-400' : 'bg-green-900/40 text-green-400' }}">
-                                    {{ $cuenta->estado }}
-                                </span>
-                                @endif
                             </td>
                             <td class="text-white/70 text-xs">{{ json_decode($cuenta->mesesdepago)->mes ?? 'N/A' }}</td>
                             <td class="font-medium">${{ number_format($cuenta->importe_base_final, 2) }}</td>
                             <td class="text-red-400 font-medium">${{ number_format($cuenta->isr, 2) }}</td>
                             <td class="font-bold">${{ number_format($cuenta->saldo_neto, 2) }}</td>
-                            <td class="text-green-400 font-medium">${{ number_format($cuenta->monto_pagado, 2) }}</td>
-                            <td class="font-black text-[#d8c495]">${{ number_format($cuenta->saldo_pendiente, 2) }}</td>
+                            <td class="text-green-400 font-medium cell-pagado">${{ number_format($cuenta->monto_pagado, 2) }}</td>
+                            <td class="font-black text-[#d8c495] cell-pendiente">${{ number_format($cuenta->saldo_pendiente, 2) }}</td>
                         </tr>
                         @empty
                         <tr>
@@ -96,11 +95,11 @@
                     <tfoot>
                         <tr>
                             <td colspan="9" class="text-right px-6 py-3 uppercase text-xs tracking-wider text-white/60">Total Pendiente:</td>
-                            <td class="px-4 py-3 text-red-400">${{ number_format($totalPendiente, 2) }}</td>
+                            <td id="totalPendiente" class="px-4 py-3 text-red-400">${{ number_format($totalPendiente, 2) }}</td>
                         </tr>
                         <tr class="border-t border-[#d8c495]/10">
                             <td colspan="9" class="text-right px-6 py-3 uppercase text-xs tracking-wider text-white/60">Total Pagado:</td>
-                            <td class="px-4 py-3 text-green-400">${{ number_format($totalPagado, 2) }}</td>
+                            <td id="totalPagado" class="px-4 py-3 text-green-400">${{ number_format($totalPagado, 2) }}</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -212,4 +211,36 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const colorMap = { pendiente: 'text-red-300', parcial: 'text-yellow-300', pagado: 'text-green-300', vencido: 'text-orange-300' };
+    function applyColor(sel) {
+        Object.values(colorMap).forEach(c => sel.classList.remove(c));
+        sel.classList.add(colorMap[sel.value] || 'text-white/70');
+    }
+    document.querySelectorAll('.estado-select').forEach(sel => {
+        sel.dataset.prev = sel.value;
+        sel.addEventListener('change', function () {
+            const prev = this.dataset.prev;
+            fetch(`/cuentasporpagar/${this.dataset.id}/estado`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                body: JSON.stringify({ estado: this.value }),
+            })
+            .then(r => r.json())
+            .then(d => {
+                if (d.success) {
+                    applyColor(this); this.dataset.prev = this.value;
+                    const row = this.closest('tr');
+                    row.querySelector('.cell-pagado').textContent   = '$' + d.montoPagado;
+                    row.querySelector('.cell-pendiente').textContent = '$' + d.saldoPendiente;
+                    document.getElementById('totalPendiente').textContent = '$' + d.totalPendiente;
+                    document.getElementById('totalPagado').textContent    = '$' + d.totalPagado;
+                } else { alert(d.message || 'Error'); this.value = prev; applyColor(this); }
+            })
+            .catch(() => { this.value = prev; applyColor(this); });
+        });
+    });
+});
+</script>
 @endsection

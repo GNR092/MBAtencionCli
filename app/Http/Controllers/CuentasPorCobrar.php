@@ -139,21 +139,31 @@ public function calcularCuentasPorPagar($user_id)
     -------------------------------------------------- */
 public function actualizarConXML(XmlFile $xml)
 {
-        
+        // Use fecha_inicio (CFDI date) for reliable Y-m parsing.
+        // The 'mes' field stores a display name like "Enero", not a parseable date.
+        if (!$xml->fecha_inicio) return;
+
         try {
-            $mesXml = Carbon::parse($xml->mes)->format('Y-m');
+            $mesXml = Carbon::parse($xml->fecha_inicio)->format('Y-m');
         } catch (\Exception $e) {
-            return; 
+            return;
         }
 
-        
-        $contract = Contract::where('user_id', $xml->id_user)->first();
+        // Find the contract for this specific user + project combination.
+        $userProyecto = \App\Models\UserProyecto::where('id_user', $xml->id_user)
+            ->where('id_proyecto', $xml->id_proyecto)
+            ->first();
+
+        $contract = $userProyecto
+            ? Contract::where('id_user_p', $userProyecto->id_user_p)->first()
+            : null;
+
         if (!$contract) return;
 
         
+        // Clave única: xml_file_id (un registro por factura/UUID)
         $cuenta = DB::table('cuentasporpagar')
-            ->where('id_contract', $contract->id)
-            ->whereRaw("JSON_EXTRACT(mesesdepago, '$.mes') = ?", [$mesXml])
+            ->where('xml_file_id', $xml->id)
             ->first();
 
         DB::beginTransaction();
@@ -175,7 +185,7 @@ public function actualizarConXML(XmlFile $xml)
                     'id_contract' => $contract->id,
                     'mesesdepago' => json_encode(['mes' => $mesXml]),
                     'xml_file_id' => $xml->id,
-                    'estado' => 'parcial',
+                    'estado' => 'pendiente',
                     'saldo_neto' => $importeBase,
                     'monto_pagado' => 0,
                     'mesespagados' => json_encode([]),
@@ -217,15 +227,19 @@ public function actualizarConXML(XmlFile $xml)
             
             
             
-            $montoPagadoXml = $importeBaseXml;
-            $montoPagadoTotal = floatval($montoPagadoXml);
+            $montoPagadoTotal = floatval($cuenta->monto_pagado ?? 0);
 
-            
-            $totalPagar = max(0, $importeBaseMes - $isrXml);
+            $totalPagar      = max(0, $importeBaseMes - $isrXml);
+            $saldoPendiente  = max(0, $totalPagar - $montoPagadoTotal);
 
-            $saldoPendiente = max(0, $totalPagar - $montoPagadoTotal);
-
-            $estado = ($saldoPendiente == 0) ? 'pagado' : 'parcial';
+            if ($montoPagadoTotal <= 0) {
+                $estado = 'pendiente';
+            } elseif ($montoPagadoTotal >= $totalPagar) {
+                $estado = 'pagado';
+                $saldoPendiente = 0;
+            } else {
+                $estado = 'parcial';
+            }
 
             
             $mesesPagados = json_decode($cuenta->mesespagados ?? '[]', true);
@@ -238,14 +252,12 @@ public function actualizarConXML(XmlFile $xml)
             DB::table('cuentasporpagar')
                 ->where('id_cuentas_por_pagar', $cuenta->id_cuentas_por_pagar)
                 ->update([
-                    'xml_file_id' => $xml->id,
-                    'saldo_neto' => $totalPagar,
-                    'isr' => $isrXml,
-                    'monto_pagado' => $montoPagadoTotal,
-                    'saldo_pendiente' => $saldoPendiente,
-                    'estado' => $estado,
-                    'mesespagados' => json_encode(array_values($mesesPagados)),
-                    'updated_at' => now()
+                    'xml_file_id'    => $xml->id,
+                    'saldo_neto'     => $totalPagar,
+                    'isr'            => $isrXml,
+                    'saldo_pendiente'=> $saldoPendiente,
+                    'estado'         => $estado,
+                    'updated_at'     => now()
                 ]);
 
             DB::commit();
@@ -356,16 +368,7 @@ public function Index(Request $request)
         $user = $request->user();
         if (!$user) return redirect('/inicio-de-sesion');
 
-        
         $this->calcularCuentasPorPagar($user->id);
-
-        
-        $xmls = XmlFile::where('id_user', $user->id)->get();
-        foreach ($xmls as $xml) {
-            $this->actualizarConXML($xml);
-        }
-
-        
         $this->calcularMontos();
 
         $query = Cuentas::with('contract')
@@ -379,7 +382,7 @@ public function Index(Request $request)
                 'cuentasporpagar.*',
                 'users.name as name',
                 'contract.importe_bruto_renta as importeBase',
-                DB::raw('COALESCE(proyectos.nombre_proyecto, contract.proyecto) as proyecto'),
+                DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'),
             )
             ->where('users.id', $user->id)
             ->where('cuentasporpagar.estado', '!=', 'pagado')

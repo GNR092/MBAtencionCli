@@ -54,7 +54,7 @@
                     @forelse($xmlFiles as $file)
                     <tr>
                         <td class="font-bold text-[#d8c495]">{{ $file->id }}</td>
-                        <td class="text-xs font-mono text-white/60">{{ Str::limit($file->uuid, 8) }}</td>
+                        <td class="text-xs font-mono text-white/60 w-auto">{{ Str::limit($file->uuid) }}</td>
                         <td class="text-white/70 text-xs">{{ $file->created_at }}</td>
                         <td class="text-white/80">{{ $file->proyecto ?? '—' }}</td>
                         <td class="text-white/80">{{ $file->departamento }}</td>

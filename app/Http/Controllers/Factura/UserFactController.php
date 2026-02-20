@@ -13,6 +13,7 @@ use App\Services\DescripcionParser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Http\Controllers\CuentasPorCobrar;
 
 class UserFactController extends Controller
 {
@@ -68,7 +69,10 @@ class UserFactController extends Controller
             $projectMismatch = true;
         }
 
-        return view('User.UserFactView', compact('factura', 'totalFacturas', 'index', 'projectMismatch', 'parsedProjectId', 'parsedProjectName', 'selectedProjectId', 'selectedProjectName', 'userMismatch', 'user'));
+        $uuid = $factura['uuid'] !== 'N/A' ? $factura['uuid'] : null;
+        $uuidExists = $uuid && XmlFile::where('uuid', $uuid)->exists();
+
+        return view('User.UserFactView', compact('factura', 'totalFacturas', 'index', 'projectMismatch', 'parsedProjectId', 'parsedProjectName', 'selectedProjectId', 'selectedProjectName', 'userMismatch', 'user', 'uuidExists'));
     }
 
     private function MapingFacturas(array $xmlData): array
@@ -193,6 +197,8 @@ class UserFactController extends Controller
         $filename    = basename($tmpFilePath);
         $newFilePath = $this->buildXmlStoragePath($user->id, $carbonFecha, $filename);
 
+        $xmlFile = null;
+
         try {
             DB::transaction(function () use (
                 $factura,
@@ -203,7 +209,8 @@ class UserFactController extends Controller
                 $filename,
                 $departamento,
                 $mes,
-                $carbonFecha
+                $carbonFecha,
+                &$xmlFile
             ) {
                 // Mover XML de almacenamiento temporal al almacenamiento privado organizado
                 $contents = Storage::disk('tmp')->get($tmpFilePath);
@@ -231,6 +238,11 @@ class UserFactController extends Controller
         } catch (\Exception $e) {
             Log::error('Error al confirmar factura [index=' . $index . ']: ' . $e->getMessage());
             return redirect()->back()->withErrors(['message' => 'Ocurrió un error al guardar la factura. Por favor intenta de nuevo.']);
+        }
+
+        // Vincular el XML a la cuenta por cobrar correspondiente
+        if ($xmlFile) {
+            (new CuentasPorCobrar())->actualizarConXML($xmlFile);
         }
 
         array_splice($allFacturasData, $index, 1);
