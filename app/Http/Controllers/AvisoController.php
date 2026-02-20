@@ -26,7 +26,7 @@ class AvisoController extends Controller
             return response()->json(['count' => 0], 401); 
         }
 
-        return response()->json(['count' => $user->unreadNotifications->count()]);
+        return response()->json(['count' => $user->unreadNotifications()->count()]);
     }
 
     public function delete(Request $request, $id)

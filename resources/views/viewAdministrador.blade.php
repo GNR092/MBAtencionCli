@@ -19,7 +19,7 @@
             @csrf
             <label for="searchInput">BUSCAR POR:</label>
             <input type="text" id="searchInput" name="search" value="{{ request('search') }}"
-                placeholder="Nombre o ID..." class="flex-1 min-w-[160px]">
+                placeholder="Nombre o ID..." class="flex-1 min-w-40">
             <select name="categoria" id="categoria">
                 <option value="mes" {{ request('categoria') == 'mes' ? 'selected' : '' }}>Mes</option>
                 <option value="estado" {{ request('categoria') == 'estado' ? 'selected' : '' }}>Estado</option>
