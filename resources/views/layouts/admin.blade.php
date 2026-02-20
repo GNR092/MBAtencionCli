@@ -186,7 +186,7 @@
                     </svg>
                 </button>
                 <h1
-                    class="text-xs md:text-sm font-bold uppercase tracking-wider text-[#d8c495] truncate max-w-[120px] md:max-w-none">
+                    class="text-xs md:text-sm font-bold uppercase tracking-wider text-[#d8c495] truncate max-w-30 md:max-w-none">
                     {{ currentUser()->name }}
                 </h1>
 
@@ -306,7 +306,7 @@
                 </div>
             </aside>
 
-            <main id="main-content" class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+            <main id="main-content" class="flex overflow-y-auto p-4 custom-scrollbar">
                 <div class="max-w-7xl mx-auto fade-in-content">
                     @yield('content')
                 </div>

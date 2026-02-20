@@ -1,4 +1,4 @@
-@extends('layouts.user-simple')
+@extends('layouts.BackFactura')
 @section('content')
 
 <div class="max-w-5xl mx-auto py-8 px-4 space-y-6">
@@ -14,7 +14,7 @@
 
     {{-- Mensaje de advertencia si el proyecto no coincide --}}
     @if(isset($projectMismatch) && $projectMismatch)
-    <div class="bg-red-800/20 border border-red-700/50 rounded-xl p-4 text-red-300">
+    <div class="bg-red-800/20 border border-red-700 rounded-xl p-4 text-red-200">
         <p class="font-bold">Advertencia: El proyecto asociado a esta factura no coincide o no se detectó en la
             descripción.</p>
         <p class="text-sm">Proyecto detectado en la descripción: <span
@@ -30,7 +30,7 @@
 
     {{-- Mensaje de advertencia si el usuario no coincide --}}
     @if(isset($userMismatch) && $userMismatch)
-    <div class="bg-orange-800/20 border border-orange-700/50 rounded-xl p-4 text-orange-300">
+    <div class="bg-orange-800/20 border border-orange-700 rounded-xl p-4 text-orange-200">
         <p class="font-bold">Advertencia: El emisor de la factura no coincide con su nombre de usuario.</p>
         <p class="text-sm">El emisor de esta factura es <span class="font-mono">{{ $factura['emisor_nombre'] }}</span>,
             pero usted está autenticado como <span class="font-mono">{{ $user->name }}</span>.

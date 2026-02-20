@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="max-w-6xl mx-auto p-6">
+<div class="max-w-6xl mx-auto p-">
 
     {{-- HEADER GIGANTE (Igual a Facturas) --}}
     <header class="mb-10 px-2">
@@ -66,7 +66,7 @@
                                 'name' => $user->name,
                                 'email' => $user->email,
                                 // Asumiendo que guardas con '52' al inicio, lo quitamos para mostrar
-                                'phone' => strlen($user->phone) > 10 ? substr($user->phone, 2) : $user->phone,
+                                'phone' => $user->phone ? (strlen($user->phone) > 10 ? substr($user->phone, 2) : $user->phone) : '',
                                 'id_regimen' => $user->id_regimen,
                                 'projects' => []
                                 ];
@@ -129,7 +129,7 @@
                 <button onclick="cerrarModalUsuario()" class="text-white/50 hover:text-white">✕</button>
             </div>
             <div class="p-6 overflow-y-auto custom-scroll">
-                <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                <form action="{{ route('usuarios.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                     @include('usuarios._form', ['prefix' => 'crear', 'usuario' => null, 'roles' => $roles, 'areas' => $areas])
                     <div class="flex justify-end gap-3 pt-4 border-t border-white/10">
                         <button type="button" onclick="cerrarModalUsuario()" class="px-4 py-2 text-white/60 hover:text-white text-xs uppercase font-bold tracking-widest transition">Cancelar</button>
@@ -141,7 +141,7 @@
     </div>
 </div>
 
-<div id="confirmModal" class="hidden fixed bg-black/80 backdrop-blur-sm overflow-y-auto" onclick="closeModal()">
+<div id="confirmModal" class="hidden fixed inset-0 z-50 bg-black/80 overflow-y-auto" onclick="closeModal()">
   <div class="flex min-h-full items-center justify-center p-4">
     <div onclick="event.stopPropagation()" class="bg-carbon-900 rounded-xl shadow-2xl w-full max-w-4xl border border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
         <div class="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-black/20">
@@ -149,8 +149,8 @@
             <button onclick="closeModal()" class="text-white/50 hover:text-white">✕</button>
         </div>
 
-        <div class="p-6 overflow-y-auto custom-scroll">
-            <form id="formEditarUsuario" action="{{ route('users.update') }}" method="POST" class="space-y-6">
+        <div class="p-6 overflow-y-auto center custom-scroll">
+            <form id="formEditarUsuario" action="{{ route('usuarios.actualizar') }}" method="POST" class="space-y-6">
                 @csrf
                 <input type="hidden" name="id" id="editUserIdInput" />
 
@@ -183,9 +183,9 @@
                             Fiscal</label>
                         <select name="regimenFiscal" id="edit_regimen"
                             class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:border-[#d8c495] outline-none">
+                            <option value="" class="text-black">— Selecciona régimen —</option>
                             @foreach($regimenesFiscales ?? [] as $regimen)
-                            <option value="{{ $regimen->id_regimen }}" class="text-black" {{ (isset($userData['id_regimen']) && $userData['id_regimen'] == $regimen->id_regimen) ? 'selected' : '' }}>{{ $regimen->nombre_regimen }}
-                            </option>
+                            <option value="{{ $regimen->id_regimen }}" class="text-black">{{ $regimen->nombre_regimen }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -285,8 +285,8 @@ window.openEditModal = function(userData) {
     document.getElementById("editUserIdInput").value = userData.id;
     document.getElementById("edit_name").value = userData.name;
     document.getElementById("edit_email").value = userData.email;
-    document.getElementById("edit_phone").value = userData.phone;
-    document.getElementById("edit_regimen").value = userData.id_regimen;
+    document.getElementById("edit_phone").value = userData.phone ?? '';
+    document.getElementById("edit_regimen").value = userData.id_regimen ?? '';
 
     // 2. Limpiar estado anterior
     container.innerHTML = '';
