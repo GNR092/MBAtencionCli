@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <style>
-        
+
         body {
             font-family: DejaVu Sans, sans-serif;
             font-size: 12px;
@@ -25,7 +25,7 @@
 </head>
 <body>
 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-    <img src="{{ public_path('uploads/Logo-Png.png') }}" alt="Logo" style="width: 200px; height: auto;">
+    <img src="{{ public_path('uploads/Logo-Png.svg') }}" alt="Logo" style="width: 200px; height: auto;">
     <div style="text-align: right; font-size: 12px; line-height: 16px;">
         <div style="font-size: 18px; font-weight: bold;">Estado de Cuenta</div>
         <div style="font-size: 13px;">MB Signature Properties</div>
@@ -76,23 +76,23 @@
     <p><strong>Email:</strong> {{ $usuario->email ?? '—' }}</p>
 </div>
 @php
-    $totalCargos = 0;      
-    $totalAbonos = 0;      
+    $totalCargos = 0;
+    $totalAbonos = 0;
 
     foreach ($cuentas as $c) {
 
-        
+
         if (!is_null($c->saldo_neto)) {
             $totalCargos += (float) $c->saldo_neto;
         }
 
-        
+
         if (!is_null($c->monto_pagado)) {
             $totalAbonos += (float) $c->monto_pagado;
         }
     }
 
-    
+
     $saldoFinal = $totalCargos - $totalAbonos;
 @endphp
 

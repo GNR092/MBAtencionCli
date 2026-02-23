@@ -173,7 +173,7 @@
         <div style="width: 100%; height: 100%; background-color: rgba(0,0,0,0.3);"></div>
     </div>
 
-    <img src="{{ asset('images/MB_SP.png') }}" alt="Marca de Agua" class="watermark-logo">
+    <img src="{{ asset('images/MB_SP.svg') }}" alt="Marca de Agua" class="watermark-logo">
 
     <div id="sidebar-overlay"></div>
 
@@ -213,7 +213,7 @@
                 <input type="month" id="start" name="start" value="{{ request('month', date('Y-m')) }}"
                     class="hidden md:block rounded-md border border-[#d8c495]/40 bg-white/10 px-2 py-1 text-sm font-semibold text-white outline-none">
                 <a class="shrink-0">
-                    <img src="/uploads/Logo-Png.png" alt="Logo" class="h-7 md:h-9">
+                    <img src="/uploads/Logo-Png.svg" alt="Logo" class="h-7 md:h-9">
                 </a>
             </div>
         </header>
@@ -319,7 +319,7 @@
     {{-- SCRIPTS (Fuera del stack para que carguen siempre) --}}
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        
+
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
         const sidebarToggle = document.getElementById('sidebar-toggle');
@@ -343,7 +343,7 @@
             });
         }
 
-        
+
         const startInput = document.getElementById('start');
         if (startInput) {
             startInput.addEventListener('change', function() {
@@ -356,7 +356,7 @@
             });
         }
 
-        
+
         const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
         dropdownToggles.forEach(toggle => {
             toggle.addEventListener('click', function() {
@@ -373,7 +373,7 @@
             });
         });
 
-        
+
         const notificationBellContainer = document.getElementById('notification-bell-container');
         const notificationBadge = document.getElementById('notification-badge');
         const notificationDropdown = document.getElementById('notification-dropdown');

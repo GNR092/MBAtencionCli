@@ -82,7 +82,7 @@
             <div class="flex items-center gap-4">
                 <input type="month" id="start" name="start" value="{{ request('month', date('Y-m')) }}" class="relative inline-flex items-center text-lg bg-white/10 text-white rounded-md px-2 border border-[#d8c495]/40 outline-none">
                 <a href="#">
-                    <img src="/uploads/Logo-Png.png" alt="Logo" class="h-8">
+                    <img src="/uploads/Logo-Png.svg" alt="Logo" class="h-8">
                 </a>
             </div>
         </header>
@@ -124,7 +124,7 @@
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                
+
                 document.getElementById('start').addEventListener('change', function() {
                     const month = this.value;
                     if (month) {
@@ -134,7 +134,7 @@
                     }
                 });
 
-                
+
                 const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
                 dropdownToggles.forEach(toggle => {
                     toggle.addEventListener('click', function() {
@@ -151,7 +151,7 @@
                     });
                 });
 
-                
+
                 const sidebar = document.getElementById('sidebar');
                 const mainContent = document.getElementById('main-content');
                 const sidebarToggle = document.getElementById('sidebar-toggle');
@@ -161,7 +161,7 @@
                     mainContent.classList.toggle('main-content-collapsed');
                 });
 
-                
+
                 const notificationBellContainer = document.getElementById('notification-bell-container');
                 const notificationBadge = document.getElementById('notification-badge');
                 const notificationDropdown = document.getElementById('notification-dropdown');
@@ -248,8 +248,8 @@
                             });
                         });
                     }
-                } 
-            }); 
+                }
+            });
         </script>
     @endpush
 
