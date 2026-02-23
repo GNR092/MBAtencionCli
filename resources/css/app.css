@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
 @import "tailwindcss";
 @import "./defstyle.css";
 @import "./multiselect.css";
@@ -66,6 +67,10 @@
         forwards;
     --animate-form-entrance: slide-up-form 5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s
         backwards;
+
+    --font-hand: "Dancing Script", cursive;
+
+    --animate-cursor-blink: blink 0.7s infinite;
 }
 
 /* REGLA DE ORO: No uses !important en etiquetas globales como 'body', 'input' o 'table'
