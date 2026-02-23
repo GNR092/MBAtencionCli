@@ -142,7 +142,7 @@
 </div>
 
 <div id="confirmModal" class="hidden fixed inset-0 z-50 bg-black/80 overflow-y-auto" onclick="closeModal()">
-  <div class="flex min-h-full items-center justify-center p-4">
+  <div class="flex min-h-screen items-center justify-center p-4">
     <div onclick="event.stopPropagation()" class="bg-carbon-900 rounded-xl shadow-2xl w-full max-w-4xl border border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
         <div class="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-black/20">
             <h2 class="text-xl font-light text-[#d8c495] tracking-widest uppercase">Editar Usuario</h2>
@@ -253,6 +253,8 @@
 
 @endsection
 
+@push('modals')
+
 @push('scripts')
 <script>
 // ==========================================
@@ -288,10 +290,9 @@ window.openEditModal = function(userData) {
     document.getElementById("edit_phone").value = userData.phone ?? '';
     document.getElementById("edit_regimen").value = userData.id_regimen ?? '';
 
-    // 2. Limpiar estado anterior
+    // 2. Limpiar estado anterior y listeners
     container.innerHTML = '';
-    select.onmousedown = null;
-    select.onchange = null;
+    select.onchange = null; // Clear previous listener
 
     // 3. Pre-seleccionar proyectos del usuario
     const existingProjectIds = Object.keys(userData.projects);
@@ -299,40 +300,35 @@ window.openEditModal = function(userData) {
         option.selected = existingProjectIds.includes(option.value);
     });
 
-    // 4. Reconstruir los contenedores de departamentos iniciales
-    existingProjectIds.forEach(projectId => {
-        createProjectContainer(projectId, container);
-        const depts = userData.projects[projectId] || [];
-        if (depts.length > 0) {
-            depts.forEach(dept => addEditDepartment(projectId, dept));
-        } else {
-            addEditDepartment(projectId);
-        }
-    });
+    // 4. Inicializar los contenedores de proyectos y departamentos con los datos existentes
+    refreshEditProjectContainers(select, container, userData.projects);
 
-    // 5. Lógica de selección/deselección personalizada
+    // 5. Lógica de selección/deselección personalizada con bloqueo
     const lockedProjectIds = existingProjectIds.filter(id =>
         userData.projects[id] && userData.projects[id].length > 0
     );
 
-    select.onmousedown = function(e) {
-        e.preventDefault(); // Detiene el comportamiento nativo del select
+    select.onchange = function() {
+        const currentSelectedIds = Array.from(select.selectedOptions).map(o => o.value);
+        let selectionChanged = false;
 
-        const option = e.target;
-        if (option.tagName !== 'OPTION') return;
+        // Revert deselection of locked projects
+        lockedProjectIds.forEach(lockedId => {
+            if (!currentSelectedIds.includes(lockedId)) {
+                // If a locked project was deselected, re-select it
+                Array.from(select.options).find(option => option.value === lockedId).selected = true;
+                selectionChanged = true;
+            }
+        });
 
-        const projectId = option.value;
-
-        // Prevenir deselección de proyectos con departamentos
-        if (lockedProjectIds.includes(projectId) && option.selected) {
-            return; // No hace nada, previniendo silenciosamente la deselección
+        if (selectionChanged) {
+            alert('No puedes deseleccionar proyectos que tienen departamentos asignados.');
+            // Re-run refreshEditProjectContainers with the corrected selection
+            refreshEditProjectContainers(select, container);
+        } else {
+            // Only update dynamically if no locked projects were deselected or if new projects were added
+            refreshEditProjectContainers(select, container);
         }
-
-        // Alternar el estado de selección del que se hizo clic
-        option.selected = !option.selected;
-
-        // Actualizar la UI de inmediato
-        refreshEditProjectContainers(this, container);
     };
 
     // 6. Asegurarse de que el scroll del modal esté arriba del todo
@@ -440,18 +436,31 @@ window.toggleEditPredial = function(checkbox, uniqueIndex) {
 }
 
 // Maneja qué pasa cuando seleccionas/deseleccionas proyectos en el select múltiple
-function refreshEditProjectContainers(select, container) {
+function refreshEditProjectContainers(select, container, initialProjectsData = null) {
     const selectedIds = Array.from(select.selectedOptions).map(o => o.value);
 
-    // 1. Agregar nuevos contenedores si no existen
+    // Clear existing containers if it's the initial load
+    if (initialProjectsData) {
+        container.innerHTML = '';
+    }
+
+    // 1. Add new containers if they don't exist, or repopulate for initial load
     selectedIds.forEach(id => {
         if (!document.getElementById(`edit_project_container_${id}`)) {
             createProjectContainer(id, container);
-            addEditDepartment(id); // Agregar uno vacío por defecto al seleccionar proyecto nuevo
+            // On initial load, populate with existing departments
+            if (initialProjectsData && initialProjectsData[id] && initialProjectsData[id].length > 0) {
+                initialProjectsData[id].forEach(dept => addEditDepartment(id, dept));
+            } else {
+                addEditDepartment(id); // Add one empty department for new selections or if no existing departments
+            }
+        } else if (initialProjectsData && !container.querySelector(`#edit_departments_list_${id} > div`)) {
+            // If it's initial load and container exists but has no departments (e.g., project was selected but no dept data), add one
+            addEditDepartment(id);
         }
     });
 
-    // 2. Eliminar contenedores de proyectos que se desmarcaron
+    // 2. Remove containers of projects that are no longer selected
     Array.from(container.children).forEach(child => {
         const id = child.id.replace('edit_project_container_', '');
         if (!selectedIds.includes(id)) {
