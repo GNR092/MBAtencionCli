@@ -41,6 +41,16 @@ class UserViewController extends Controller
         
         $administradores = User::where('role', 'administrador')->get();
 
+        $sumImporteCobrarRentas = $user->userProyectos()
+            ->with('deptos')
+            ->get()
+            ->flatMap(function ($userProyecto) {
+                return $userProyecto->deptos;
+            })
+            ->sum('importe');
+            
+        $deptoCount = $user->userProyectos->flatMap->deptos->count();
+
         return view('viewUser', compact(
             'user',
             'ticketsCount',
@@ -53,7 +63,9 @@ class UserViewController extends Controller
             'usuarios',
             'misResguardos',
             'administradores',
-            'anuncios' 
+            'anuncios',
+            'sumImporteCobrarRentas',
+            'deptoCount'
         ));
     }
 
@@ -75,9 +87,7 @@ class UserViewController extends Controller
             $path = $request->file('foto')->store('fotos_perfil', 'public');
             $user->foto = $path;
             $user->save();
-
-            
-            Session::put('user', $user);
+            Auth::user()->refresh();
         }
 
         return back()->with('success', 'Foto de perfil actualizada correctamente.');

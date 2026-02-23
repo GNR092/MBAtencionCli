@@ -88,7 +88,7 @@
                     </div>
                     <div class="flex flex-col">
                         <h1 class="text-lg md:text-2xl font-bold text-white tracking-tight">Bienvenido, <span style="color: #d8c495 !important;">{{ $user->name ?? 'Usuario' }}</span></h1>
-                        <p class="text-xs md:text-sm text-gray-300 italic">Panel de Cliente</p>
+                        <p class="text-xs md:text-sm text-gray-300 italic">Vive de tus rentas, ¡Sin preocupaciones!</p>
                     </div>
                 </div>
                 <form method="get" action="{{ route('logout') }}" class="m-0">
@@ -101,16 +101,26 @@
                 @php
                     $opciones = [
                         ['route' => 'user.facturacion', 'label' => 'Facturación'],
+                        ['route' => 'cuentas-cobrar.index', 'label' => 'Cobrar Rentas'],
                         ['route' => 'notificaciones.index', 'label' => 'Notificaciones'],
-                        ['route' => 'cuentas-cobrar.index', 'label' => 'Cuentas Cobrar'],
-                        ['route' => 'estados-cuenta.index', 'label' => 'Estados Cuenta'],
                         ['route' => 'contratos.index', 'label' => 'Contratos'],
+                        ['route' => 'estados-cuenta.index', 'label' => 'Estados Cuenta'],
                     ];
                 @endphp
 
                 @foreach($opciones as $opt)
                     <a href="{{ route($opt['route']) }}"
                        class="bg-white/90 rounded-2xl p-4 md:p-6 text-center shadow-lg border-b-4 border-transparent hover:border-[#d8c495] transition-all transform hover:-translate-y-1 flex flex-col items-center justify-center h-24 md:h-32">
+                        @if($opt['label'] === 'Cobrar Rentas' && isset($sumImporteCobrarRentas))
+                            <div class="text-xs md:text-sm font-semibold text-[#d8c495] mb-1">
+                                $ {{ number_format($sumImporteCobrarRentas, 2) }}
+                            </div>
+                        @endif
+                        @if($opt['label'] === 'Contratos' && isset($deptoCount))
+                            <div class="text-xs md:text-sm font-semibold text-[#d8c495] mb-1">
+                                {{ $deptoCount }} Deptos
+                            </div>
+                        @endif
                         <span class="font-black text-sm md:text-lg uppercase text-[#3c3c3c]">{{$opt['label']}}</span>
                     </a>
                 @endforeach
@@ -262,25 +272,25 @@
             });
 
             document.addEventListener('DOMContentLoaded', function () {
-                
+
                 const openBtn = document.getElementById('openChatBtn');
                 const closeBtn = document.getElementById('closeChatBtn');
                 const modal = document.getElementById('chatModal');
                 const messagesDiv = document.getElementById('chatMessages');
                 const input = document.getElementById('chatInput');
                 const sendBtn = document.getElementById('sendChatBtn');
-                
+
                 let lastId = 0;
                 let pollingInterval = null;
                 let isTabActive = true;
                 let isFetching = false;
                 const renderedMessageIds = new Set();
 
-                
+
                 const csrfMeta = document.querySelector('meta[name="csrf-token"]');
                 const csrf = csrfMeta ? csrfMeta.getAttribute('content') : '';
 
-                
+
                 document.addEventListener('visibilitychange', () => {
                     isTabActive = !document.hidden;
                     if (!isTabActive) stopPolling();
@@ -292,12 +302,12 @@
                         e.preventDefault();
                         modal.classList.remove('hidden');
                         modal.style.display = 'flex';
-                        
+
                         if (lastId === 0) {
                             messagesDiv.innerHTML = '<div class="text-center text-gray-400 text-sm mt-4">Cargando mensajes...</div>';
                             renderedMessageIds.clear();
                         }
-                        
+
                         fetchMessages();
                         startPolling();
                         setTimeout(() => input.focus(), 100);
@@ -335,7 +345,7 @@
                                 window.location.href = '/inicio-de-sesion';
                                 return;
                             }
-                            
+
                             if (res.ok) {
                                 const msgs = await res.json();
                                 if (msgs.length > 0) {
@@ -410,7 +420,7 @@
                 }
             });
 
-            
+
             let currentAnuncio = 0;
             const slides = document.querySelectorAll('.anuncio-slide');
             const dots = document.querySelectorAll('.anuncio-dot');
@@ -418,7 +428,7 @@
             function jumpToAnuncio(index) {
                 if (slides.length <= 1) return;
 
-                
+
                 slides[currentAnuncio].classList.replace('opacity-100', 'opacity-0');
                 slides[currentAnuncio].classList.replace('z-10', 'z-0');
 
@@ -428,10 +438,10 @@
                     allDots[currentAnuncio].classList.add('bg-white/30', 'w-2');
                 }
 
-                
+
                 currentAnuncio = (index + slides.length) % slides.length;
 
-                
+
                 slides[currentAnuncio].classList.replace('opacity-0', 'opacity-100');
                 slides[currentAnuncio].classList.replace('z-0', 'z-10');
 
@@ -440,7 +450,7 @@
                     allDots[currentAnuncio].classList.add('bg-[#d8c495]', 'w-6');
                 }
 
-                
+
                 const activeScroll = slides[currentAnuncio].querySelector('.overflow-y-auto');
                 if (activeScroll) activeScroll.scrollTop = 0;
             }
@@ -449,7 +459,7 @@
                 jumpToAnuncio(currentAnuncio + direction);
             }
 
-            
+
             let autoPlayInterval = setInterval(() => changeAnuncio(1), 8000);
 
             function expandirAnuncio() {
@@ -476,14 +486,14 @@
 
                 document.getElementById('fullScreenAnuncio').classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
-                clearInterval(autoPlayInterval); 
+                clearInterval(autoPlayInterval);
             }
 
             function cerrarFullScreen() {
                 document.getElementById('fullScreenAnuncio').classList.add('hidden');
                 document.getElementById('fs-media').innerHTML = '';
                 document.body.style.overflow = 'auto';
-                autoPlayInterval = setInterval(() => changeAnuncio(1), 8000); 
+                autoPlayInterval = setInterval(() => changeAnuncio(1), 8000);
             }
 
             function closeMiniVideo(event) {
