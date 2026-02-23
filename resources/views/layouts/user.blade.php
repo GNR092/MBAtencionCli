@@ -191,7 +191,7 @@
 
                     function loadNotifications() {
                         notificationList.innerHTML = '<p class="text-gray-500 text-sm p-4">Cargando...</p>';
-                        fetch('{{ route('notificaciones.index') }}', {
+                        fetch('{{ route('notificaciones.api-list') }}', {
                             method: 'GET',
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',

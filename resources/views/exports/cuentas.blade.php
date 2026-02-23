@@ -20,7 +20,7 @@
                 <td>{{ $cuenta->name }}</td>
                 <td>{{$cuenta->proyecto}}</td>
                 <td>{{ $cuenta->estado }}</td>
-                <td>{{ json_decode($cuenta->mesesdepago)->mes ?? 'Sin mes' }}</td>
+                <td>{{ $cuenta->mes_pago ?? 'Sin mes' }}</td>
                 <td>{{ number_format($cuenta->importe_base_final,2)}}</td>
                 <td>{{ number_format($cuenta->isr,2) }}</td>
                 <td>{{ number_format($cuenta->saldo_neto,2)}}</td>

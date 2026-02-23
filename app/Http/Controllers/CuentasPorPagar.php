@@ -45,13 +45,11 @@ class CuentasPorPagar extends Controller
 
 
         if ($request->filled('desde')) {
-            $desdeMes = substr($request->desde, 0, 7);
-            $query->where('cuentasporpagar.mesesdepago->mes', '>=', $desdeMes);
+            $query->where('cuentasporpagar.mes_pago', '>=', substr($request->desde, 0, 7));
         }
 
         if ($request->filled('hasta')) {
-            $hastaMes = substr($request->hasta, 0, 7);
-            $query->where('cuentasporpagar.mesesdepago->mes', '<=', $hastaMes);
+            $query->where('cuentasporpagar.mes_pago', '<=', substr($request->hasta, 0, 7));
         }
 
 
@@ -255,6 +253,9 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             ->get();
 
         foreach ($xmls as $xml) {
+            // Sin folio fiscal no hay clave única confiable
+            if (empty($xml->uuid)) continue;
+
             try {
                 $mesXml = Carbon::parse($xml->fecha_inicio)->format('Y-m');
             } catch (\Exception $e) {
@@ -271,16 +272,14 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             $contract = Contract::where('id_user_p', $userProyecto->id_user_p)->first();
             if (!$contract) continue;
 
-            // Usar xml_file_id como clave única (un registro por UUID/factura)
-            $exists = DB::table('cuentasporpagar')
-                ->where('xml_file_id', $xml->id)
-                ->exists();
-
-            if ($exists) continue;
+            // El folio fiscal (UUID del CFDI) es globalmente único: un registro por factura
+            if (DB::table('cuentasporpagar')->where('uuid', $xml->uuid)->exists()) continue;
 
             DB::table('cuentasporpagar')->insert([
+                'uuid'         => $xml->uuid,
                 'id_contract'  => $contract->id,
                 'xml_file_id'  => $xml->id,
+                'mes_pago'     => $mesXml,
                 'mesesdepago'  => json_encode(['mes' => $mesXml]),
                 'estado'       => 'pendiente',
                 'saldo_neto'   => $contract->importe_bruto_renta,
@@ -313,10 +312,10 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 'contract.importe_bruto_renta as importeBase',
                 DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'),
             );
-        $query->when($request->month, fn($q, $month) => $q->where('cuentasporpagar.mesesdepago->mes', $month))
+        $query->when($request->month, fn($q, $month) => $q->where('cuentasporpagar.mes_pago', $month))
             ->when($request->filled(['search', 'categoria']), function ($q) use ($request) {
                 $columnas = [
-                    'mes'    => 'cuentasporpagar.mesesdepago',
+                    'mes'    => 'cuentasporpagar.mes_pago',
                     'name'   => 'users.name',
                     'estado' => 'cuentasporpagar.estado',
                 ];
@@ -383,7 +382,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
     private function aplicarFiltros(&$query, Request $request)
     {
         if ($request->filled('mes')) {
-            $query->whereDate('cuentasporpagar.mesesdepago', $request->input('mes'));
+            $query->where('cuentasporpagar.mes_pago', $request->input('mes'));
         }
 
         if ($request->filled('id_cuentas_por_pagar')) {
@@ -423,7 +422,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                     $query->where('cuentasporpagar.estado', 'LIKE', "%{$search}%");
                     break;
                 case 'mes':
-                    $query->where('cuentasporpagar.mesesdepago', 'LIKE', "%{$search}%");
+                    $query->where('cuentasporpagar.mes_pago', 'LIKE', "%{$search}%");
                     break;
             }
         }
@@ -431,37 +430,16 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
 
     public function graficaAnual($year)
     {
-        $cuentas = Cuentas::all();
+        $cuentas = Cuentas::whereNotNull('mes_pago')
+            ->where('mes_pago', 'like', $year . '-%')
+            ->get(['mes_pago', 'estado', 'saldo_neto']);
 
         $resultado = [];
-
         for ($m = 1; $m <= 12; $m++) {
-
-            $pagados = 0;
-            $noPagados = 0;
-
-            foreach ($cuentas as $c) {
-                $mesJson = json_decode($c->mesesdepago);
-
-                if (!$mesJson || !isset($mesJson->mes)) continue;
-
-
-                [$y, $month] = explode('-', $mesJson->mes);
-
-                if ((int)$y === (int)$year && (int)$month === $m) {
-                    if ($c->estado === "pagado") {
-                        $pagados += $c->saldo_neto;
-                    } else {
-                        $noPagados += $c->saldo_neto;
-                    }
-                }
-            }
-
-            $resultado[] = [
-                'mes' => $m,
-                'pagados' => $pagados,
-                'no_pagados' => $noPagados,
-            ];
+            $mes = sprintf('%d-%02d', $year, $m);
+            $pagados   = $cuentas->where('mes_pago', $mes)->where('estado', 'pagado')->sum('saldo_neto');
+            $noPagados = $cuentas->where('mes_pago', $mes)->where('estado', '!=', 'pagado')->sum('saldo_neto');
+            $resultado[] = ['mes' => $m, 'pagados' => $pagados, 'no_pagados' => $noPagados];
         }
 
         return response()->json($resultado);
@@ -484,44 +462,18 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
             ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
             ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
-            ->select(
-                'cuentasporpagar.estado',
-                'cuentasporpagar.saldo_neto',
-                'cuentasporpagar.mesesdepago',
-                'proyectos.nombre_proyecto as proyecto'
-            )
+            ->select('cuentasporpagar.estado', 'cuentasporpagar.saldo_neto', 'cuentasporpagar.mes_pago')
             ->where('proyectos.nombre_proyecto', $proyecto)
+            ->whereNotNull('cuentasporpagar.mes_pago')
+            ->where('cuentasporpagar.mes_pago', 'like', $year . '-%')
             ->get();
 
         $resultado = [];
-
         for ($m = 1; $m <= 12; $m++) {
-
-            $pagados = 0;
-            $noPagados = 0;
-
-            foreach ($cuentas as $c) {
-
-                $mesJson = json_decode($c->mesesdepago);
-
-                if (!$mesJson || !isset($mesJson->mes)) continue;
-
-                [$y, $month] = explode('-', $mesJson->mes);
-
-                if ((int)$y === (int)$year && (int)$month === $m) {
-                    if ($c->estado === "pagado") {
-                        $pagados += $c->saldo_neto;
-                    } else {
-                        $noPagados += $c->saldo_neto;
-                    }
-                }
-            }
-
-            $resultado[] = [
-                'mes' => $m,
-                'pagados' => $pagados,
-                'no_pagados' => $noPagados,
-            ];
+            $mes = sprintf('%d-%02d', $year, $m);
+            $pagados   = $cuentas->where('mes_pago', $mes)->where('estado', 'pagado')->sum('saldo_neto');
+            $noPagados = $cuentas->where('mes_pago', $mes)->where('estado', '!=', 'pagado')->sum('saldo_neto');
+            $resultado[] = ['mes' => $m, 'pagados' => $pagados, 'no_pagados' => $noPagados];
         }
 
         return response()->json($resultado);

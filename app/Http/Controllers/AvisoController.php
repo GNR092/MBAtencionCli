@@ -22,11 +22,17 @@ class AvisoController extends Controller
     public function unreadCount(Request $request)
     {
         $user = $request->user();
-        if (!$user) {
-            return response()->json(['count' => 0], 401); 
-        }
-
+        if (!$user) return response()->json(['count' => 0], 401);
         return response()->json(['count' => $user->unreadNotifications()->count()]);
+    }
+
+    public function apiNotifications(Request $request)
+    {
+        $user = $request->user();
+        if (!$user) return response()->json(['html' => '', 'count' => 0], 401);
+        $notificaciones = $user->unreadNotifications()->latest()->take(10)->get();
+        $html = view('partials.notificacion-dropdown', compact('notificaciones'))->render();
+        return response()->json(['html' => $html, 'count' => $notificaciones->count()]);
     }
 
     public function delete(Request $request, $id)
@@ -180,7 +186,7 @@ class AvisoController extends Controller
 
         $waPhoneId  = env('WHATSAPP_PHONE_ID');
         $waToken    = env('WHATSAPP_ACCESS_TOKEN');
-        $waUrl      = $waPhoneId ? "https://graph.facebook.com/v17.0/{$waPhoneId}/messages" : null;
+        $waUrl      = $waPhoneId ? "https://graph.facebook.com/v20.0/{$waPhoneId}/messages" : null;
 
         $usarInterno  = in_array('interno', $request->canales, true);
         $usarCorreo   = in_array('correo', $request->canales, true);
@@ -215,10 +221,11 @@ class AvisoController extends Controller
             
             if ($usarWhatsApp) {
                 try {
-                    if ($waUrl && $waToken && !empty($u->phone)) {
+                    $phone = preg_replace('/[^\d]/', '', $u->phone ?? '');
+                    if ($waUrl && $waToken && strlen($phone) >= 10) {
                         $payload = [
                             'messaging_product' => 'whatsapp',
-                            'to' => $u->phone,
+                            'to' => $phone,
                             'type' => 'template',
                             'template' => [
                                 'name' => 'aviso_atencion_inversionistas',

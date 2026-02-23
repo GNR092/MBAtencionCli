@@ -210,7 +210,7 @@ class crudUser extends Controller
                                 'nombre' => $deptData['nombre_depto'],
                                 'importe' => $deptData['importe'],
                                 // Si el checkbox no está marcado, no llegará. Usamos '?? false'
-                                'predial' => isset($deptData['cuenta_predial']) ? ($deptData['cuenta_numero'] ?? 'N/A') : null,
+                                'predial' => isset($deptData['cuenta_predial']) ? ($deptData['cuenta_numero'] ?? '') : '',
                             ]);
                         }
                     }

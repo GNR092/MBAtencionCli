@@ -49,6 +49,8 @@
     /* --- 3. TUS ESTILOS ORIGINALES (Glassmorphism & Sidebar) --- */
     #main-content {
         background-color: transparent !important;
+        margin-left: 0 !important;
+        padding: 0 !important;
     }
 
     /* Sidebar con efecto Glassmorphism */
@@ -306,8 +308,8 @@
                 </div>
             </aside>
 
-            <main id="main-content" class="flex overflow-y-auto p-4 custom-scrollbar">
-                <div class="max-w-7xl mx-auto fade-in-content">
+            <main id="main-content" class="flex-1 overflow-y-auto custom-scrollbar">
+                <div class="fade-in-content">
                     @yield('content')
                 </div>
             </main>
@@ -407,7 +409,7 @@
                 const meta = document.querySelector('meta[name="csrf-token"]');
                 if (!meta) return;
 
-                fetch('{{ route('notificaciones.index') }}', {
+                fetch('{{ route('notificaciones.api-list') }}', {
                             method: 'GET',
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',

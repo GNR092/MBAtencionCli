@@ -55,10 +55,8 @@ Route::middleware([AuthUser::class.':usuario'])->group(function () {
     Route::post('/user-factura/{index}/confirm', [UserFactController::class, 'confirmFactura'])->name('user.factura.confirm');
     Route::delete('/user-factura/{index}/delete', [UserFactController::class, 'deleteFactura'])->name('user.factura.delete');
 
-    // Notificaciones
+    // Notificaciones (página completa - solo usuarios)
     Route::get('/notificaciones', [AvisoController::class, 'index'])->name('notificaciones.index');
-    Route::post('/notificaciones/{id}/leer', [AvisoController::class, 'markAsRead'])->name('notificaciones.leer');
-    Route::delete('/notificaciones/delete/{id}', [AvisoController::class, 'delete'])->name('notificaciones.eliminar');
 
     // Cuentas por cobrar
     Route::get('/cuentas-por-cobrar', [CuentasPorCobrar::class, 'index'])->name('cuentas-cobrar.index');
@@ -168,6 +166,9 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
 
 Route::middleware([AuthUser::class])->group(function () {
     Route::get('/api/notifications/unread-count', [AvisoController::class, 'unreadCount'])->name('notificaciones.no-leidas');
+    Route::get('/api/notifications/list', [AvisoController::class, 'apiNotifications'])->name('notificaciones.api-list');
+    Route::post('/notificaciones/{id}/leer', [AvisoController::class, 'markAsRead'])->name('notificaciones.leer');
+    Route::delete('/notificaciones/delete/{id}', [AvisoController::class, 'delete'])->name('notificaciones.eliminar');
 });
 
 

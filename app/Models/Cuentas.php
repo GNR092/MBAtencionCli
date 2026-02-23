@@ -11,6 +11,8 @@ class Cuentas extends Model
     protected $table = 'cuentasporpagar';
     protected $fillable = [
         'id_cuentas_por_pagar',
+        'uuid',
+        'mes_pago',
         'estado',
         'saldo_neto',
         'monto_pagado',
@@ -33,7 +35,7 @@ class Cuentas extends Model
 
     public function getImporteBaseFinalAttribute()
 {
-    $mes = json_decode($this->mesesdepago)->mes ?? null;
+    $mes = $this->mes_pago ?? null;
 
     if (!$mes) {
         return $this->importeBase;

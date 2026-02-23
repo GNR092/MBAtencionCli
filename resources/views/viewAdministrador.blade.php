@@ -46,6 +46,7 @@
                     <thead>
                         <tr>
                             <th>ID</th>
+                            <th>Folio Fiscal (UUID)</th>
                             <th>Inversionista</th>
                             <th>Proyecto</th>
                             <th>Estado</th>
@@ -62,6 +63,7 @@
                         @forelse($cuentas as $cuenta)
                         <tr>
                             <td class="font-bold text-[#d8c495]">{{ $cuenta->id_cuentas_por_pagar }}</td>
+                            <td class="text-xs font-mono text-white/50 whitespace-nowrap">{{ $cuenta->uuid ?? 'N/A' }}</td>
                             <td class="text-left font-medium">{{ $cuenta->name }}</td>
                             <td class="text-white/80">{{ $cuenta->proyecto }}</td>
                             <td>
@@ -87,18 +89,18 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="10" class="py-10 text-white/40 italic">No se encontraron registros activos.</td>
+                            <td colspan="11" class="py-10 text-white/40 italic">No se encontraron registros activos.</td>
                         </tr>
                         @endforelse
                     </tbody>
 
                     <tfoot>
                         <tr>
-                            <td colspan="9" class="text-right px-6 py-3 uppercase text-xs tracking-wider text-white/60">Total Pendiente:</td>
+                            <td colspan="10" class="text-right px-6 py-3 uppercase text-xs tracking-wider text-white/60">Total Pendiente:</td>
                             <td id="totalPendiente" class="px-4 py-3 text-red-400">${{ number_format($totalPendiente, 2) }}</td>
                         </tr>
                         <tr class="border-t border-[#d8c495]/10">
-                            <td colspan="9" class="text-right px-6 py-3 uppercase text-xs tracking-wider text-white/60">Total Pagado:</td>
+                            <td colspan="10" class="text-right px-6 py-3 uppercase text-xs tracking-wider text-white/60">Total Pagado:</td>
                             <td id="totalPagado" class="px-4 py-3 text-green-400">${{ number_format($totalPagado, 2) }}</td>
                         </tr>
                     </tfoot>
@@ -212,7 +214,64 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+let _chartAnual = null, _chartProyecto = null;
+const _MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function openModal()         { document.getElementById('chartsmModal').classList.remove('hidden'); cargarGraficaAnual(); }
+function closeModal()        { document.getElementById('chartsmModal').classList.add('hidden'); }
+function openModalDescarga() { document.getElementById('descargaModal').classList.remove('hidden'); }
+function closeModalDescarga(){ document.getElementById('descargaModal').classList.add('hidden'); }
+
+function _buildChart(canvasId, data, titulo) {
+    return new Chart(document.getElementById(canvasId), {
+        type: 'bar',
+        data: {
+            labels: data.map(x => _MESES[x.mes - 1]),
+            datasets: [
+                { label: 'Pagados',    data: data.map(x => x.pagados),    backgroundColor: '#10b981' },
+                { label: 'Pendientes', data: data.map(x => x.no_pagados), backgroundColor: '#d8c495' }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { labels: { color: 'rgba(255,255,255,0.7)' } },
+                title: titulo ? { display: true, text: titulo, color: '#d8c495', font: { size: 13 } } : { display: false }
+            },
+            scales: {
+                y: { ticks: { color: 'rgba(255,255,255,0.5)', callback: v => '$' + Number(v).toLocaleString('es-MX') }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                x: { ticks: { color: 'rgba(255,255,255,0.5)' }, grid: { display: false } }
+            }
+        }
+    });
+}
+
+async function cargarGraficaAnual() {
+    const year    = document.getElementById('filtroYear').value;
+    const proyecto = document.getElementById('selectProyecto').value;
+
+    try {
+        const r = await fetch(`/cuentas/grafica-anual/${year}`);
+        const data = await r.json();
+        if (_chartAnual) _chartAnual.destroy();
+        _chartAnual = _buildChart('graficaAnual', data);
+    } catch(e) { console.error('Error gráfica anual:', e); }
+
+    if (proyecto) {
+        try {
+            const r2 = await fetch(`/cuentas/grafica-anual-proyecto/${year}/${encodeURIComponent(proyecto)}`);
+            const data2 = await r2.json();
+            if (_chartProyecto) _chartProyecto.destroy();
+            _chartProyecto = _buildChart('graficaProyecto', data2, proyecto);
+        } catch(e) { console.error('Error gráfica proyecto:', e); }
+    } else {
+        if (_chartProyecto) { _chartProyecto.destroy(); _chartProyecto = null; }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('selectProyecto').addEventListener('change', cargarGraficaAnual);
+
     const colorMap = { pendiente: 'text-red-300', parcial: 'text-yellow-300', pagado: 'text-green-300', vencido: 'text-orange-300' };
     function applyColor(sel) {
         Object.values(colorMap).forEach(c => sel.classList.remove(c));
