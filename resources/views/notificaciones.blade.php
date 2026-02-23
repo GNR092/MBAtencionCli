@@ -8,7 +8,7 @@
         <a href="{{ route('user.dashboard') }}"
             class="group flex items-center gap-4 text-[10px] tracking-[0.4em] uppercase text-white/40 hover:text-dorado-400 transition-all duration-700">
             <span class="text-lg group-hover:-translate-x-2 transition-transform duration-500">←</span>
-            <span>Volver al Panel</span>
+            <span class="text-[#d8c495]">Volver al Panel</span>
         </a>
         <div class="h-px flex-1 mx-10 bg-linear-to-r from-[#8B6B23]/40 to-transparent"></div>
         <span class="text-[9px] text-dorado-400 tracking-[0.5em] uppercase opacity-70">
@@ -24,7 +24,7 @@
                 Notifica<span class="font-light">ciones</span><span class="text-dorado-400 animate-pulse">_</span>
             </h1>
         </div>
-        <p class="text-white/20 text-xs tracking-[0.3em] uppercase mt-6 ml-12">
+        <p class="text-white/50 text-s tracking-[0.3em] uppercase mt-6 ml-12">
             Centro de mensajes y alertas del sistema
         </p>
     </header>
