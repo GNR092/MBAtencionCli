@@ -295,7 +295,7 @@ class UserFactController extends Controller
         }
 
         session()->forget('factura_data');
-        return redirect()->route('facturas.index');
+        return redirect()->route('user.facturacion');
     }
 
     // -------------------------------------------------------------------------
