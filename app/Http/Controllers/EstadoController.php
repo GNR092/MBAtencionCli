@@ -40,43 +40,24 @@ public function Index(Request $request)
         ->select(
             'cuentasporpagar.*',
             'users.name as name',
-            DB::raw('COALESCE(proyectos.nombre_proyecto, contract.proyecto) as proyecto'),
+            DB::raw('COALESCE(proyectos.nombre_proyecto, \'\') as proyecto'),
             'contract.importe_bruto_renta as importeBase',
         )
         ->where('users.id', $user->id)
         ->where('cuentasporpagar.estado', '=', 'pagado')
+        ->whereRaw("LEFT(cuentasporpagar.mes_pago, 4) <= ?", [$yearActual]);
 
-
-        ->where(function ($q) use ($yearActual) {
-            
-            $q->whereRaw("LEFT(JSON_UNQUOTE(JSON_EXTRACT(cuentasporpagar.mesesdepago, '$.mes')), 4) < ?", [
-                $yearActual
-            ]) 
-
-            ->orWhereRaw("LEFT(JSON_UNQUOTE(JSON_EXTRACT(cuentasporpagar.mesesdepago, '$.mes')), 4) = ?", [
-                $yearActual
-            ]); 
-        });
-
-                    
-            
-            
-            if ($request->filled('month')) {
-
-                $selectedMonth = $request->month; 
-
-                $query->where(function ($q) use ($selectedMonth) {
-                    $q->where('cuentasporpagar.mesesdepago->mes', $selectedMonth);
-                });
-            }
+        if ($request->filled('month')) {
+            $query->where('cuentasporpagar.mes_pago', $request->month);
+        }
 
         if ($request->filled('search') && $request->filled('categoria')) {
-        $search = $request->input('search');
-        $categoria = $request->input('categoria');
+            $search = $request->input('search');
+            $categoria = $request->input('categoria');
 
             switch ($categoria) {
                 case 'mes':
-                    $query->where('cuentasporpagar.mesesdepago', 'LIKE', "%{$search}%");
+                    $query->where('cuentasporpagar.mes_pago', 'LIKE', "%{$search}%");
                     break;
                 case 'id':
                     $query->where('cuentasporpagar.id_cuentas_por_pagar', 'LIKE', "%{$search}%");
@@ -100,11 +81,19 @@ public function Index(Request $request)
         return response()->json(['html' => $html]);
     }
 
+    $minYear = (int) DB::table('cuentasporpagar')
+        ->join('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
+        ->where('contract.user_id', $user->id)
+        ->whereNotNull('cuentasporpagar.mes_pago')
+        ->min(DB::raw('LEFT(cuentasporpagar.mes_pago, 4)'));
+    $minYear = $minYear ?: now()->year;
+
     return view('estadosDeCuenta', [
-    'cuentas' => $cuentas,
-    'user' => $user,   
-    'usuario' => $user
-]);
+        'cuentas'  => $cuentas,
+        'user'     => $user,
+        'usuario'  => $user,
+        'minYear'  => $minYear,
+    ]);
 
 }
 
@@ -169,31 +158,20 @@ public function graficaAnualPagados($year){
     $cuentas = DB::table('cuentasporpagar')
         ->join('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
         ->where('contract.user_id', $user->id)
-        ->select('cuentasporpagar.*')
+        ->whereNotNull('cuentasporpagar.mes_pago')
+        ->where('cuentasporpagar.mes_pago', 'like', $year . '-%')
+        ->select('cuentasporpagar.mes_pago', 'cuentasporpagar.monto_pagado')
         ->get();
 
     $resultado = [];
 
     for ($m = 1; $m <= 12; $m++) {
-
-        $Pagados = 0;
-
-        foreach ($cuentas as $c) {
-            $mesJson = json_decode($c->mesesdepago);
-
-            if (!$mesJson || !isset($mesJson->mes)) continue;
-
-            
-            [$y, $month] = explode('-', $mesJson->mes);
-
-            if ((int)$y === (int)$year && (int)$month === $m) {
-                $Pagados += floatval($c->monto_pagado);
-            }
-        }
+        $mes = sprintf('%d-%02d', $year, $m);
+        $Pagados = $cuentas->where('mes_pago', $mes)->sum('monto_pagado');
 
         $resultado[] = [
-            'mes' => $m,
-            'pagados' => $Pagados,
+            'mes'    => $m,
+            'pagados'=> $Pagados,
         ];
     }
 
@@ -216,21 +194,21 @@ public function descargarPdf(Request $request)
         ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
         ->select(
             'cuentasporpagar.*',
-            DB::raw('COALESCE(proyectos.nombre_proyecto, contract.proyecto) as proyecto'),
+            DB::raw('COALESCE(proyectos.nombre_proyecto, \'\') as proyecto'),
             'contract.importe_bruto_renta as importeBase'
         )
         ->where('contract.user_id', $usuario->id)
         ->where('cuentasporpagar.estado', 'pagado');
 
     if ($desde) {
-        $query->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(cuentasporpagar.mesesdepago, '$.mes')) >= ?", [$desde]);
+        $query->where('cuentasporpagar.mes_pago', '>=', $desde);
     }
 
     if ($hasta) {
-        $query->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(cuentasporpagar.mesesdepago, '$.mes')) <= ?", [$hasta]);
+        $query->where('cuentasporpagar.mes_pago', '<=', $hasta);
     }
 
-    $cuentas = $query->orderByRaw("JSON_UNQUOTE(JSON_EXTRACT(cuentasporpagar.mesesdepago, '$.mes')) ASC")->get();
+    $cuentas = $query->orderBy('cuentasporpagar.mes_pago', 'ASC')->get();
 
     $pdf = Pdf::loadView('pdf.estadodecuenta', [
         'usuario' => $usuario,

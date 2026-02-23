@@ -141,7 +141,7 @@
                                 </td>
 
                                 <td class="text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
-                                    {{ json_decode($cuenta->mesesdepago)->mes ?? '-' }}
+                                    {{ $cuenta->mes_pago ?? '-' }}
                                 </td>
 
                                 <td class="text-right pr-6 font-bold text-dorado-400 font-mono text-lg">
@@ -188,7 +188,7 @@
                         <label class="text-[10px] tracking-[0.4em] text-dorado-400 uppercase font-bold">Año:</label>
                         <select id="filtroYear" onchange="cargarGraficaAnual()"
                             class="bg-transparent border-b border-white/10 py-2 text-2xl text-white outline-none">
-                            @for($y = 2023; $y <= now()->year; $y++)
+                            @for($y = $minYear; $y <= now()->year; $y++)
                                 <option value="{{ $y }}" class="bg-carbon-900">{{ $y }}</option>
                                 @endfor
                         </select>

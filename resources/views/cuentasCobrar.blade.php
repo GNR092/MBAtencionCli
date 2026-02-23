@@ -174,7 +174,7 @@
                         <label class="text-[10px] tracking-[0.4em] text-dorado-400 uppercase">Año fiscal:</label>
                         <select id="filtroYear" onchange="cargarGraficaAnual()"
                             class="bg-transparent border-b border-white/10 py-2 text-2xl text-white outline-none">
-                            @for($y = 2023; $y <= now()->year; $y++)
+                            @for($y = $minYear; $y <= now()->year; $y++)
                                 <option value="{{ $y }}" class="bg-[#112134]">{{ $y }}</option>
                                 @endfor
                         </select>
