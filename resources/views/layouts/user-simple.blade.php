@@ -49,7 +49,7 @@
     style="background-image: url('{{ asset('images/marmol2.svg') }}');"
 >
 
-<img src="{{ asset('images/MB_SP.png') }}" alt="Marca de Agua" class="watermark-logo">
+<img src="{{ asset('images/MB_SP.svg') }}" alt="Marca de Agua" class="watermark-logo">
 
 <div class="relative z-10 bg-black/50 w-full min-h-screen">
 

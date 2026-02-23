@@ -47,7 +47,7 @@
 <body
     class="bg-carbon-950 bg-cover bg-center bg-no-repeat bg-fixed text-white antialiased">
 
-<img src="{{ asset('images/MB_SP.png') }}" alt="Marca de Agua" class="watermark-logo">
+<img src="{{ asset('images/MB_SP.svg') }}" alt="Marca de Agua" class="watermark-logo">
 
 <div class="relative z-10 bg-black/50 w-full min-h-screen">
 

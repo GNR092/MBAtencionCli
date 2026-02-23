@@ -95,7 +95,7 @@
 <body>
 
 <div id="logo-container">
-    <img id="intro-logo" src="{{ asset('images/MB_SP.png') }}" alt="MB Signature Logo">
+    <img id="intro-logo" src="{{ asset('images/MB_SP.svg') }}" alt="MB Signature Logo">
 </div>
 
 <div id="black-curtain"></div>
@@ -116,21 +116,21 @@
         const curtain = document.getElementById('black-curtain');
 
         if (logo && curtain) {
-            
+
             setTimeout(() => {
 
-                
+
                 logo.classList.add('logo-smash');
 
-                
+
                 setTimeout(() => {
                     curtain.style.opacity = '0';
                     curtain.style.visibility = 'hidden';
 
-                    
+
                     logoContainer.classList.add('logo-background-mode');
 
-                    
+
                     setTimeout(() => {
                         curtain.remove();
                     }, 1000);

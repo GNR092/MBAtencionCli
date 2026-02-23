@@ -21,7 +21,7 @@
 
         <div class="relative flex flex-col items-center justify-center h-full text-white">
 
-            <img src="./uploads/Logo-Png.png" alt="logo" class="w-52 h-auto animate-logo-entrance z-10">
+            <img src="./uploads/Logo-Png.svg" alt="logo" class="w-52 h-auto animate-logo-entrance z-10">
 
             <div class=" p-6 rounded-lg animate-form-entrance ">
                 <h2 class="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h2>
