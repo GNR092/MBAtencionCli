@@ -88,7 +88,7 @@
                     </div>
                     <div class="flex flex-col">
                         <h1 class="text-lg md:text-2xl font-bold text-white tracking-tight">Bienvenido, <span style="color: #d8c495 !important;">{{ $user->name ?? 'Usuario' }}</span></h1>
-                        <p class="text-xs md:text-sm text-gray-300 italic">Vive de tus rentas, ¡Sin preocupaciones!</p>
+                        <p class="text-xs md:text-sm text-gray-300 italic">Vive de tus rentas, ¡Sin dolores de cabeza!</p>
                     </div>
                 </div>
                 <form method="get" action="{{ route('logout') }}" class="m-0">
@@ -96,7 +96,7 @@
                 </form>
             </header>
 
-            {{-- Grid de botones transparentes --}}
+            {{-- Grid de botones --}}
             <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
                 @php
                     $opciones = [
@@ -110,18 +110,35 @@
 
                 @foreach($opciones as $opt)
                     <a href="{{ route($opt['route']) }}"
-                       class="bg-white/90 rounded-2xl p-4 md:p-6 text-center shadow-lg border-b-4 border-transparent hover:border-[#d8c495] transition-all transform hover:-translate-y-1 flex flex-col items-center justify-center h-24 md:h-32">
-                        @if($opt['label'] === 'Cobrar Rentas' && isset($sumImporteCobrarRentas))
-                            <div class="text-xs md:text-sm font-semibold text-[#d8c495] mb-1">
-                                $ {{ number_format($sumImporteCobrarRentas, 2) }}
-                            </div>
-                        @endif
-                        @if($opt['label'] === 'Contratos' && isset($deptoCount))
-                            <div class="text-xs md:text-sm font-semibold text-[#d8c495] mb-1">
-                                {{ $deptoCount }} Deptos
-                            </div>
-                        @endif
-                        <span class="font-black text-sm md:text-lg uppercase text-[#3c3c3c]">{{$opt['label']}}</span>
+                       class="group relative bg-white/90 rounded-2xl p-4 md:p-6 shadow-lg border-b-4 border-transparent hover:border-[#d8c495] transition-all transform hover:-translate-y-1 flex flex-col items-center justify-center h-24 md:h-32 overflow-hidden">
+
+                        {{-- BLOQUE DE NÚMEROS (Posición Absoluta Arriba) --}}
+                        {{-- Visible siempre para que se vea la animación --}}
+                        <div class="absolute top-3 w-full flex justify-center pointer-events-none">
+
+                            {{-- CASO 1: COBRAR RENTAS --}}
+                            @if($opt['label'] === 'Cobrar Rentas' && isset($sumImporteCobrarRentas))
+                                <div class="flex items-baseline gap-1 text-[#3c3c3c">
+                                    <span class="text-xs font-semibold opacity-80">$</span>
+                                    <span class="text-lg md:text-xl font-bold tracking-tight counter-currency"
+                                          data-target="{{ $sumImporteCobrarRentas }}">0</span>
+                                </div>
+                            @endif
+
+                            {{-- CASO 2: CONTRATOS --}}
+                            @if($opt['label'] === 'Contratos' && isset($deptoCount))
+                                <div class="flex items-baseline gap-1 text-[#3c3c3c]">
+                            <span class="text-lg md:text-xl font-bold tracking-tight counter-int"
+                                  data-target="{{ $deptoCount }}">0</span>
+                                    <span class="text-[10px] font-medium opacity-70 uppercase tracking-widest ml-1">Propiedades</span>
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- TÍTULO DEL BOTÓN (Centrado vertical y horizontalmente) --}}
+                        <span class="font-black text-xs md:text-sm uppercase text-[#3c3c3c] tracking-widest leading-tight z-10 mt-2">
+                    {{$opt['label']}}
+                </span>
                     </a>
                 @endforeach
 
@@ -231,6 +248,72 @@
     </div>
 
     @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // Configuración de animación
+                const animationDuration = 5000; // Duración del conteo (1.5s)
+                const frameDuration = 1000 / 60; // 60fps
+                const startDelay = 2000; // <--- RETRASO DE 2 SEGUNDOS
+
+                // Easing function para suavizar el final
+                const easeOutExpo = (t) => {
+                    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+                };
+
+                const animateCount = (el, isCurrency) => {
+                    const target = parseFloat(el.getAttribute('data-target'));
+                    const totalFrames = Math.round(animationDuration / frameDuration);
+                    let frame = 0;
+
+                    const counter = setInterval(() => {
+                        frame++;
+                        const progress = easeOutExpo(frame / totalFrames);
+                        const currentCount = target * progress;
+
+                        if (isCurrency) {
+                            // Formato Moneda
+                            el.innerText = currentCount.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            });
+                        } else {
+                            // Formato Entero
+                            el.innerText = Math.round(currentCount).toLocaleString('en-US');
+                        }
+
+                        if (frame === totalFrames) {
+                            clearInterval(counter);
+                            // Valor final exacto
+                            el.innerText = isCurrency
+                                ? target.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                : target.toLocaleString('en-US');
+                        }
+                    }, frameDuration);
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const el = entry.target;
+                            const isCurrency = el.classList.contains('counter-currency');
+
+                            // Aquí aplicamos el retraso antes de iniciar la función de animación
+                            setTimeout(() => {
+                                animateCount(el, isCurrency);
+                            }, startDelay);
+
+                            observer.unobserve(el);
+                        }
+                    });
+                }, { threshold: 0.5 });
+
+                document.querySelectorAll('.counter-currency, .counter-int').forEach(el => {
+                    observer.observe(el);
+                });
+            });
+        </script>
+
+
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const fotoInput = document.getElementById('foto-input');
