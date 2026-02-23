@@ -115,7 +115,7 @@
             <td>{{ $c->proyecto ?? $c->proyectos ?? '—' }}</td>
             <td>{{ $c->estado }}</td>
             <td>${{ number_format($c->saldo_neto ?? $c->saldo_neto ?? 0, 2) }}</td>
-            <td>{{ optional(json_decode($c->mesesdepago))->mes ?? '—' }}</td>
+            <td>{{ $c->mes_pago ?? '—' }}</td>
             <td>{{ optional($c->created_at)->format('d/m/Y') }}</td>
         </tr>
         @empty

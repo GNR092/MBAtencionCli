@@ -132,7 +132,7 @@
                 <select id="filtroYear"
                     class="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-[#d8c495] bg-[#0d1f30] border-[#d8c495]/30 text-white"
                     onchange="cargarGraficaAnual()">
-                    @for($y = 2023; $y <= now()->year; $y++)
+                    @for($y = $minYear; $y <= now()->year; $y++)
                         <option value="{{ $y }}">{{ $y }}</option>
                     @endfor
                 </select>

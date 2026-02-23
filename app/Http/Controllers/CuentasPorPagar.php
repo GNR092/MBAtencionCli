@@ -329,8 +329,12 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         $cuentas = $query->paginate(6)->appends($request->query());
         $proyectos = \App\Models\Proyecto::orderBy('nombre_proyecto')->pluck('nombre_proyecto');
 
+        $minYear = (int) DB::table('cuentasporpagar')
+            ->whereNotNull('mes_pago')
+            ->min(DB::raw('LEFT(mes_pago, 4)'));
+        $minYear = $minYear ?: now()->year;
 
-        return view('viewAdministrador', compact('cuentas', 'totalPendiente', 'totalPagado', 'proyectos'))
+        return view('viewAdministrador', compact('cuentas', 'totalPendiente', 'totalPagado', 'proyectos', 'minYear'))
             ->with('selectedMonth', $request->month ?? now()->format('Y-m'));
     }
 

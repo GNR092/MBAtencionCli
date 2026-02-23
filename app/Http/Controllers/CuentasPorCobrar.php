@@ -386,20 +386,11 @@ public function Index(Request $request)
             )
             ->where('users.id', $user->id)
             ->where('cuentasporpagar.estado', '!=', 'pagado')
-            ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(cuentasporpagar.mesesdepago, '$.mes')) <= ?", [date('Y-m')]);
+            ->where('cuentasporpagar.mes_pago', '<=', date('Y-m'));
 
-            
-            
-            
-            if ($request->filled('month')) {
-
-                $selectedMonth = $request->month; 
-
-                $query->where(function ($q) use ($selectedMonth) {
-                    $q->where('cuentasporpagar.mesesdepago->mes', $selectedMonth);
-                });
-            }
-
+        if ($request->filled('month')) {
+            $query->where('cuentasporpagar.mes_pago', $request->month);
+        }
 
         if ($request->filled('search') && $request->filled('categoria')) {
             $search = $request->input('search');
@@ -407,10 +398,10 @@ public function Index(Request $request)
 
             switch ($categoria) {
                 case 'mes':
-                    $query->where('cuentasporpagar.mesesdepago', 'LIKE', "%{$search}%");
+                    $query->where('cuentasporpagar.mes_pago', 'LIKE', "%{$search}%");
                     break;
                 case 'proyecto':
-                    $query->where('contract.proyecto', 'LIKE', "%{$search}%");
+                    $query->where('proyectos.nombre_proyecto', 'LIKE', "%{$search}%");
                     break;
                 case 'estado':
                     $query->where('cuentasporpagar.estado', 'LIKE', "%{$search}%");
@@ -422,12 +413,19 @@ public function Index(Request $request)
 
         $cuentas = $query->paginate(6)->appends($request->query());
 
+        $minYear = (int) DB::table('cuentasporpagar')
+            ->join('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
+            ->where('contract.user_id', $user->id)
+            ->whereNotNull('cuentasporpagar.mes_pago')
+            ->min(DB::raw('LEFT(cuentasporpagar.mes_pago, 4)'));
+        $minYear = $minYear ?: now()->year;
+
         if ($request->expectsJson()) {
-            $html = view('cuentasCobrar', compact('cuentas'))->render();
+            $html = view('cuentasCobrar', compact('cuentas', 'minYear'))->render();
             return response()->json(['html' => $html]);
         }
 
-        return view('cuentasCobrar', compact('cuentas'));
+        return view('cuentasCobrar', compact('cuentas', 'minYear'));
 }
 
 public function graficaAnualNoPagados(Request $request, $year)
