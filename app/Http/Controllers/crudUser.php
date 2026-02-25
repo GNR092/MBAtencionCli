@@ -170,6 +170,14 @@ class crudUser extends Controller
 
         $id = $request->input('id');
 
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $id,
+            'phone' => 'required|string|max:20',
+            'regimenFiscal' => 'required|integer',
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+
         DB::transaction(function () use ($request, $id) {
             $user = User::findOrFail($id);
 

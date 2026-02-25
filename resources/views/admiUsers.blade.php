@@ -193,6 +193,24 @@
 
                 <hr class="border-white/10">
 
+                {{-- Cambio de Contraseña --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-[#d8c495] uppercase tracking-widest mb-1">Nueva Contraseña (Opcional)</label>
+                        <input type="password" name="password" id="edit_password" minlength="8"
+                            class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:border-[#d8c495] outline-none"
+                            placeholder="••••••••">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-[#d8c495] uppercase tracking-widest mb-1">Confirmar Contraseña</label>
+                        <input type="password" name="password_confirmation" id="edit_password_confirmation"
+                            class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:border-[#d8c495] outline-none"
+                            placeholder="••••••••">
+                    </div>
+                </div>
+
+                <hr class="border-white/10">
+
                 {{-- Proyectos (Igual que antes) --}}
                 <div>
                     <label class="block text-xs font-bold text-[#d8c495] uppercase tracking-widest mb-2">Asignación de
