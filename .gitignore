@@ -43,3 +43,11 @@ GEMINI.md
 .claude/settings.local.json
 prompt.txt
 Correcciones_manual.txt
+/public/build/assets
+/public/build
+/bootstrap/cache/*.php
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/storage/app/public/*
