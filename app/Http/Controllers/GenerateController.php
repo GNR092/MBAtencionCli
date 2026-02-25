@@ -45,7 +45,7 @@ class GenerateController extends Controller
         if (!$user) { return redirect('/inicio-de-sesion'); }
 
         $phone = '52' . $request->input('phone');
-        $passwordPlain = '123456';
+        $passwordPlain = $this->generarContrasenia();
 
         try {
             DB::transaction(function () use ($request, $phone, $passwordPlain) {
@@ -103,7 +103,8 @@ class GenerateController extends Controller
                 }
             });
 
-            return back()->with('success', '✅ Usuario registrado correctamente.');
+            return back()->with('success', '✅ Usuario registrado correctamente.')
+                         ->with('generated_password', $passwordPlain);
 
         } catch (\Throwable $e) {
             // Si falla, revertirá todo y mostrará esto:

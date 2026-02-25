@@ -16,10 +16,18 @@
 <div id="successModal" class="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50">
     <div class="bg-white p-6 rounded-lg shadow-lg w-96 text-center">
         <span class="text-xl font-bold text-green-700 mb-2">¡Éxito!</span>
-        <p class="text-gray-700">{{ session('success') }}</p>
+        <p class="text-gray-700 mb-4">{{ session('success') }}</p>
+
+        @if(session('generated_password'))
+        <div class="bg-gray-100 p-3 rounded-lg border border-gray-200 mb-4">
+            <span class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Contraseña generada:</span>
+            <span class="text-2xl font-mono font-bold text-dorado-400 select-all">{{ session('generated_password') }}</span>
+        </div>
+        <p class="text-xs text-gray-500 mb-4 italic">Por favor, comparta esta contraseña con el usuario de forma segura.</p>
+        @endif
 
         <button onclick="document.getElementById('successModal').remove()"
-            class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+            class="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors">
             Cerrar
         </button>
     </div>
