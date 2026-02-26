@@ -10,7 +10,7 @@
 @source '../**/*.js';
 
 @font-face {
-    font-family: 'Dancing Script';
+    font-family: 'Doulos SIL';
     /* Laravel mapea la carpeta 'public' como la raíz '/' */
     src: url('/fonts/DoulosSILR.ttf') format('truetype');
     font-weight: 400;
@@ -21,11 +21,19 @@
 /* Nota: Doulos SIL suele venir solo en un peso.
    Si no tienes un archivo 'Bold', usa el mismo archivo. */
 @font-face {
-    font-family: 'Dancing Script';
+    font-family: 'Doulos SIL';
     src: url('/fonts/DoulosSILR.ttf') format('truetype');
     font-weight: 700;
     font-style: normal;
     font-display: swap;
+}
+
+.font-doulos {
+    font-family: 'Doulos SIL', sans-serif;
+}
+
+body {
+    font-family: 'Doulos SIL', sans-serif;
 }
 
 @theme {
