@@ -1,34 +1,36 @@
 @extends('layouts.admin')
 
 @section('content')
-<header class="mb-10 px-2">
-    <div class="flex items-baseline gap-4">
-        <span class="text-dorado-400 text-sm font-serif italic">|</span>
-        <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
-            Avisos
-        </h1>
+    <div class="w-full p-4 md:p-6 animate-fadeInUp">
+        <div class="max-w-6xl mx-auto">
+            <header class="mb-10 px-2">
+                <div class="flex items-baseline gap-4">
+                    <span class="text-dorado-400 text-sm font-serif italic">|</span>
+                    <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                        Avisos
+                    </h1>
+                </div>
+            </header>
+
+    @if(session('success'))
+    <div class="bg-green-800 text-white p-4 mb-6 rounded">
+        {{ session('success') }}
     </div>
-</header>
+    @endif
+    <!-- Formulario -->
+    <div class="max-w-6xl mx-auto">
+        <div class="w-full relative bg-white rounded-2xl shadow-xl border border-carbon-200 overflow-hidden pb-2">
 
-@if(session('success'))
-<div class="bg-green-800 text-white p-4 mb-6 rounded">
-    {{ session('success') }}
-</div>
-@endif
-<!-- Formulario -->
-
-<div class="w-full relative bg-white rounded-2xl shadow-xl border border-carbon-200 overflow-hidden pb-2">
-
-    <div class="bg-carbon-900 px-6 py-4 border-b-2 border-dorado">
-        <h2 class="text-dorado-400 text-lg font-bold uppercase tracking-widest flex items-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z">
-                </path>
-            </svg>
-            Redactar Nuevo Aviso
-        </h2>
-    </div>
+        <div class="bg-carbon-900 px-6 py-4 border-b-2 border-dorado">
+            <h2 class="text-dorado-400 text-lg font-bold uppercase tracking-widest flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z">
+                    </path>
+                </svg>
+                Redactar Nuevo Aviso
+            </h2>
+        </div>
 
     <form action="{{ route('avisos.store') }}" method="POST" class="p-6 space-y-6">
         @csrf
@@ -150,6 +152,7 @@
             </button>
         </div>
     </form>
+    </div>
 </div>
 <script>
 function usuarioSearch() {
@@ -160,7 +163,6 @@ function usuarioSearch() {
         resultados: [],
         abierto: false,
         activo: -1,
-
         async buscar() {
             this.selectedId = null;
             if (this.query.length < 2) {

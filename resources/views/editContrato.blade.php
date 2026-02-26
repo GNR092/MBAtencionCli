@@ -1,17 +1,18 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="mb-4">
-    <a href="{{ route('admin.contratos.index') }}"
-        class="inline-flex items-center gap-2 text-sm text-[#d8c495] hover:text-white transition-colors">
-        ← Volver a contratos
-    </a>
-</div>
-<h1 class="text-center text-black text-3xl p-4">Editar Contrato</h1>
+<div class="w-full p-4 md:p-6 animate-fadeInUp">
+    <div class="mb-4">
+        <a href="{{ route('admin.contratos.index') }}"
+            class="inline-flex items-center gap-2 text-sm text-[#d8c495] hover:text-white transition-colors">
+            ← Volver a contratos
+        </a>
+    </div>
+    <h1 class="text-center text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase mb-10">Editar Contrato</h1>
 
-<div class="flex justify-center py-4">
-    <form action="{{ route('admin.contratos.actualizar', $contractToEdit->id) }}" method="POST" enctype="multipart/form-data"
-        class="bg-[#2f2f2f] p-6 rounded-2xl shadow-lg w-full max-w-md">
+    <div class="max-w-6xl mx-auto">
+        <form action="{{ route('admin.contratos.actualizar', $contractToEdit->id) }}" method="POST" enctype="multipart/form-data"
+            class="bg-[#2f2f2f] p-6 rounded-2xl shadow-lg w-full">
         @csrf
         @method('PUT')
 
@@ -88,5 +89,6 @@
             Guardar cambios
         </button>
     </form>
+</div>
 </div>
 @endsection

@@ -1,13 +1,14 @@
 @extends('layouts.admin')
 @section('content')
-<header class="mb-10 px-2">
-    <div class="flex items-baseline gap-4">
-        <span class="text-dorado-400 text-sm font-serif italic">|</span>
-        <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
-            nuevos usuarios
-        </h1>
-    </div>
-</header>
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-10 px-2">
+            <div class="flex items-baseline gap-4">
+                <span class="text-dorado-400 text-sm font-serif italic">|</span>
+                <h1 class="text-white text-6xl md:text-8xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                    Nuevos Usuarios
+                </h1>
+            </div>
+        </header>
 
 
 @if(session('success'))
@@ -45,14 +46,13 @@
 @endif
 
 
-<div class="flex justify-center">
-    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-carbon-200 w-full max-w-md mx-auto">
+<div class="max-w-6xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-carbon-200 w-full">
 
         <div class="bg-carbon-900 px-6 py-4 border-b-2 border-dorado">
-            <h2 class="text-dorado-400 text-xl font-bold uppercase tracking-widest text-center">
+            <h2 class="text-dorado-400 text-xl font-bold uppercase tracking-widest">
                 Registro de Inversionistas
-            </h2>
-        </div>
+            </h2>        </div>
 
         <form id="registroUsuarios" class="p-6 space-y-5" action="{{ route('usuarios.registro.store') }}" method="POST">
             @csrf
@@ -236,5 +236,5 @@
         proyectSelect.addEventListener('change', renderDynamicProjectFields);
     });
 </script>
-
+</div>
 @endsection

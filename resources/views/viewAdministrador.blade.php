@@ -1,17 +1,17 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="w-full p-4 md:p-6 animate-fadeInUp">
+    <div class="max-w-6xl mx-auto">
     <header class="mb-10 px-2">
         <div class="flex items-baseline gap-4">
             <span class="text-dorado-400 text-sm font-serif italic">|</span>
             <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
-                Pagar cuentas
+                Pagar Cuentas
             </h1>
         </div>
     </header>
 
-    <div class="max-w-7xl mx-auto space-y-6">
+    <div class="max-w-6xl mx-auto space-y-6">
 
         <!-- Barra de búsqueda -->
         <form method="GET" action="{{ route('cuentas-pagar.index') }}" class="tabla-dorada-search">
@@ -174,7 +174,7 @@
 <div id="descargaModal"
     class="bg-black/60 backdrop-blur-sm fixed inset-0 z-[9999] flex items-center justify-center hidden p-4">
     <div class="bg-[#112134] border border-[#d8c495]/20 rounded-3xl shadow-2xl p-6 md:p-10 w-full max-w-md">
-        <h2 class="text-xl font-bold mb-6 text-center text-[#d8c495]">Configuración de Reporte</h2>
+        <h2 class="text-xl font-bold mb-6 text-[#d8c495]">Configuración de Reporte</h2>
         <form action="{{ route('cuentas-pagar.export') }}" method="POST" class="space-y-5">
             @csrf
             <div class="grid grid-cols-2 gap-4">

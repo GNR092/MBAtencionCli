@@ -2,11 +2,11 @@
 
 @section('content')
 
-<h1 class="text-center text-black text-3xl p-2">Editar Usuario</h1>
+<div class="w-full p-4 md:p-6 animate-fadeInUp">
+    <h1 class="text-center text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase mb-10">Editar Usuario</h1>
 
-
-<div class="flex justify-center py-2">
-<form method="post" action="{{ route('users.update') }}" class="bg-[#2f2f2f] p-6 rounded-2xl shadow-lg w-full max-w-md">
+    <div class="max-w-6xl mx-auto">
+        <form method="post" action="{{ route('users.update') }}" class="bg-[#2f2f2f] p-6 rounded-2xl shadow-lg w-full">
     @csrf
     <input type="hidden" name="id" value="{{ $userToEdit->id }}">
 
@@ -208,5 +208,5 @@ window.addEventListener('load',()=>{
   MultiselectDropdown(window.MultiselectDropdownOptions);
 });
 </script>
-
+</div>
 @endsection

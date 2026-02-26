@@ -1,15 +1,16 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="p-6">
-    <header class="mb-10 px-2">
-        <div class="flex items-baseline gap-4">
-            <span class="text-dorado-400 text-sm font-serif italic">|</span>
-            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
-                Impuestos
-            </h1>
-        </div>
-    </header>
+<div class="w-full p-4 md:p-6 animate-fadeInUp">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-10 px-2">
+            <div class="flex items-baseline gap-4">
+                <span class="text-dorado-400 text-sm font-serif italic">|</span>
+                <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                    Impuestos
+                </h1>
+            </div>
+        </header>
 
     <!-- Barra de búsqueda -->
     <form method="GET" action="{{ route('impuestos.index') }}" class="tabla-dorada-search">
@@ -112,6 +113,7 @@
             </form>
         </div>
     </div>
+</div>
 </div>
 
 <script>

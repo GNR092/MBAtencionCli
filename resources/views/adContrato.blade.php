@@ -2,18 +2,18 @@
 
 
 @section('content')
+<div class="w-full p-4 md:p-6 animate-fadeInUp">
+    <div class="mb-4">
+        <a href="{{ route('admin.contratos.index') }}"
+            class="inline-flex items-center gap-2 text-sm text-[#d8c495] hover:text-white transition-colors">
+            ← Volver a contratos
+        </a>
+    </div>
+    <h1 class="text-center text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase mb-10">CONTRATOS</h1>
+    <div class="max-w-6xl mx-auto">
 
-<div class="mb-4">
-    <a href="{{ route('admin.contratos.index') }}"
-        class="inline-flex items-center gap-2 text-sm text-[#d8c495] hover:text-white transition-colors">
-        ← Volver a contratos
-    </a>
-</div>
-<h1 class="text-center text-dorado-400 text-3xl p-4"> CONTRATOS</h1>
-<div class="flex justify-center py-4">
-
-    <form action="/subir-archivo" method="POST" enctype="multipart/form-data"
-        class="bg-[#2f2f2f] p-6 rounded-2xl shadow-lg w-full max-w-md">
+        <form action="/subir-archivo" method="POST" enctype="multipart/form-data"
+            class="bg-[#2f2f2f] p-6 rounded-2xl shadow-lg w-full">
         @csrf
 
         <!-- Título -->
@@ -162,4 +162,6 @@ function formatearImporte(input) {
     }
 }
 </script>
+</div>
+</div>
 @endsection

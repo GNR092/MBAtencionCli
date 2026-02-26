@@ -1,17 +1,16 @@
 @extends('layouts.admin')
 
 @section('content')
-    <div class="max-w-6xl mx-auto p-6">
-
-        {{-- HEADER GIGANTE --}}
-        <header class="mb-10 px-2">
-            <div class="flex items-baseline gap-4">
-                <span class="text-dorado-400 text-sm font-serif italic">|</span>
-                <h1 class="text-white text-6xl md:text-8xl font-extralight tracking-[-0.02em] leading-none uppercase">
-                    Incrementos
-                </h1>
-            </div>
-        </header>
+    <div class="w-full p-4 md:p-6 animate-fadeInUp">
+        <div class="max-w-6xl mx-auto">
+            <header class="mb-10 px-2">
+                <div class="flex items-baseline gap-4">
+                    <span class="text-dorado-400 text-sm font-serif italic">|</span>
+                    <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                        Incrementos
+                    </h1>
+                </div>
+            </header>
 
         {{-- BARRA DE ACCIONES --}}
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-end mb-8 px-2">
@@ -72,4 +71,5 @@
             </div>
         </div>
     </div>
+</div>
 @endsection

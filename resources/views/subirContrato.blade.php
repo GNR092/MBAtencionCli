@@ -1,14 +1,16 @@
 @extends('layouts.admin')
 
 @section('content')
-<header class="mb-10 px-2">
-    <div class="flex items-baseline gap-4">
-        <span class="text-dorado-400 text-sm font-serif italic">|</span>
-        <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
-            Contratos
-        </h1>
-    </div>
-</header>
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-10 px-2">
+            <div class="flex items-baseline gap-4">
+                <span class="text-dorado-400 text-sm font-serif italic">|</span>
+                <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                    Contratos
+                </h1>
+            </div>
+        </header>
+
 @if(session('success'))
 <div id="alert-success" class="bg-green-800/80 border border-green-400/30 text-green-300 px-4 py-3 rounded-xl mb-4 text-sm">
     {{ session('success') }}
@@ -23,7 +25,7 @@ setTimeout(() => {
 
     <!-- Encabezado con título y barra de búsqueda -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-        <form method="post" action="{{ route('admin.contratos.buscar') }}" class="relative mx-12 flex items-center gap-2">
+        <form method="post" action="{{ route('admin.contratos.buscar') }}" class="relative flex items-center gap-2 w-full">
             @csrf
             <label for="searchInput" class="text-white/70 text-sm">Buscar por:</label>
 
@@ -142,7 +144,7 @@ setTimeout(() => {
 <div id="confirmModal"
     class="bg-black/60 backdrop-blur-sm fixed inset-0 flex items-center justify-center hidden">
     <div class="bg-[#112134] border border-[#d8c495]/20 rounded-xl shadow-lg p-6 w-96">
-        <h2 class="text-[#d8c495] font-bold uppercase tracking-widest text-sm mb-4 text-center">Confirmar contraseña</h2>
+        <h2 class="text-[#d8c495] font-bold uppercase tracking-widest text-sm mb-4">Confirmar contraseña</h2>
         <form method="POST" action="{{ route('admin.contratos.confirmar') }}">
             @csrf
             <div class="mb-4">
@@ -212,4 +214,5 @@ function closeModalDelete() {
     document.getElementById("confrimDeleteModal").classList.add("hidden");
 }
 </script>
+</div>
 @endsection

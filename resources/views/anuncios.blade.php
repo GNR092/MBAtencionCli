@@ -1,20 +1,23 @@
 @extends('layouts.admin')
 
 @section('content')
-<header class="mb-10 px-2">
-    <div class="flex items-baseline gap-4">
-        <span class="text-dorado-400 text-sm font-serif italic">|</span>
-        <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
-            Emitir anuncios</h1>
-    </div>
-</header>
+    <div class="w-full p-4 md:p-6 animate-fadeInUp">
+        <div class="max-w-6xl mx-auto">
+            <header class="mb-10 px-2">
+                <div class="flex items-baseline gap-4">
+                    <span class="text-dorado-400 text-sm font-serif italic">|</span>
+                    <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                        Emitir anuncios
+                    </h1>
+                </div>
+            </header>
 
-<div class="max-w-6xl mx-auto p-6">
-    <div class="flex justify-end mb-4">
-        <button onclick="document.getElementById('modalCrear').classList.remove('hidden')"
-            class="bg-[#d8c495] hover:bg-[#c9a143] text-black px-6 py-2 rounded font-bold shadow-md">+ NUEVO
-            ANUNCIO</button>
-    </div>
+    <div class="max-w-6xl mx-auto p-6">
+        <div class="flex justify-end mb-4">
+            <button onclick="document.getElementById('modalCrear').classList.remove('hidden')"
+                class="bg-[#d8c495] hover:bg-[#c9a143] text-black px-6 py-2 rounded font-bold shadow-md">+ NUEVO
+                ANUNCIO</button>
+        </div>
 
     <div class="tabla-dorada-container">
         <div class="overflow-x-auto custom-scroll">
@@ -256,4 +259,5 @@ function editAnuncio(anuncio) {
     document.getElementById('modalEditar').classList.remove('hidden');
 }
 </script>
+</div>
 @endsection

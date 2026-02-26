@@ -1,18 +1,27 @@
 @extends('layouts.admin')
 
 @section('content')
+<div class="w-full p-4 md:p-6 animate-fadeInUp">
+    <header class="mb-10 px-2">
+        <div class="flex items-baseline gap-4">
+            <span class="text-dorado-400 text-sm font-serif italic">|</span>
+            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                Editar Proyecto
+            </h1>
+        </div>
+    </header>
 
-<div class="mb-4">
-    <a href="{{ route('proyectos.index') }}"
-        class="inline-flex items-center gap-2 text-sm text-dorado-400 hover:text-white transition-colors">
-        ← Volver a proyectos
-    </a>
-</div>
-
-<div class="w-full max-w-2xl bg-[#112134]/60 backdrop-blur-md rounded-xl border border-[#d8c495]/20 overflow-hidden">
-    <div class="px-6 py-4 border-b border-[#d8c495]/20">
-        <h2 class="text-[#d8c495] text-lg font-bold uppercase tracking-widest">Editar Proyecto</h2>
+    <div class="mb-4">
+        <a href="{{ route('proyectos.index') }}"
+            class="inline-flex items-center gap-2 text-sm text-dorado-400 hover:text-white transition-colors">
+            ← Volver a proyectos
+        </a>
     </div>
+
+    <div class="w-full max-w-6xl mx-auto bg-[#112134]/60 backdrop-blur-md rounded-xl border border-[#d8c495]/20 overflow-hidden">
+        <div class="px-6 py-4 border-b border-[#d8c495]/20">
+            <h2 class="text-[#d8c495] text-lg font-bold uppercase tracking-widest">Editar Proyecto</h2>
+        </div>
 
     <form action="{{ route('proyectos.update', $proyecto->id_proyecto) }}" method="POST" class="p-8 space-y-6">
         @csrf
@@ -44,6 +53,7 @@
             </a>
         </div>
     </form>
+</div>
 </div>
 
 @endsection

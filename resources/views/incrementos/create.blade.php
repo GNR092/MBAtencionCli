@@ -1,9 +1,18 @@
 @extends('layouts.admin')
 
 @section('content')
-    <div class="w-full px-2 mb-20 flex justify-center">
+<div class="w-full p-4 md:p-6 animate-fadeInUp">
+    <header class="mb-10 px-2">
+        <div class="flex items-baseline gap-4">
+            <span class="text-dorado-400 text-sm font-serif italic">|</span>
+            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                Registrar Incremento
+            </h1>
+        </div>
+    </header>
 
-        <div class="w-full max-w-3xl bg-[#112134]/60 backdrop-blur-md rounded-xl border border-[#d8c495]/20 overflow-hidden">
+    <div class="max-w-6xl mx-auto">
+        <div class="w-full bg-[#112134]/60 backdrop-blur-md rounded-xl border border-[#d8c495]/20 overflow-hidden">
 
             {{-- Encabezado del Formulario --}}
             <div class="px-8 py-6 border-b border-[#d8c495]/20">
@@ -87,4 +96,5 @@
             </div>
         </div>
     </div>
+</div>
 @endsection

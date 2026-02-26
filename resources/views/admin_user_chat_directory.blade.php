@@ -1,27 +1,30 @@
 @extends('layouts.admin')
 
 @section('content')
-<header class="mb-10 ">
-    <div class="flex items-baseline gap-4">
-        <span class="text-dorado-400 text-sm font-serif italic">|</span>
-        <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
-            Directorio
-        </h1>
-    </div>
-</header>
+    <div class="w-full p-4 md:p-6 animate-fadeInUp">
+        <div class="max-w-6xl mx-auto">
+            <header class="mb-10 px-2">
+                <div class="flex items-baseline gap-4">
+                    <span class="text-dorado-400 text-sm font-serif italic">|</span>
+                    <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                        directorio
+                    </h1>
+                </div>
+            </header>
 
-<div class="bg-white rounded-2xl shadow-xl border border-carbon-200 overflow-hidden relative z-10">
+<div class="max-w-6xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-xl border border-carbon-200 overflow-hidden relative z-10">
 
-    <div class="bg-carbon-900 px-6 py-4 border-b-2 border-dorado-400 flex justify-between items-center">
-        <h2 class="text-dorado-400 text-lg font-bold uppercase tracking-widest flex items-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z">
-                </path>
-            </svg>
-            Directorio de Chat
-        </h2>
-    </div>
+        <div class="bg-carbon-900 px-6 py-4 border-b-2 border-dorado-400 flex justify-between items-center">
+            <h2 class="text-dorado-400 text-lg font-bold uppercase tracking-widest flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z">
+                    </path>
+                </svg>
+                Directorio de Chat
+            </h2>
+        </div>
 
     <div class="p-6">
         <form method="GET" action="{{ route('admin.users.chat-directory') }}" class="mb-8">
@@ -151,6 +154,8 @@
     </div>
 </div>
 
+</div>
+</div>
 @endsection
 
 @push('scripts')

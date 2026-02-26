@@ -1,15 +1,16 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="max-w-6xl mx-auto p-6">
-    <header class="mb-10 px-2">
-        <div class="flex items-baseline gap-4">
-            <span class="text-dorado-400 text-sm font-serif italic">|</span>
-            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
-                Logos
-            </h1>
-        </div>
-    </header>
+<div class="w-full p-4 md:p-6 animate-fadeInUp">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-10 px-2">
+            <div class="flex items-baseline gap-4">
+                <span class="text-dorado-400 text-sm font-serif italic">|</span>
+                <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                    Logos
+                </h1>
+            </div>
+        </header>
 
     <div class="bg-white rounded-lg shadow-md p-8 mb-8 border-t-4 border-[#d8c495]">
         <h2 class="text-lg font-bold mb-4 text-gray-800">Cargar Nuevo Logo</h2>
@@ -112,7 +113,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="py-10 text-carbon-900 font-medium italic">
+                        <td colspan="5" class="py-10 text-white/30 font-medium italic">
                             No hay logos cargados en el carrusel actualmente.
                         </td>
                     </tr>
@@ -121,5 +122,6 @@
             </table>
         </div>
     </div>
+</div>
 </div>
 @endsection
