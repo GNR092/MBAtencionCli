@@ -6,8 +6,17 @@
 <div class="bg-green-800/80 text-white p-4 mb-6 rounded-xl text-sm">{{ session('success') }}</div>
 @endif
 
+{{-- HEADER GIGANTE --}}
+<header class="mb-10 px-2">
+    <div class="flex items-baseline gap-4">
+        <span class="text-dorado-400 text-sm font-serif italic">|</span>
+        <h1 class="text-white text-6xl md:text-8xl font-extralight tracking-[-0.02em] leading-none uppercase">
+            Regimen fiscal
+        </h1>
+    </div>
+</header>
+
 <div class="mb-6 flex justify-between items-center">
-    <h2 class="text-2xl font-bold text-[#d8c495] uppercase tracking-wider">Gestión de Régimen Fiscal</h2>
     <a href="{{ route('regimen-fiscal.create') }}"
         class="bg-[#d8c495] hover:bg-[#b8a374] text-[#112134] px-4 py-2 rounded-lg font-bold text-sm transition-all uppercase">
         + Nuevo Régimen

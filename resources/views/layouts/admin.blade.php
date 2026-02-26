@@ -24,7 +24,8 @@
         height: 100%;
         z-index: -10;
         /* Al fondo absoluto */
-        background-image: url("{{ asset('images/marmol2.svg') }}");
+        /* background-image: url("{{ asset('images/marmol2.svg') }}"); */
+        background-color: #3c3c3c;
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;

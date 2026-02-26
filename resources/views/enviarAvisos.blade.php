@@ -4,8 +4,8 @@
 <header class="mb-10 px-2">
     <div class="flex items-baseline gap-4">
         <span class="text-dorado-400 text-sm font-serif italic">|</span>
-        <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
-            Emitir anuncios<span class="font-light text-dorado"></span><span class="text-dorado-400 animate-pulse">_</span>
+        <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+            Avisos
         </h1>
     </div>
 </header>

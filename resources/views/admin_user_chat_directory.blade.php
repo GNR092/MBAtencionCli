@@ -4,9 +4,8 @@
 <header class="mb-10 ">
     <div class="flex items-baseline gap-4">
         <span class="text-dorado-400 text-sm font-serif italic">|</span>
-        <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
-            Directorio de usuarios<span class="font-light text-dorado"></span><span
-                class="text-dorado-400 animate-pulse">_</span>
+        <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+            Directorio
         </h1>
     </div>
 </header>
@@ -176,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let isFetching = false;
     const renderedMessageIds = new Set();
 
-    
+
     document.addEventListener('visibilitychange', () => {
         isTabActive = !document.hidden;
         if (!isTabActive) stopPolling();
@@ -197,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    
+
     document.querySelectorAll('.start-chat-btn').forEach(button => {
         button.addEventListener('click', function() {
             currentChatUserId = this.dataset.userId;
@@ -219,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    
+
     if (closeAdminChatBtn) {
         closeAdminChatBtn.addEventListener('click', function() {
             adminChatModal.classList.add('hidden');
@@ -235,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    
+
     adminChatModal.addEventListener('click', function(e) {
         if (e.target === adminChatModal) {
             closeAdminChatBtn.click();
@@ -248,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    
+
     function displayAdminMessages(messages) {
         if (!adminChatMessagesDiv) return;
 
@@ -262,20 +261,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const isUserSender = message.sender.role === 'usuario';
 
-            
+
             messageWrapper.classList.add('flex', 'w-full', 'mb-2');
 
-            
+
             messageBubble.classList.add('px-4', 'py-2', 'max-w-[75%]', 'break-words', 'shadow-sm',
                 'text-sm');
 
             if (isUserSender) {
-                
+
                 messageWrapper.classList.add('justify-start');
                 messageBubble.classList.add('bg-white', 'text-carbon-900', 'rounded-2xl',
                     'rounded-bl-none', 'border', 'border-gray-200');
             } else {
-                
+
                 messageWrapper.classList.add('justify-end');
                 messageBubble.classList.add('bg-carbon-900', 'text-dorado', 'rounded-2xl',
                     'rounded-br-none', 'font-medium');
@@ -288,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
         scrollAdminChatToBottom();
     }
 
-    
+
     async function fetchAdminMessages(userId) {
         if (!userId || isFetching) return;
         isFetching = true;
@@ -300,7 +299,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRF-TOKEN': csrfToken
                 }
             });
-            
+
             if (response.status === 401 || response.status === 419) {
                 clearInterval(messagePollingInterval);
                 window.location.href = '/inicio-de-sesion';
