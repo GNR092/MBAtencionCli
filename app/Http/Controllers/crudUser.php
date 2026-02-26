@@ -101,7 +101,7 @@ class crudUser extends Controller
         session(['validated_edit_user' => $request->user_id]);
 
 
-        return redirect()->route('users.edit', $request->user_id);
+        return redirect()->route('usuarios.editar', $request->user_id);
     }
 
     public function showEditForm($id)
@@ -121,8 +121,9 @@ class crudUser extends Controller
 
 
         $userToEdit = User::findOrFail($id);
+        $regimenesFiscales = RegimenFiscal::all();
 
-        return view('editUser', compact('admin', 'userToEdit'));
+        return view('editUser', compact('admin', 'userToEdit', 'regimenesFiscales'));
     }
 
     public function eliminar(Request $request)

@@ -6,7 +6,7 @@
     <h1 class="text-center text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase mb-10">Editar Usuario</h1>
 
     <div class="max-w-6xl mx-auto">
-        <form method="post" action="{{ route('users.update') }}" class="bg-[#2f2f2f] p-6 rounded-2xl shadow-lg w-full">
+        <form method="post" action="{{ route('usuarios.actualizar') }}" class="bg-[#2f2f2f] p-6 rounded-2xl shadow-lg w-full">
     @csrf
     <input type="hidden" name="id" value="{{ $userToEdit->id }}">
 
@@ -51,9 +51,11 @@
         <div class="mb-4 mt-4">
         <label class="text-white">Regimen Fiscal</label>
         <select name="regimenFiscal" id="regimenFiscal" class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200 text-black">
-            <option value="resico">RESICO</option>
-            <option value="arrendamiento">ARRENDAMIENTO</option>
-            <option value="persona moral">PERSONA MORAL</option>
+            @foreach($regimenesFiscales ?? [] as $regimen)
+                <option value="{{ $regimen->id_regimen }}" {{ $userToEdit->id_regimen == $regimen->id_regimen ? 'selected' : '' }}>
+                    {{ $regimen->nombre_regimen }}
+                </option>
+            @endforeach
         </select>
     </div>
 
