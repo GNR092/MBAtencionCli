@@ -23,14 +23,33 @@ class AvisoController extends Controller
     {
         $user = $request->user();
         if (!$user) return response()->json(['count' => 0], 401);
-        return response()->json(['count' => $user->unreadNotifications()->count()]);
+
+        if ($user->role === 'administrador') {
+            $count = DatabaseNotification::where('type', \App\Notifications\AvisoInterno::class)
+                                         ->whereNull('read_at')
+                                         ->count();
+        } else {
+            $count = $user->unreadNotifications()->count();
+        }
+
+        return response()->json(['count' => $count]);
     }
 
     public function apiNotifications(Request $request)
     {
         $user = $request->user();
         if (!$user) return response()->json(['html' => '', 'count' => 0], 401);
-        $notificaciones = $user->unreadNotifications()->latest()->take(10)->get();
+
+        if ($user->role === 'administrador') {
+            $notificaciones = DatabaseNotification::where('type', \App\Notifications\AvisoInterno::class)
+                                                 ->whereNull('read_at')
+                                                 ->latest()
+                                                 ->take(10)
+                                                 ->get();
+        } else {
+            $notificaciones = $user->unreadNotifications()->latest()->take(10)->get();
+        }
+
         $html = view('partials.notificacion-dropdown', compact('notificaciones'))->render();
         return response()->json(['html' => $html, 'count' => $notificaciones->count()]);
     }

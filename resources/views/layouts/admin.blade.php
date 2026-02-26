@@ -204,7 +204,7 @@
                             class="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white hidden">0</span>
                     </button>
                     <div id="notification-dropdown"
-                        class="absolute left-0 md:right-0 md:left-auto z-50 mt-3 hidden w-72 md:w-80 rounded-xl bg-white shadow-2xl text-gray-800 border border-gray-200">
+                        class="absolute right-0 z-50 mt-3 hidden max-w-xs rounded-xl bg-white shadow-2xl text-gray-800 border border-gray-200">
                         <div id="notification-list" class="max-h-60 overflow-y-auto"></div>
                     </div>
                 </div>
