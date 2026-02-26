@@ -61,30 +61,34 @@
 
         <div class="flex justify-center w-full px-4 text-center"
              x-data="{
-        text: '',
-        // El \n está aquí, justo después de 'inversionistas'
-        fullText: 'Bienvenido a la comunidad de inversionistas\nque vive de sus rentas sin dolores de cabeza.',
-        speed: 70,
-        startDelay: 1500,
+        linea1: 'Bienvenido a la comunidad de inversionistas'.split(' '),
+        linea2: 'que vive de sus rentas garantizadas.'.split(' '),
+        show: false,
         init() {
-            this.text = '';
-            setTimeout(() => {
-                let i = 0;
-                let interval = setInterval(() => {
-                    if (i < this.fullText.length) {
-                        this.text += this.fullText.charAt(i);
-                        i++;
-                    } else {
-                        clearInterval(interval);
-                    }
-                }, this.speed);
-            }, this.startDelay);
+            setTimeout(() => { this.show = true }, 1000);
         }
      }">
 
-            <h1 x-text="text"
-                class="fuente-personalizada text-3xl md:text-5xl text-dorado-400 leading-tight drop-shadow-lg whitespace-pre-wrap"
-                style="min-height: 3em;">
+            <h1 class="fuente-personalizada text-3xl md:text-5xl text-dorado-400 leading-tight drop-shadow-lg text-center">
+        <span class="block mb-2">
+            <template x-for="(word, index) in linea1">
+                <span
+                    x-html="word + '&nbsp;'"
+                    class="inline-block transition-all duration-700"
+                    :style="`transition-delay: ${index * 150}ms; transform: ${show ? 'translateY(0)' : 'translateY(20px)'}; opacity: ${show ? 1 : 0};`"
+                ></span>
+            </template>
+        </span>
+
+                <span class="block">
+            <template x-for="(word, index) in linea2">
+                <span
+                    x-html="word + '&nbsp;'"
+                    class="inline-block transition-all duration-700"
+                    :style="`transition-delay: ${(index + linea1.length) * 150}ms; transform: ${show ? 'translateY(0)' : 'translateY(20px)'}; opacity: ${show ? 1 : 0};`"
+                ></span>
+            </template>
+        </span>
             </h1>
         </div>
 

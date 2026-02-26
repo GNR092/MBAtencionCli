@@ -20,8 +20,8 @@
     <header class="mb-20 px-2">
         <div class="flex items-baseline gap-4">
             <span class="text-dorado-400 text-sm font-serif italic">01</span>
-            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none">
-                Factura<span class="font-light">ción</span><span class="text-dorado-400 animate-pulse">_</span>
+            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                Facturación
             </h1>
         </div>
         <p class="text-white/50 text-s tracking-[0.3em] uppercase mt-6 ml-12">

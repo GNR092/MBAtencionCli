@@ -17,7 +17,8 @@
             z-index: -5; /* Muy al fondo */
 
             /* AQUÍ ESTÁ EL CAMBIO: Usamos el archivo .svg */
-            background-image: url("{{ asset('images/marmol2.svg') }}");
+            /*background-image: url("{{ asset('images/marmol2.svg') }}"); */
+            background-color: #3c3c3c;
 
             /* 'cover' asegura que el SVG cubra toda la pantalla sin deformarse */
             background-size: cover;

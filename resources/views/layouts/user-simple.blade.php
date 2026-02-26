@@ -13,6 +13,7 @@
         html, body {
             height: 100%;
             overflow: hidden; /* Evita doble scrollbar en la ventana principal */
+            background-color: #3c3c3c;
         }
 
         #content-overlay {
@@ -46,7 +47,6 @@
 </head>
 <body
     class="bg-cover bg-center bg-no-repeat bg-fixed text-white antialiased"
-    style="background-image: url('{{ asset('images/marmol2.svg') }}');"
 >
 
 <img src="{{ asset('images/MB_SP.svg') }}" alt="Marca de Agua" class="watermark-logo">

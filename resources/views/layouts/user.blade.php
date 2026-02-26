@@ -10,7 +10,7 @@
         /* Forzamos que los contenedores raíz no tengan color */
         html, body, #app-layout, .h-screen {
             background: transparent !important;
-            background-color: transparent !important;
+            background-color: #3c3c3c;
             background-image: none !important;
         }
 
