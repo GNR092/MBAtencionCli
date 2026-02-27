@@ -189,36 +189,56 @@ class crudUser extends Controller
             $user->id_regimen = $request->input('regimenFiscal');
 
             if ($request->filled('password')) {
-                $user->password = Hash::make($request->input('password'));
+                $user->password = $request->input('password');
             }
 
             $user->save();
 
-            // 2. Sincronizar proyectos
+            // 2. Obtener proyectos actuales y nuevos
             $projectIds = $request->input('proyect', []);
-            $user->proyectos()->sync($projectIds);
+            $currentProyectos = $user->userProyectos()->get()->keyBy('id_proyecto');
+            $currentProjectIds = $currentProyectos->keys()->map(fn($k) => (int) $k)->toArray();
+            $newProjectIds = array_map('intval', $projectIds);
 
-            // 3. Obtener los registros pivote 'user_proyectos' actualizados
-            $userProyectos = $user->userProyectos()->get()->keyBy('id_proyecto');
+            // 3. Eliminar proyectos que ya no están seleccionados (esto también elimina sus deptos por el boot del modelo)
+            $projectsToRemove = array_diff($currentProjectIds, $newProjectIds);
+            if (!empty($projectsToRemove)) {
+                \App\Models\UserProyecto::where('id_user', $user->id)
+                    ->whereIn('id_proyecto', $projectsToRemove)
+                    ->get()
+                    ->each(function ($pivot) {
+                        $pivot->delete();
+                    });
+            }
 
-            // 4. Limpiar departamentos antiguos de los proyectos gestionados
+            // 4. Agregar proyectos nuevos
+            $projectsToAdd = array_diff($newProjectIds, $currentProjectIds);
+            foreach ($projectsToAdd as $projectId) {
+                \App\Models\UserProyecto::create([
+                    'id_user' => $user->id,
+                    'id_proyecto' => $projectId,
+                ]);
+            }
+
+            // 5. Refrescar la colección de proyectos del usuario
+            $user->load('userProyectos');
+            $userProyectos = $user->userProyectos->keyBy('id_proyecto');
+
+            // 6. Limpiar departamentos de proyectos que se mantienen (se recrearán)
             if ($userProyectos->isNotEmpty()) {
                 UserDepto::whereIn('id_user_p', $userProyectos->pluck('id_user_p'))->delete();
             }
 
-            // 5. Procesar y guardar los nuevos detalles de departamentos
+            // 7. Procesar y guardar los nuevos detalles de departamentos
             if ($request->has('project_details')) {
                 foreach ($request->project_details as $projectId => $departments) {
-                    // Asegurarse de que el proyecto exista en la relación del usuario
                     if (isset($userProyectos[$projectId])) {
                         $userProyectoId = $userProyectos[$projectId]->id_user_p;
-
                         foreach ($departments as $deptData) {
                             UserDepto::create([
                                 'id_user_p' => $userProyectoId,
                                 'nombre' => $deptData['nombre_depto'],
                                 'importe' => $deptData['importe'],
-                                // Si el checkbox no está marcado, no llegará. Usamos '?? false'
                                 'predial' => isset($deptData['cuenta_predial']) ? ($deptData['cuenta_numero'] ?? '') : '',
                             ]);
                         }

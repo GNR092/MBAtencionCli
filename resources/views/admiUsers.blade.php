@@ -151,6 +151,15 @@
         </div>
 
         <div class="p-6 overflow-y-auto center custom-scroll">
+            @if ($errors->any())
+            <div class="bg-red-900/30 border border-red-500/30 text-red-400 px-4 py-3 rounded mb-4">
+                <ul class="list-disc list-inside text-xs">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
             <form id="formEditarUsuario" action="{{ route('usuarios.actualizar') }}" method="POST" class="space-y-6">
                 @csrf
                 <input type="hidden" name="id" id="editUserIdInput" />
@@ -520,8 +529,7 @@ window.closeDeleteModal = function() {
 @if (session('highlight_user'))
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const userId = '{{ session('
-    highlight_user ') }}';
+    const userId = '{{ session('highlight_user') }}';
     const userRow = document.getElementById(`user-${userId}`);
     if (userRow) {
         setTimeout(() => {
@@ -532,6 +540,21 @@ document.addEventListener('DOMContentLoaded', () => {
             userRow.classList.add('highlight-row');
         }, 100);
     }
+});
+</script>
+@endif
+
+@if ($errors->any() && old('id'))
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById("confirmModal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    document.getElementById("editUserIdInput").value = '{{ old('id') }}';
+    document.getElementById("edit_name").value = '{{ old('name') }}';
+    document.getElementById("edit_email").value = '{{ old('email') }}';
+    document.getElementById("edit_phone").value = '{{ old('phone') }}';
+    document.getElementById("edit_regimen").value = '{{ old('regimenFiscal') }}';
 });
 </script>
 @endif
