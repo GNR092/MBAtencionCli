@@ -121,7 +121,9 @@
     </div>
 
 </div>
+@endsection
 
+@push('modals')
 <div id="modalUsuario" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto" onclick="cerrarModalUsuario()">
     <div class="flex min-h-full items-center justify-center p-4">
         <div onclick="event.stopPropagation()" class="bg-carbon-900 rounded-xl shadow-2xl w-full max-w-2xl border border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
@@ -142,8 +144,8 @@
     </div>
 </div>
 
-<div id="confirmModal" class="hidden fixed inset-0 z-50 bg-black/80 overflow-y-auto" onclick="closeModal()">
-  <div class="flex min-h-screen items-center justify-center p-4">
+<div id="confirmModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm items-center justify-center p-4 overflow-y-auto" onclick="closeModal()">
+  <div class="flex min-h-full items-center justify-center">
     <div onclick="event.stopPropagation()" class="bg-carbon-900 rounded-xl shadow-2xl w-full max-w-4xl border border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
         <div class="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-black/20">
             <h2 class="text-xl font-light text-[#d8c495] tracking-widest uppercase">Editar Usuario</h2>
@@ -278,10 +280,7 @@
         </div>
     </div>
 </div>
-
-@endsection
-
-@push('modals')
+@endpush
 
 @push('scripts')
 <script>
