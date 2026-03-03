@@ -51,3 +51,5 @@ Correcciones_manual.txt
 /storage/framework/testing/*
 /storage/framework/views/*
 /storage/app/public/*
+AGENTS.md
+.opencode/tools/mgrep.ts

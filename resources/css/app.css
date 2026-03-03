@@ -193,7 +193,7 @@ body {
     backdrop-filter: blur(12px);
     border-radius: 1rem;
     box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3);
-    overflow: hidden;
+    overflow-x: auto;
     border: 1px solid rgb(216 196 149 / 0.2);
 }
 

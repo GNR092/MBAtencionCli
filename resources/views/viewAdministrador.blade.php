@@ -44,48 +44,32 @@
                 <table class="tabla-dorada">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Folio Fiscal (UUID)</th>
                             <th>Inversionista</th>
-                            <th>Proyecto</th>
-                            <th>Estado</th>
-                            <th>Mes</th>
-                            <th>Base</th>
-                            <th>ISR</th>
-                            <th>Neto</th>
-                            <th>Pagado</th>
-                            <th>Pendiente</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        @forelse($cuentas as $cuenta)
-                        <tr>
-                            <td class="font-bold text-[#d8c495]">{{ $cuenta->id_cuentas_por_pagar }}</td>
-                            <td class="text-xs font-mono text-white/50 whitespace-nowrap">{{ $cuenta->uuid ?? 'N/A' }}</td>
-                            <td class="text-left font-medium">{{ $cuenta->name }}</td>
-                            <td class="text-white/80">{{ $cuenta->proyecto }}</td>
-                            <td>
-                                <select class="estado-select bg-[#0d1f30] border border-white/20 rounded-lg px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-[#d8c495]
-                                    @if($cuenta->estado === 'pendiente') text-red-300
-                                    @elseif($cuenta->estado === 'parcial') text-yellow-300
-                                    @elseif($cuenta->estado === 'pagado') text-green-300
-                                    @elseif($cuenta->estado === 'vencido') text-orange-300
-                                    @else text-white/70 @endif"
-                                    data-id="{{ $cuenta->id_cuentas_por_pagar }}">
-                                    <option value="pendiente" {{ $cuenta->estado === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                    <option value="parcial" {{ $cuenta->estado === 'parcial' ? 'selected' : '' }}>Parcial</option>
-                                    <option value="pagado" {{ $cuenta->estado === 'pagado' ? 'selected' : '' }}>Pagado</option>
-                                    <option value="vencido" {{ $cuenta->estado === 'vencido' ? 'selected' : '' }}>Vencido</option>
-                                </select>
+                        @forelse($grupos as $grupo)
+                        <tr class="group-header bg-[#0d1f30]/80 cursor-pointer hover:bg-[#0d1f30] transition" 
+                            data-grupo-nombre="{{ $grupo['nombre'] }}"
+                            onclick='openDetalleModal(@json($grupo))'>
+                            <td colspan="6" class="text-left font-bold text-[#d8c495] py-3 px-4">
+                                <span class="flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    {{ $grupo['nombre'] }}
+                                </span>
+                                <span class="text-white/50 text-xs font-normal ml-6">({{ $grupo['count'] }} cuenta{{ $grupo['count'] > 1 ? 's' : '' }})</span>
                             </td>
-                            <td class="text-white/70 text-xs">{{ json_decode($cuenta->mesesdepago)->mes ?? 'N/A' }}</td>
-                            <td class="font-medium">${{ number_format($cuenta->importe_base_final, 2) }}</td>
-                            <td class="text-red-400 font-medium">${{ number_format($cuenta->isr, 2) }}</td>
-                            <td class="font-bold">${{ number_format($cuenta->saldo_neto, 2) }}</td>
-                            <td class="text-green-400 font-medium cell-pagado">${{ number_format($cuenta->monto_pagado, 2) }}</td>
-                            <td class="font-black text-[#d8c495] cell-pendiente">${{ number_format($cuenta->saldo_pendiente, 2) }}</td>
+                            <td colspan="5" class="text-right py-3 px-4">
+                                <span class="text-white/60 text-xs">Total: </span>
+                                <span class="text-[#d8c495] font-bold grupo-total"> ${{ number_format($grupo['total_neto'], 2) }}</span>
+                                <span class="text-white/40 mx-2">|</span>
+                                <span class="text-green-400 text-xs grupo-pagado">Pag: ${{ number_format($grupo['total_pagado'], 2) }}</span>
+                                <span class="text-white/40 mx-2">|</span>
+                                <span class="text-red-400 text-xs grupo-pendiente">Pen: ${{ number_format($grupo['total_pendiente'], 2) }}</span>
+                            </td>
                         </tr>
+                        
                         @empty
                         <tr>
                             <td colspan="11" class="py-10 text-white/40 italic">No se encontraron registros activos.</td>
@@ -113,13 +97,12 @@
                 onClick="openModal()">
                 MOSTRAR GRÁFICAS
             </button>
-            <div class="tabla-dorada-footer rounded-xl border border-[#d8c495]/20 bg-[#112134]/60 backdrop-blur-md px-2">
-                {{ $cuentas->links('pagination::tailwind') }}
-            </div>
         </div>
     </div>
 </div>
+@endsection
 
+@push('modals')
 <!-- Modal gráficas -->
 <div id="chartsmModal"
     class="bg-black/60 backdrop-blur-sm fixed inset-0 z-[9999] flex items-center justify-center hidden p-4">
@@ -211,6 +194,51 @@
     </div>
 </div>
 
+<!-- Modal detalle inversionista -->
+<div id="detalleModal"
+    class="bg-black/60 backdrop-blur-sm fixed inset-0 z-9999 flex items-center justify-center hidden p-4">
+    <div class="bg-[#112134] border border-[#d8c495]/20 rounded-3xl shadow-2xl p-4 md:p-6 relative w-full max-w-auto max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="flex justify-between items-center mb-4 border-b border-[#d8c495]/20 pb-3">
+            <h2 class="text-xl font-bold text-[#d8c495]" id="detalleTitulo">Detalle de Cuentas</h2>
+            <button type="button" onclick="closeDetalleModal()" class="text-white/50 hover:text-white text-2xl">&times;</button>
+        </div>
+        <div class="overflow-auto flex-1 custom-scroll">
+            <table class="tabla-dorada w-full text-xs">
+                <thead class="sticky top-0 bg-[#0d1f30]">
+                    <tr>
+                        <th class="px-2 py-2 hidden">ID</th>
+                        <th class="px-2 py-2">Folio Fiscal</th>
+                        <th class="px-2 py-2">Inversionista</th>
+                        <th class="px-2 py-2">Proyecto</th>
+                        <th class="px-2 py-2">Estado</th>
+                        <th class="px-2 py-2">Mes Correspondiente</th>
+                        <th class="px-2 py-2">Mes Subida</th>
+                        <th class="px-2 py-2">Base</th>
+                        <th class="px-2 py-2">ISR</th>
+                        <th class="px-2 py-2">Neto</th>
+                        <th class="px-2 py-2">Pagado</th>
+                        <th class="px-2 py-2">Pendiente</th>
+                    </tr>
+                </thead>
+                <tbody id="detalleCuerpo">
+                </tbody>
+                <tfoot class="sticky bottom-0 bg-[#0d1f30]">
+                    <tr>
+                        <td colspan="8" class="text-right px-2 py-2 text-white/60">Total:</td>
+                        <td id="detalleTotalNeto" class="text-[#d8c495] font-bold px-2 py-2"></td>
+                        <td id="detalleTotalPagado" class="text-green-400 font-bold px-2 py-2"> </td>
+                        <td id="detalleTotalPendiente" class="text-red-400 font-bold px-2 py-2"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="mt-4 pt-3 border-t border-[#d8c495]/20 flex justify-end">
+            <button type="button" onclick="closeDetalleModal()"
+                class="bg-white/10 text-white px-6 py-2 rounded-xl font-bold hover:bg-white/20 transition">CERRAR</button>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 let _chartAnual = null, _chartProyecto = null;
@@ -220,6 +248,172 @@ function openModal()         { document.getElementById('chartsmModal').classList
 function closeModal()        { document.getElementById('chartsmModal').classList.add('hidden'); }
 function openModalDescarga() { document.getElementById('descargaModal').classList.remove('hidden'); }
 function closeModalDescarga(){ document.getElementById('descargaModal').classList.add('hidden'); }
+
+let grupoActualNombre = '';
+let grupoActual = null;
+let gruposData = @json($grupos->toArray());
+
+function openDetalleModal(grupo) {
+    const nombre = grupo.nombre;
+    const grupoActualizado = gruposData.find(function(g) { return g.nombre === nombre; });
+    if (grupoActualizado) {
+        grupo = grupoActualizado;
+        grupoActual = grupoActualizado;
+    }
+    grupoActualNombre = nombre;
+    document.getElementById('detalleTitulo').textContent = 'Cuentas de ' + grupo.nombre;
+    const tbody = document.getElementById('detalleCuerpo');
+    tbody.innerHTML = '';
+    
+    let totalNeto = 0, totalPagado = 0, totalPendiente = 0;
+    
+    grupo.cuentas.forEach(function(cuenta) {
+        const mesPago = cuenta.mesesdepago ? JSON.parse(cuenta.mesesdepago).mes : 'N/A';
+        
+        const row = document.createElement('tr');
+        row.className = 'border-b border-white/5 hover:bg-white/5';
+        row.dataset.id = cuenta.id_cuentas_por_pagar;
+        row.dataset.saldoNeto = cuenta.saldo_neto || 0;
+        
+        const selectHtml = 
+            '<select class="estado-select bg-[#0d1f30] border border-white/20 rounded-lg px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-[#d8c495] ' + getEstadoColor(cuenta.estado) + '" ' +
+            'data-id="' + cuenta.id_cuentas_por_pagar + '" data-prev="' + cuenta.estado + '" data-saldo-neto="' + (cuenta.saldo_neto || 0) + '">' +
+            '<option value="pendiente" ' + (cuenta.estado === 'pendiente' ? 'selected' : '') + '>Pendiente</option>' +
+            '<option value="parcial" ' + (cuenta.estado === 'parcial' ? 'selected' : '') + '>Parcial</option>' +
+            '<option value="pagado" ' + (cuenta.estado === 'pagado' ? 'selected' : '') + '>Pagado</option>' +
+            '<option value="vencido" ' + (cuenta.estado === 'vencido' ? 'selected' : '') + '>Vencido</option>' +
+            '</select>';
+        
+        row.innerHTML = 
+            '<td class="px-2 py-2 font-bold text-[#d8c495] hidden">' + cuenta.id_cuentas_por_pagar + '</td>' +
+            '<td class="px-2 py-2 text-xs font-mono text-white/50">' + (cuenta.uuid || 'N/A') + '</td>' +
+            '<td class="px-2 py-2">' + cuenta.name + '</td>' +
+            '<td class="px-2 py-2 text-white/80">' + cuenta.proyecto + '</td>' +
+            '<td class="px-2 py-2">' + selectHtml + '</td>' +
+            '<td class="px-2 py-2 text-white/70 text-xs">' + mesPago + '</td>' +
+            '<td class="px-2 py-2 text-white/70 text-xs">' + (cuenta.mes_subida || 'N/A') + '</td>' +
+            '<td class="px-2 py-2">$' + Number(cuenta.importe_base_final || 0).toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</td>' +
+            '<td class="px-2 py-2 text-red-400">$' + Number(cuenta.isr || 0).toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</td>' +
+            '<td class="px-2 py-2 font-bold cell-neto">$' + Number(cuenta.saldo_neto || 0).toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</td>' +
+            '<td class="px-2 py-2 text-green-400 cell-pagado">$' + Number(cuenta.monto_pagado || 0).toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</td>' +
+            '<td class="px-2 py-2 text-[#d8c495] font-bold cell-pendiente">$' + Number(cuenta.saldo_pendiente || 0).toLocaleString('es-MX', {minimumFractionDigits: 2}) + '</td>';
+        tbody.appendChild(row);
+        
+        totalNeto += Number(cuenta.saldo_neto || 0);
+        totalPagado += Number(cuenta.monto_pagado || 0);
+        totalPendiente += Number(cuenta.saldo_pendiente || 0);
+    });
+    
+    document.getElementById('detalleTotalNeto').textContent = '$' + totalNeto.toLocaleString('es-MX', {minimumFractionDigits: 2});
+    document.getElementById('detalleTotalPagado').textContent = '$' + totalPagado.toLocaleString('es-MX', {minimumFractionDigits: 2});
+    document.getElementById('detalleTotalPendiente').textContent = '$' + totalPendiente.toLocaleString('es-MX', {minimumFractionDigits: 2});
+    
+    attachEstadoListeners();
+    document.getElementById('detalleModal').classList.remove('hidden');
+}
+
+function getEstadoColor(estado) {
+    const colors = {
+        'pendiente': 'text-red-300',
+        'parcial': 'text-yellow-300',
+        'pagado': 'text-green-300',
+        'vencido': 'text-orange-300'
+    };
+    return colors[estado] || 'text-white/70';
+}
+
+function attachEstadoListeners() {
+    document.querySelectorAll('#detalleCuerpo .estado-select').forEach(function(sel) {
+        sel.addEventListener('change', function() {
+            const prev = this.dataset.prev;
+            const id = this.dataset.id;
+            const selectEl = this;
+            
+            fetch('/cuentasporpagar/' + id + '/estado', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                body: JSON.stringify({ estado: selectEl.value }),
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d.success) {
+                    updateEstadoSelect(selectEl, selectEl.value);
+                    selectEl.dataset.prev = selectEl.value;
+                    
+                    const row = selectEl.closest('tr');
+                    row.querySelector('.cell-pagado').textContent = '$' + d.montoPagado.replace(/,/g, '');
+                    row.querySelector('.cell-pendiente').textContent = '$' + d.saldoPendiente.replace(/,/g, '');
+                    
+                    if (grupoActual) {
+                        const cuentaId = parseInt(selectEl.dataset.id);
+                        const cuentaIdx = grupoActual.cuentas.findIndex(function(c) { return c.id_cuentas_por_pagar === cuentaId; });
+                        if (cuentaIdx !== -1) {
+                            grupoActual.cuentas[cuentaIdx].estado = selectEl.value;
+                            grupoActual.cuentas[cuentaIdx].monto_pagado = parseFloat(d.montoPagado.replace(/,/g, ''));
+                            grupoActual.cuentas[cuentaIdx].saldo_pendiente = parseFloat(d.saldoPendiente.replace(/,/g, ''));
+                        }
+                        const idxGlobal = gruposData.findIndex(function(g) { return g.nombre === grupoActual.nombre; });
+                        if (idxGlobal !== -1) {
+                            gruposData[idxGlobal] = grupoActual;
+                        }
+                    }
+                    
+                    recalcularTotalesModal();
+                    document.getElementById('totalPendiente').textContent = '$' + d.totalPendiente;
+                    document.getElementById('totalPagado').textContent = '$' + d.totalPagado;
+                    
+                    if (grupoActualNombre) {
+                        const grupoRow = document.querySelector('[data-grupo-nombre="' + grupoActualNombre + '"]');
+                        if (grupoRow) {
+                            let grupoPagado = 0, grupoPendiente = 0;
+                            document.querySelectorAll('#detalleCuerpo tr').forEach(function(r) {
+                                grupoPagado += parseFloat(r.querySelector('.cell-pagado').textContent.replace(/[^0-9.-]/g, '')) || 0;
+                                grupoPendiente += parseFloat(r.querySelector('.cell-pendiente').textContent.replace(/[^0-9.-]/g, '')) || 0;
+                            });
+                            
+                            grupoRow.querySelector('.grupo-pagado').textContent = 'Pag: $' + grupoPagado.toLocaleString('es-MX', {minimumFractionDigits: 2});
+                            grupoRow.querySelector('.grupo-pendiente').textContent = 'Pen: $' + grupoPendiente.toLocaleString('es-MX', {minimumFractionDigits: 2});
+                        }
+                    }
+                } else {
+                    alert(d.message || 'Error');
+                    selectEl.value = prev;
+                    updateEstadoSelect(selectEl, prev);
+                }
+            })
+            .catch(function() {
+                selectEl.value = prev;
+                updateEstadoSelect(selectEl, prev);
+            });
+        });
+    });
+}
+
+function updateEstadoSelect(sel, estado) {
+    sel.classList.remove('text-red-300', 'text-yellow-300', 'text-green-300', 'text-orange-300', 'text-white/70');
+    sel.classList.add(getEstadoColor(estado));
+}
+
+function recalcularTotalesModal() {
+    let totalNeto = 0, totalPagado = 0, totalPendiente = 0;
+    document.querySelectorAll('#detalleCuerpo tr').forEach(function(row) {
+        const neto = parseFloat(row.dataset.saldoNeto) || 0;
+        const pagado = parseFloat(row.querySelector('.cell-pagado').textContent.replace(/[$,]/g, '')) || 0;
+        const pendiente = parseFloat(row.querySelector('.cell-pendiente').textContent.replace(/[$,]/g, '')) || 0;
+        
+        totalNeto += neto;
+        totalPagado += pagado;
+        totalPendiente += pendiente;
+    });
+    
+    document.getElementById('detalleTotalNeto').textContent = '$' + totalNeto.toLocaleString('es-MX', {minimumFractionDigits: 2});
+    document.getElementById('detalleTotalPagado').textContent = '$' + totalPagado.toLocaleString('es-MX', {minimumFractionDigits: 2});
+    document.getElementById('detalleTotalPendiente').textContent = '$' + totalPendiente.toLocaleString('es-MX', {minimumFractionDigits: 2});
+}
+
+function closeDetalleModal() {
+    document.getElementById('detalleModal').classList.add('hidden');
+}
 
 function _buildChart(canvasId, data, titulo) {
     return new Chart(document.getElementById(canvasId), {
@@ -270,35 +464,7 @@ async function cargarGraficaAnual() {
 
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('selectProyecto').addEventListener('change', cargarGraficaAnual);
-
-    const colorMap = { pendiente: 'text-red-300', parcial: 'text-yellow-300', pagado: 'text-green-300', vencido: 'text-orange-300' };
-    function applyColor(sel) {
-        Object.values(colorMap).forEach(c => sel.classList.remove(c));
-        sel.classList.add(colorMap[sel.value] || 'text-white/70');
-    }
-    document.querySelectorAll('.estado-select').forEach(sel => {
-        sel.dataset.prev = sel.value;
-        sel.addEventListener('change', function () {
-            const prev = this.dataset.prev;
-            fetch(`/cuentasporpagar/${this.dataset.id}/estado`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                body: JSON.stringify({ estado: this.value }),
-            })
-            .then(r => r.json())
-            .then(d => {
-                if (d.success) {
-                    applyColor(this); this.dataset.prev = this.value;
-                    const row = this.closest('tr');
-                    row.querySelector('.cell-pagado').textContent   = '$' + d.montoPagado;
-                    row.querySelector('.cell-pendiente').textContent = '$' + d.saldoPendiente;
-                    document.getElementById('totalPendiente').textContent = '$' + d.totalPendiente;
-                    document.getElementById('totalPagado').textContent    = '$' + d.totalPagado;
-                } else { alert(d.message || 'Error'); this.value = prev; applyColor(this); }
-            })
-            .catch(() => { this.value = prev; applyColor(this); });
-        });
-    });
 });
 </script>
-@endsection
+@endpush
+

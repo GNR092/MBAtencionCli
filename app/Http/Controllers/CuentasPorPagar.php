@@ -2,24 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session;
-use App\Models\Contract;
-use App\Models\XmlFile;
-use App\Models\Cuentas;
-use App\Models\Impuesto;
-use Carbon\Carbon;
-use Carbon\CarbonPeriod;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\cuentasExport;
-use App\Models\IncrementoImporte;
+use App\Models\Contract;
+use App\Models\Cuentas;
+use App\Models\XmlFile;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CuentasPorPagar extends Controller
 {
-
     public function export(Request $request)
     {
         $query = Cuentas::with('contract')
@@ -36,13 +30,7 @@ class CuentasPorPagar extends Controller
                 DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'),
             );
 
-
         $this->aplicarFiltros($query, $request);
-
-
-
-
-
 
         if ($request->filled('desde')) {
             $query->where('cuentasporpagar.mes_pago', '>=', substr($request->desde, 0, 7));
@@ -51,7 +39,6 @@ class CuentasPorPagar extends Controller
         if ($request->filled('hasta')) {
             $query->where('cuentasporpagar.mes_pago', '<=', substr($request->hasta, 0, 7));
         }
-
 
         if ($request->filled('estado')) {
             $query->where('cuentasporpagar.estado', $request->estado);
@@ -87,7 +74,7 @@ class CuentasPorPagar extends Controller
 
         foreach ($cuentas as $cuenta) {
             $mesData = null;
-            if (!empty($cuenta->mesesdepago)) {
+            if (! empty($cuenta->mesesdepago)) {
                 $decoded = json_decode($cuenta->mesesdepago, true);
                 if (is_array($decoded) && isset($decoded['mes'])) {
                     $mesData = $decoded['mes'];
@@ -96,7 +83,9 @@ class CuentasPorPagar extends Controller
                 }
             }
 
-            if (!$mesData) continue;
+            if (! $mesData) {
+                continue;
+            }
 
             try {
                 $mesDate = Carbon::createFromFormat('Y-m', $mesData)->startOfMonth();
@@ -115,40 +104,24 @@ class CuentasPorPagar extends Controller
                 ->orderByDesc('fecha_inicio')
                 ->first();
 
-
-
-
             $importeBase = $cuenta->importeBaseXML
                 ?? ($incremento->importe_base ?? null)
                 ?? $cuenta->importeBaseContrato;
 
             $importeBase = floatval($importeBase);
 
-
-
-
             $regimen = strtolower($cuenta->regimenFiscal ?? '');
             $tasaCuota = $regimen === 'resico' ? 0.0125 : ($regimen === 'arrendamiento' ? 0.10 : 0.00);
 
             $isr = round($importeBase * $tasaCuota, 2);
 
-
-
-
             $saldoNeto = round($importeBase - $isr, 2);
             $saldoPendiente = round($saldoNeto - ($cuenta->monto_pagado ?? 0), 2);
-
-
-
 
             if ($cuenta->estado === 'pagado') {
 
                 continue;
             }
-
-
-
-
 
             if ($cuenta->monto_pagado == 0) {
                 $estado = 'pendiente';
@@ -159,19 +132,15 @@ class CuentasPorPagar extends Controller
                 $saldoPendiente = 0;
             }
 
-
-
-
-
             DB::table('cuentasporpagar')
                 ->where('id_cuentas_por_pagar', $cuenta->id_cuentas_por_pagar)
                 ->update([
-                    'tasaCuota'       => $tasaCuota,
-                    'isr'             => $isr,
-                    'saldo_neto'      => $saldoNeto,
+                    'tasaCuota' => $tasaCuota,
+                    'isr' => $isr,
+                    'saldo_neto' => $saldoNeto,
                     'saldo_pendiente' => $saldoPendiente,
-                    'estado'          => $estado,
-                    'updated_at'      => now(),
+                    'estado' => $estado,
+                    'updated_at' => now(),
                 ]);
         }
 
@@ -200,7 +169,9 @@ class CuentasPorPagar extends Controller
         foreach ($cuentas as $cuenta) {
             $decoded = json_decode($cuenta->mesesdepago, true);
             $mesData = $decoded['mes'] ?? (is_string($decoded) ? $decoded : null);
-            if (!$mesData) continue;
+            if (! $mesData) {
+                continue;
+            }
 
             try {
                 $mesDate = Carbon::createFromFormat('Y-m', $mesData)->startOfMonth();
@@ -211,39 +182,39 @@ class CuentasPorPagar extends Controller
             $incremento = DB::table('incrementos_importe')
                 ->where('id_contract', $cuenta->id_contract)
                 ->whereDate('fecha_inicio', '<=', $mesDate->copy()->endOfMonth())
-                ->where(fn($q) => $q->whereNull('fecha_fin')->orWhereDate('fecha_fin', '>=', $mesDate->copy()->startOfMonth()))
+                ->where(fn ($q) => $q->whereNull('fecha_fin')->orWhereDate('fecha_fin', '>=', $mesDate->copy()->startOfMonth()))
                 ->orderByDesc('fecha_inicio')
                 ->value('importe_base');
 
             $importeBase = floatval($cuenta->importeBaseXML ?? $incremento ?? $cuenta->importeBaseContrato);
-            $regimen     = strtolower($cuenta->regimenFiscal ?? '');
-            $tasaCuota   = $regimen === 'resico' ? 0.0125 : ($regimen === 'arrendamiento' ? 0.10 : 0.00);
-            $isr         = round($importeBase * $tasaCuota, 2);
-            $saldoNeto   = round($importeBase - $isr, 2);
+            $regimen = strtolower($cuenta->regimenFiscal ?? '');
+            $tasaCuota = $regimen === 'resico' ? 0.0125 : ($regimen === 'arrendamiento' ? 0.10 : 0.00);
+            $isr = round($importeBase * $tasaCuota, 2);
+            $saldoNeto = round($importeBase - $isr, 2);
             $montoPagado = floatval($cuenta->monto_pagado ?? 0);
             $saldoPendiente = round(max(0, $saldoNeto - $montoPagado), 2);
 
             $estado = $montoPagado <= 0 ? 'pendiente'
                 : ($montoPagado >= $saldoNeto ? 'pagado' : 'parcial');
 
-            if ($estado === 'pagado') $saldoPendiente = 0;
+            if ($estado === 'pagado') {
+                $saldoPendiente = 0;
+            }
 
             DB::table('cuentasporpagar')
                 ->where('id_cuentas_por_pagar', $cuenta->id_cuentas_por_pagar)
                 ->update([
-                    'tasaCuota'       => $tasaCuota,
-                    'isr'             => $isr,
-                    'saldo_neto'      => $saldoNeto,
+                    'tasaCuota' => $tasaCuota,
+                    'isr' => $isr,
+                    'saldo_neto' => $saldoNeto,
                     'saldo_pendiente' => $saldoPendiente,
-                    'estado'          => $estado,
-                    'updated_at'      => now(),
+                    'estado' => $estado,
+                    'updated_at' => now(),
                 ]);
         }
     }
 
-
-
-    /*Cada mes debe quedar registrado con estado "pendiente" 
+    /*Cada mes debe quedar registrado con estado "pendiente"
 inicialmente, aunque no haya XML / factura cargada aún.*/
     private function seedDesdeXmlFiles(): void
     {
@@ -254,7 +225,9 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
 
         foreach ($xmls as $xml) {
             // Sin folio fiscal no hay clave única confiable
-            if (empty($xml->uuid)) continue;
+            if (empty($xml->uuid)) {
+                continue;
+            }
 
             try {
                 $mesXml = Carbon::parse($xml->fecha_inicio)->format('Y-m');
@@ -267,26 +240,32 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 ->where('id_proyecto', $xml->id_proyecto)
                 ->first();
 
-            if (!$userProyecto) continue;
+            if (! $userProyecto) {
+                continue;
+            }
 
             $contract = Contract::where('id_user_p', $userProyecto->id_user_p)->first();
-            if (!$contract) continue;
+            if (! $contract) {
+                continue;
+            }
 
             // El folio fiscal (UUID del CFDI) es globalmente único: un registro por factura
-            if (DB::table('cuentasporpagar')->where('uuid', $xml->uuid)->exists()) continue;
+            if (DB::table('cuentasporpagar')->where('uuid', $xml->uuid)->exists()) {
+                continue;
+            }
 
             DB::table('cuentasporpagar')->insert([
-                'uuid'         => $xml->uuid,
-                'id_contract'  => $contract->id,
-                'xml_file_id'  => $xml->id,
-                'mes_pago'     => $mesXml,
-                'mesesdepago'  => json_encode(['mes' => $mesXml]),
-                'estado'       => 'pendiente',
-                'saldo_neto'   => $contract->importe_bruto_renta,
+                'uuid' => $xml->uuid,
+                'id_contract' => $contract->id,
+                'xml_file_id' => $xml->id,
+                'mes_pago' => $mesXml,
+                'mesesdepago' => json_encode(['mes' => $mesXml]),
+                'estado' => 'pendiente',
+                'saldo_neto' => $contract->importe_bruto_renta,
                 'monto_pagado' => 0,
                 'mesespagados' => json_encode([]),
-                'created_at'   => now(),
-                'updated_at'   => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
     }
@@ -294,7 +273,9 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
     public function index(Request $request)
     {
         $user = Auth::user();
-        if (!$user) return redirect('/inicio-de-sesion');
+        if (! $user) {
+            return redirect('/inicio-de-sesion');
+        }
 
         $this->seedDesdeXmlFiles();
         $this->recalcularSaldos();
@@ -311,22 +292,38 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 'users.name as name',
                 'contract.importe_bruto_renta as importeBase',
                 DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'),
+                DB::raw('DATE_FORMAT(xml_files.created_at, "%Y-%m") as mes_subida'),
             );
-        $query->when($request->month, fn($q, $month) => $q->where('cuentasporpagar.mes_pago', $month))
-            ->when($request->filled(['search', 'categoria']), function ($q) use ($request) {
-                $columnas = [
-                    'mes'    => 'cuentasporpagar.mes_pago',
-                    'name'   => 'users.name',
-                    'estado' => 'cuentasporpagar.estado',
-                ];
-                if (array_key_exists($request->categoria, $columnas)) {
-                    $q->where($columnas[$request->categoria], 'LIKE', '%' . $request->search . '%');
-                }
-            });
+        $selectedMonth = $request->month ?? now()->format('Y-m');
+        $query->where('cuentasporpagar.mes_pago', $selectedMonth);
+
+        $query->when($request->filled(['search', 'categoria']), function ($q) use ($request) {
+            $columnas = [
+                'mes' => 'cuentasporpagar.mes_pago',
+                'name' => 'users.name',
+                'estado' => 'cuentasporpagar.estado',
+            ];
+            if (array_key_exists($request->categoria, $columnas)) {
+                $q->where($columnas[$request->categoria], 'LIKE', '%'.$request->search.'%');
+            }
+        });
 
         $totalPendiente = (clone $query)->sum('cuentasporpagar.saldo_pendiente');
         $totalPagado = (clone $query)->sum('cuentasporpagar.monto_pagado');
-        $cuentas = $query->paginate(6)->appends($request->query());
+
+        $cuentasRaw = $query->orderBy('users.name')->orderBy('cuentasporpagar.id_cuentas_por_pagar')->get();
+
+        $grupos = $cuentasRaw->groupBy('name')->map(function ($grupo, $nombre) {
+            return [
+                'nombre' => $nombre,
+                'cuentas' => $grupo,
+                'total_neto' => $grupo->sum('saldo_neto'),
+                'total_pagado' => $grupo->sum('monto_pagado'),
+                'total_pendiente' => $grupo->sum('saldo_pendiente'),
+                'count' => $grupo->count(),
+            ];
+        })->values();
+
         $proyectos = \App\Models\Proyecto::orderBy('nombre_proyecto')->pluck('nombre_proyecto');
 
         $minYear = (int) DB::table('cuentasporpagar')
@@ -334,16 +331,15 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             ->min(DB::raw('LEFT(mes_pago, 4)'));
         $minYear = $minYear ?: now()->year;
 
-        return view('viewAdministrador', compact('cuentas', 'totalPendiente', 'totalPagado', 'proyectos', 'minYear'))
-            ->with('selectedMonth', $request->month ?? now()->format('Y-m'));
+        return view('viewAdministrador', compact('grupos', 'totalPendiente', 'totalPagado', 'proyectos', 'minYear', 'selectedMonth', 'cuentasRaw'))
+            ->with('selectedMonth', $selectedMonth);
     }
-
 
     public function actualizarEstado(Request $request, $id)
     {
         $nuevoEstado = $request->input('estado');
 
-        if (!in_array($nuevoEstado, ['pendiente', 'parcial', 'pagado', 'vencido'])) {
+        if (! in_array($nuevoEstado, ['pendiente', 'parcial', 'pagado', 'vencido'])) {
             return response()->json(['success' => false, 'message' => 'Estado inválido']);
         }
 
@@ -352,33 +348,38 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         $updates = ['estado' => $nuevoEstado, 'updated_at' => now()];
 
         if ($nuevoEstado === 'pagado') {
-            $updates['monto_pagado']   = $cuenta->saldo_neto;
+            $updates['monto_pagado'] = $cuenta->saldo_neto;
             $updates['saldo_pendiente'] = 0;
         } elseif ($nuevoEstado === 'pendiente') {
-            $updates['monto_pagado']   = 0;
+            $updates['monto_pagado'] = 0;
             $updates['saldo_pendiente'] = $cuenta->saldo_neto;
         }
 
         DB::table('cuentasporpagar')->where('id_cuentas_por_pagar', $id)->update($updates);
 
-        $totalPendiente = DB::table('cuentasporpagar')->sum('saldo_pendiente');
-        $totalPagado    = DB::table('cuentasporpagar')->sum('monto_pagado');
+        $mesPago = $cuenta->mes_pago;
+        $totalPendiente = DB::table('cuentasporpagar')
+            ->where('mes_pago', $mesPago)
+            ->sum('saldo_pendiente');
+        $totalPagado = DB::table('cuentasporpagar')
+            ->where('mes_pago', $mesPago)
+            ->sum('monto_pagado');
 
         $updated = DB::table('cuentasporpagar')->where('id_cuentas_por_pagar', $id)->first();
 
         return response()->json([
-            'success'        => true,
+            'success' => true,
             'totalPendiente' => number_format($totalPendiente, 2),
-            'totalPagado'    => number_format($totalPagado, 2),
-            'montoPagado'    => number_format($updated->monto_pagado, 2),
+            'totalPagado' => number_format($totalPagado, 2),
+            'montoPagado' => number_format($updated->monto_pagado, 2),
             'saldoPendiente' => number_format($updated->saldo_pendiente, 2),
         ]);
     }
 
-
     public function limpiar()
     {
         session()->forget(['search', 'categoria']);
+
         return redirect()->route('cuentas-pagar.index');
     }
 
@@ -394,7 +395,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         }
 
         if ($request->filled('name')) {
-            $query->where('users.name', 'LIKE', '%' . $request->input('name') . '%');
+            $query->where('users.name', 'LIKE', '%'.$request->input('name').'%');
         }
 
         if ($request->filled('isr')) {
@@ -412,7 +413,6 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         if ($request->filled('saldo_pendiente')) {
             $query->where('cuentasporpagar.saldo_pendiente', $request->input('saldo_pendiente'));
         }
-
 
         if ($request->filled('search') && $request->filled('categoria')) {
             $search = $request->input('search');
@@ -435,13 +435,13 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
     public function graficaAnual($year)
     {
         $cuentas = Cuentas::whereNotNull('mes_pago')
-            ->where('mes_pago', 'like', $year . '-%')
+            ->where('mes_pago', 'like', $year.'-%')
             ->get(['mes_pago', 'estado', 'saldo_neto']);
 
         $resultado = [];
         for ($m = 1; $m <= 12; $m++) {
             $mes = sprintf('%d-%02d', $year, $m);
-            $pagados   = $cuentas->where('mes_pago', $mes)->where('estado', 'pagado')->sum('saldo_neto');
+            $pagados = $cuentas->where('mes_pago', $mes)->where('estado', 'pagado')->sum('saldo_neto');
             $noPagados = $cuentas->where('mes_pago', $mes)->where('estado', '!=', 'pagado')->sum('saldo_neto');
             $resultado[] = ['mes' => $m, 'pagados' => $pagados, 'no_pagados' => $noPagados];
         }
@@ -457,6 +457,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         $texto = strtolower(trim($texto));
         $texto = iconv('UTF-8', 'ASCII//TRANSLIT', $texto);
         $texto = preg_replace('/[^a-z0-9]+/', ' ', $texto);
+
         return trim(preg_replace('/\s+/', ' ', $texto));
     }
 
@@ -469,13 +470,13 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             ->select('cuentasporpagar.estado', 'cuentasporpagar.saldo_neto', 'cuentasporpagar.mes_pago')
             ->where('proyectos.nombre_proyecto', $proyecto)
             ->whereNotNull('cuentasporpagar.mes_pago')
-            ->where('cuentasporpagar.mes_pago', 'like', $year . '-%')
+            ->where('cuentasporpagar.mes_pago', 'like', $year.'-%')
             ->get();
 
         $resultado = [];
         for ($m = 1; $m <= 12; $m++) {
             $mes = sprintf('%d-%02d', $year, $m);
-            $pagados   = $cuentas->where('mes_pago', $mes)->where('estado', 'pagado')->sum('saldo_neto');
+            $pagados = $cuentas->where('mes_pago', $mes)->where('estado', 'pagado')->sum('saldo_neto');
             $noPagados = $cuentas->where('mes_pago', $mes)->where('estado', '!=', 'pagado')->sum('saldo_neto');
             $resultado[] = ['mes' => $m, 'pagados' => $pagados, 'no_pagados' => $noPagados];
         }
