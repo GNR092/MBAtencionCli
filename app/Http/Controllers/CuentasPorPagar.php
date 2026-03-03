@@ -324,7 +324,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             ];
         })->values();
 
-        $proyectos = \App\Models\Proyecto::orderBy('nombre_proyecto')->pluck('nombre_proyecto');
+        $proyectos = \App\Models\Proyecto::orderBy('nombre_proyecto')->select('id_proyecto', 'nombre_proyecto')->get();
 
         $minYear = (int) DB::table('cuentasporpagar')
             ->whereNotNull('mes_pago')
@@ -461,14 +461,14 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         return trim(preg_replace('/\s+/', ' ', $texto));
     }
 
-    public function graficaAnualProyecto($year, $proyecto)
+    public function graficaAnualProyecto($year, $id_proyecto)
     {
         $cuentas = DB::table('cuentasporpagar')
             ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
             ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
             ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
             ->select('cuentasporpagar.estado', 'cuentasporpagar.saldo_neto', 'cuentasporpagar.mes_pago')
-            ->where('proyectos.nombre_proyecto', $proyecto)
+            ->where('proyectos.id_proyecto', $id_proyecto)
             ->whereNotNull('cuentasporpagar.mes_pago')
             ->where('cuentasporpagar.mes_pago', 'like', $year.'-%')
             ->get();

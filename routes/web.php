@@ -1,45 +1,37 @@
 <?php
+
+use App\Http\Controllers\Admin\LogoController;
+use App\Http\Controllers\AdminChatController;
+use App\Http\Controllers\AnuncioController;
 use App\Http\Controllers\AuthController;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
-use App\Http\Controllers\ContractController;
-use App\Http\Middleware\AuthUser;
-use App\Http\Controllers\CfdiValidatorController;
 use App\Http\Controllers\AvisoController;
-use App\Http\Controllers\PasswordCheckController;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Session;
-use App\Http\Controllers\ListController;
-use App\Http\Controllers\GenerateController;
-use App\Http\Controllers\UploadFactura;
+use App\Http\Controllers\CfdiValidatorController;
+use App\Http\Controllers\ContractController;
 use App\Http\Controllers\crudUser;
+use App\Http\Controllers\CuentasPorCobrar;
+use App\Http\Controllers\CuentasPorPagar;
+use App\Http\Controllers\EstadoController;
+use App\Http\Controllers\Factura\UserFactController;
+use App\Http\Controllers\GenerateController;
 use App\Http\Controllers\ImpuestoController;
 use App\Http\Controllers\IncrementoImporteController;
-use App\Http\Controllers\CuentasPorPagar;
-use App\Http\Controllers\CuentasPorCobrar;
-use App\Http\Controllers\UserViewController;
-use App\Http\Controllers\EstadoController;
-use App\Http\Controllers\AdminChatController;
-use App\Http\Controllers\UserChatController;
-use Barryvdh\DomPDF\Facade\Pdf;
-use App\Http\Controllers\Admin\LogoController;
-use App\Http\Controllers\AnuncioController;
-use App\Http\Controllers\RegimenFiscalController;
+use App\Http\Controllers\ListController;
+use App\Http\Controllers\PasswordCheckController;
 use App\Http\Controllers\ProyectoController;
-use App\Http\Controllers\Factura\UserFactController;
-
-
+use App\Http\Controllers\RegimenFiscalController;
+use App\Http\Controllers\UploadFactura;
+use App\Http\Controllers\UserChatController;
+use App\Http\Controllers\UserViewController;
+use App\Http\Middleware\AuthUser;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-
 Route::get('/inicio-de-sesion', [AuthController::class, 'showLoginForm'])->name('login.form');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
-
 
 Route::middleware([AuthUser::class.':usuario'])->group(function () {
     Route::get('/user/dashboard', [UserViewController::class, 'index'])->name('user.dashboard');
@@ -81,7 +73,6 @@ Route::middleware([AuthUser::class.':usuario'])->group(function () {
     Route::post('/chat/messages', [UserChatController::class, 'sendMessage'])->name('chat.sendMessage');
 });
 
-
 Route::middleware([AuthUser::class.':administrador'])->group(function () {
 
     // Logos
@@ -109,7 +100,7 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::get('/cuentas-por-pagar/limpiar', [CuentasPorPagar::class, 'limpiar'])->name('cuentas-pagar.limpiar');
     Route::post('/cuentas-por-pagar/export', [CuentasPorPagar::class, 'export'])->name('cuentas-pagar.export');
     Route::get('/cuentas/grafica-anual/{year}', [CuentasPorPagar::class, 'graficaAnual']);
-    Route::get('/cuentas/grafica-anual-proyecto/{year}/{proyecto}', [CuentasPorPagar::class, 'graficaAnualProyecto']);
+    Route::get('/cuentas/grafica-anual-proyecto/{year}/{id_proyecto}', [CuentasPorPagar::class, 'graficaAnualProyecto']);
 
     // Contratos (administrador)
     Route::post('/subir-archivo', [ContractController::class, 'subir']);
@@ -163,13 +154,11 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::resource('proyectos', ProyectoController::class);
 });
 
-
 Route::middleware([AuthUser::class])->group(function () {
     Route::get('/api/notifications/unread-count', [AvisoController::class, 'unreadCount'])->name('notificaciones.no-leidas');
     Route::get('/api/notifications/list', [AvisoController::class, 'apiNotifications'])->name('notificaciones.api-list');
     Route::post('/notificaciones/{id}/leer', [AvisoController::class, 'markAsRead'])->name('notificaciones.leer');
     Route::delete('/notificaciones/delete/{id}', [AvisoController::class, 'delete'])->name('notificaciones.eliminar');
 });
-
 
 Route::post('/password-check', [PasswordCheckController::class, 'check'])->name('password.check');

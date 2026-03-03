@@ -125,7 +125,7 @@
                     class="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-[#d8c495] bg-[#0d1f30] border-[#d8c495]/30 text-white">
                     <option value="">-- Todos los proyectos --</option>
                     @foreach ($proyectos as $p)
-                    <option value="{{ $p }}">{{ $p }}</option>
+                    <option value="{{ $p->id_proyecto }}">{{ $p->nombre_proyecto }}</option>
                     @endforeach
                 </select>
             </div>
@@ -441,7 +441,7 @@ function _buildChart(canvasId, data, titulo) {
 
 async function cargarGraficaAnual() {
     const year    = document.getElementById('filtroYear').value;
-    const proyecto = document.getElementById('selectProyecto').value;
+    const id_proyecto = document.getElementById('selectProyecto').value;
 
     try {
         const r = await fetch(`/cuentas/grafica-anual/${year}`);
@@ -450,12 +450,13 @@ async function cargarGraficaAnual() {
         _chartAnual = _buildChart('graficaAnual', data);
     } catch(e) { console.error('Error gráfica anual:', e); }
 
-    if (proyecto) {
+    if (id_proyecto) {
         try {
-            const r2 = await fetch(`/cuentas/grafica-anual-proyecto/${year}/${encodeURIComponent(proyecto)}`);
+            const r2 = await fetch(`/cuentas/grafica-anual-proyecto/${year}/${id_proyecto}`);
             const data2 = await r2.json();
             if (_chartProyecto) _chartProyecto.destroy();
-            _chartProyecto = _buildChart('graficaProyecto', data2, proyecto);
+            const proyectoNombre = document.getElementById('selectProyecto').options[document.getElementById('selectProyecto').selectedIndex].text;
+            _chartProyecto = _buildChart('graficaProyecto', data2, proyectoNombre);
         } catch(e) { console.error('Error gráfica proyecto:', e); }
     } else {
         if (_chartProyecto) { _chartProyecto.destroy(); _chartProyecto = null; }
