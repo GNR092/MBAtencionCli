@@ -7,6 +7,7 @@ use App\Models\Contract;
 use App\Models\Cuentas;
 use App\Models\XmlFile;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -270,6 +271,61 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         }
     }
 
+    private function generarCuentasDesdeContratos(): void
+    {
+        $contracts = Contract::whereNotNull('fecha_inicio')
+            ->get();
+
+        foreach ($contracts as $contract) {
+            $fechaStart = $contract->fecha_inicio ?? $contract->fecha_creacion ?? $contract->fecha;
+            $fechaEnd = $contract->fecha_terminacion
+                ? Carbon::parse($contract->fecha_terminacion)->startOfMonth()
+                : Carbon::now()->addMonths(12)->startOfMonth();
+
+            $inicio = Carbon::parse($fechaStart)->startOfMonth();
+            $fin = $fechaEnd;
+
+            $periodo = CarbonPeriod::create($inicio, '1 month', $fin);
+
+            foreach ($periodo as $date) {
+                $mes = $date->format('Y-m');
+
+                $exists = DB::table('cuentasporpagar')
+                    ->where('id_contract', $contract->id)
+                    ->where('mes_pago', $mes)
+                    ->exists();
+
+                if ($exists) {
+                    continue;
+                }
+
+                $importeIncremento = DB::table('incrementos_importe')
+                    ->where('id_contract', $contract->id)
+                    ->whereDate('fecha_inicio', '<=', $mes.'-01')
+                    ->where(function ($q) use ($mes) {
+                        $q->whereNull('fecha_fin')
+                            ->orWhereDate('fecha_fin', '>=', $mes.'-01');
+                    })
+                    ->value('importe_base');
+
+                $importeBase = $importeIncremento ?? $contract->importe_bruto_renta;
+
+                DB::table('cuentasporpagar')->insert([
+                    'id_contract' => $contract->id,
+                    'mes_pago' => $mes,
+                    'mesesdepago' => json_encode(['mes' => $mes]),
+                    'estado' => 'pendiente',
+                    'saldo_neto' => $importeBase,
+                    'xml_file_id' => null,
+                    'mesespagados' => json_encode([]),
+                    'monto_pagado' => 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+    }
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -278,6 +334,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         }
 
         $this->seedDesdeXmlFiles();
+        $this->generarCuentasDesdeContratos();
         $this->recalcularSaldos();
 
         $query = Cuentas::with('contract')
@@ -482,5 +539,17 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         }
 
         return response()->json($resultado);
+    }
+
+    public function mesesConFacturas($year)
+    {
+        $meses = DB::table('cuentasporpagar')
+            ->whereNotNull('mes_pago')
+            ->where('mes_pago', 'like', $year.'-%')
+            ->distinct()
+            ->pluck('mes_pago')
+            ->toArray();
+
+        return response()->json($meses);
     }
 }

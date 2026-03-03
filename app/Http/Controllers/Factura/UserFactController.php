@@ -230,7 +230,7 @@ class UserFactController extends Controller
                     'mes'           => $mes,
                 ]);
 
-                $this->saveImpuestos($xmlFile->id, $factura);
+                $this->saveImpuestos($xmlFile->id, $factura, $user->id);
 
                 // Eliminar el XML temporal solo si el registro en BD fue exitoso
                 Storage::disk('tmp')->delete($tmpFilePath);
@@ -335,19 +335,31 @@ class UserFactController extends Controller
     /**
      * Crea registros de Impuesto para cada traslado de cada concepto.
      * Si el concepto tiene retención de ISR (código 001), se asocia al mismo registro.
+     * Si no existe ISR en el XML, se calcula usando el régimen fiscal del usuario.
      */
-    private function saveImpuestos(int $xmlFileId, array $factura): void
+    private function saveImpuestos(int $xmlFileId, array $factura, int $userId): void
     {
         $regimenFiscal = $factura['emisor_regimen'];
+
+        $tasaRetencion = 0;
+        $regimenData = DB::table('regimen_fiscals')
+            ->where('id_regimen', $regimenFiscal)
+            ->first();
+        if ($regimenData) {
+            $tasaRetencion = floatval($regimenData->tasa_retencion);
+        }
 
         foreach ($factura['conceptos'] as $concepto) {
             $importeBase = $concepto['importe'];
 
             foreach ($concepto['traslados'] as $traslado) {
-                // ISR: código SAT '001' — retencion aplicable a este concepto
                 $isrImporte = collect($concepto['retenciones'])
                     ->where('impuesto', '001')
                     ->sum('importe');
+
+                if ($isrImporte == 0 && $tasaRetencion > 0) {
+                    $isrImporte = $importeBase * $tasaRetencion;
+                }
 
                 Impuesto::create([
                     'xml_file_id'   => $xmlFileId,
@@ -355,6 +367,7 @@ class UserFactController extends Controller
                     'regimenFiscal' => $regimenFiscal,
                     'importeBase'   => $importeBase,
                     'tasaCuota'     => $traslado['tasa'],
+                    'tasaRetencion' => $tasaRetencion,
                     'isr'           => $isrImporte,
                 ]);
             }

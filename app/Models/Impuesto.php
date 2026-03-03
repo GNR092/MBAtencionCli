@@ -28,6 +28,7 @@ class Impuesto extends Model
         'regimenFiscal',
         'importeBase',
         'tasaCuota',
+        'tasaRetencion',
         'isr',
     ];
 

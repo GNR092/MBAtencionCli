@@ -101,6 +101,7 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::post('/cuentas-por-pagar/export', [CuentasPorPagar::class, 'export'])->name('cuentas-pagar.export');
     Route::get('/cuentas/grafica-anual/{year}', [CuentasPorPagar::class, 'graficaAnual']);
     Route::get('/cuentas/grafica-anual-proyecto/{year}/{id_proyecto}', [CuentasPorPagar::class, 'graficaAnualProyecto']);
+    Route::get('/api/cuentas/meses-facturados/{year}', [CuentasPorPagar::class, 'mesesConFacturas']);
 
     // Contratos (administrador)
     Route::post('/subir-archivo', [ContractController::class, 'subir']);

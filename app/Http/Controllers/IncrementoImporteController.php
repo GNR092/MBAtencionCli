@@ -31,7 +31,7 @@ class IncrementoImporteController extends Controller
 
     public function create()
     {
-        $contract = Contract::all();
+        $contract = Contract::with('user')->get();
         return view('incrementos.create', compact('contract'));
     }
 

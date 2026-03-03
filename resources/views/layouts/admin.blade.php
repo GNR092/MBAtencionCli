@@ -211,8 +211,14 @@
             </div>
 
             <div class="flex items-center gap-4">
-                <input type="month" id="start" name="start" value="{{ request('month', date('Y-m')) }}"
-                    class="hidden md:block rounded-md border border-[#d8c495]/40 bg-white/10 px-2 py-1 text-sm font-semibold text-white outline-none">
+                @php
+                    $mesActual = request('month', date('Y-m'));
+                    $anoDisplay = substr($mesActual, 0, 4);
+                @endphp
+                <x-mes-selector 
+                    :mes-actual="$mesActual" 
+                    :ano-inicial="$anoDisplay"
+                />
                 <a class="shrink-0">
                     <img src="/uploads/Logo-Png.svg" alt="Logo" class="h-7 md:h-9">
                 </a>

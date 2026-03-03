@@ -42,8 +42,8 @@
                         <div class="relative">
                             <select name="id_contract" class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg py-4 pl-4 pr-10 text-lg text-white focus:outline-none focus:border-[#d8c495] appearance-none cursor-pointer transition-all">
                                 <option value="">SELECCIONA UN CONTRATO</option>
-                                @foreach($contract as $contract)
-                                    <option value="{{ $contract->id }}">{{ $contract->nombre ?? 'CONTRATO '.$contract->id }}</option>
+                                @foreach($contract as $c)
+                                    <option value="{{ $c->id }}">{{ ($c->user->name ?? 'Sin inversionista') . ' - ' . ($c->nombre ?? 'CONTRATO '.$c->id) }}</option>
                                 @endforeach
                             </select>
                             <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-[#d8c495]/50">
