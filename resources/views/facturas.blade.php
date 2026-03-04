@@ -58,7 +58,7 @@
                             </a>
                         </td>
                         <td>
-                            @if($file->pdf_path)
+                            @if($file->pdf_path || $file->pdf_uploaded)
                             <a href="{{ route('facturas.descargarPdf', $file->id) }}"
                                 class="inline-block bg-white/10 text-[#d8c495] px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-white/20 transition shadow-sm border border-[#d8c495]/30">
                                 Descargar PDF

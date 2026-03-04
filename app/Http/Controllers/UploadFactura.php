@@ -153,11 +153,17 @@ class UploadFactura extends Controller
 
         $pdfPath = $xmlFile->pdf_path;
 
-
-        if (basename($pdfPath) === $pdfPath) {
-            $fullPath = public_path('storage/pdf_files/' . $pdfPath);
-        } else {
-            $fullPath = public_path('storage/' . $pdfPath);
+        // PDFs guardados desde CfdiValidatorController (public disk)
+        if (str_starts_with($pdfPath, 'pdf_files/')) {
+            $fullPath = storage_path('app/public/' . $pdfPath);
+        }
+        // PDFs guardados desde UserFactController (local disk)
+        elseif (str_starts_with($pdfPath, 'facturas/')) {
+            $fullPath = storage_path('app/' . $pdfPath);
+        }
+        // Fallback: solo nombre de archivo
+        else {
+            $fullPath = storage_path('app/public/pdf_files/' . $pdfPath);
         }
 
         if (!file_exists($fullPath)) {

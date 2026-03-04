@@ -2,72 +2,70 @@
 
 namespace App\Http\Controllers;
 
-use Yasumi\Yasumi;
+use App\Models\FileLog;
+use App\Models\Proyecto;
+use App\Models\UserProyecto;
 use App\Models\XmlBatch;
 use App\Models\XmlFile;
-use App\Models\Impuesto;
-use App\Models\FileLog;
-use App\Models\UserProyecto;
-use App\Models\Proyecto;
-use App\Services\XmlValidationService;
 use App\Services\PdfUuidExtractionService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use App\Services\XmlValidationService;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
-use Illuminate\Support\Facades\Auth; // Import Auth facade
-
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Yasumi\Yasumi; // Import Auth facade
 
 class CfdiValidatorController extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
 
     private $xmlValidationService;
+
     private $pdfUuidExtractionService;
+
     private $maxBatchSize = 2;
-    //validar que el usuario tenga el proyecto asignado
+
+    // validar que el usuario tenga el proyecto asignado
     private function getProyectos()
     {
         $user = Auth::user();
 
-
         $usuario = DB::table('users')->where('id', $user->id)->first();
 
-        if (!$usuario || empty($usuario->proyect)) {
+        if (! $usuario || empty($usuario->proyect)) {
             return null;
         }
 
-
         $proyectos = json_decode($usuario->proyect, true);
 
+        if (! is_array($proyectos)) {
 
-        if (!is_array($proyectos)) {
-
-            $proyectos = is_object($proyectos) ? array_values((array)$proyectos) : [$proyectos];
+            $proyectos = is_object($proyectos) ? array_values((array) $proyectos) : [$proyectos];
         }
 
         return $proyectos;
     }
-    //funcion para validar el email
+
+    // funcion para validar el email
     private function getMail()
     {
         $user = Auth::user();
 
-
         $usuario = DB::table('users')->where('id', $user->id)->first();
 
-        if (!$usuario || empty($usuario->email)) {
+        if (! $usuario || empty($usuario->email)) {
             return null;
         } else {
             return $usuario->email;
         }
     }
-    //valida los servicios
+
+    // valida los servicios
     public function __construct(
         XmlValidationService $xmlValidationService,
         PdfUuidExtractionService $pdfUuidExtractionService
@@ -75,6 +73,7 @@ class CfdiValidatorController extends BaseController
         $this->xmlValidationService = $xmlValidationService;
         $this->pdfUuidExtractionService = $pdfUuidExtractionService;
     }
+
     private function getNextQuincenaDeadline(): Carbon
     {
         $today = now();
@@ -87,13 +86,11 @@ class CfdiValidatorController extends BaseController
             $deadline = Carbon::create($today->year, $today->month, $deadlineDay, 23, 59, 59);
         }
 
-
         if ($deadline->isSaturday()) {
             $deadline->addDays(2);
         } elseif ($deadline->isSunday()) {
             $deadline->addDay();
         }
-
 
         $holidays = Yasumi::create('Mexico', $today->year, 'es_ES');
         while ($holidays->isHoliday($deadline)) {
@@ -120,23 +117,23 @@ class CfdiValidatorController extends BaseController
 
         if ($request->expectsJson()) {
             $html = view('User.factura', compact('batch', 'isDeadlinePassed', 'success', 'user'))->render();
+
             return response()->json(['html' => $html]);
         }
 
         return view('User.factura', compact('batch', 'isDeadlinePassed', 'success', 'user', 'proyectos'));
     }
 
-    //Sube y valida archivos XML, Los inválidos no se guardan,Los válidos se guardan en disco y BD.
+    // Sube y valida archivos XML, Los inválidos no se guardan,Los válidos se guardan en disco y BD.
     public function uploadXmlFiles(Request $request)
     {
         try {
             $request->validate([
-                //'xml_files' => 'required|array|max:' . $this->maxBatchSize,
+                // 'xml_files' => 'required|array|max:' . $this->maxBatchSize,
                 'xml_files.*' => 'required|file|mimes:xml|max:10240',
                 'user_email' => 'required|email',
-                'proyect' => 'required|string'
+                'proyect' => 'required|string',
             ]);
-
 
             $sessionId = $request->session()->getId();
             $deadline = $this->getNextQuincenaDeadline();
@@ -156,39 +153,41 @@ class CfdiValidatorController extends BaseController
 
                 $validationResult = $this->xmlValidationService->validateXml($tempPath, $filename);
 
-                //Storage::put('validation_results.txt', json_encode($validationResult, JSON_PRETTY_PRINT));
+                // Storage::put('validation_results.txt', json_encode($validationResult, JSON_PRETTY_PRINT));
 
-                if (!$validationResult['valid']) {
+                if (! $validationResult['valid']) {
                     $flatErrors = collect($validationResult['errors'])->flatten();
                     foreach ($flatErrors as $errorMsg) {
                         $errors[] = "Archivo {$filename}: {$errorMsg}";
                     }
+
                     continue;
                 }
 
                 if (($uuid = $validationResult['uuid'] ?? null) && isset($uuidMapping[$uuid])) {
                     $errors[] = "Archivo {$filename}: UUID duplicado {$validationResult['uuid']}";
+
                     continue;
                 }
-
 
                 $filePath = $file->store('xml_files', 'tmp');
                 $xmlUserData[] = [
                     'select_project' => $proyecto,
-                    'xmlData'      => $validationResult,
-                    'file_path'    => $filePath,
+                    'xmlData' => $validationResult,
+                    'file_path' => $filePath,
                 ];
             }
             session()->put('factura_data', $xmlUserData);
 
             return redirect()->route('user.factura.view', ['index' => 0]);
         } catch (\Exception $e) {
-            Log::error("Error uploading XML files: " . $e->getMessage());
+            Log::error('Error uploading XML files: '.$e->getMessage());
+
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    //Reinicia el lote actual
+    // Reinicia el lote actual
     public function resetBatch(Request $request)
     {
         $sessionId = $request->session()->getId();
@@ -197,12 +196,11 @@ class CfdiValidatorController extends BaseController
 
         if ($batch) {
 
-            $batch->update(['session_id' => 'archived_' . $batch->id]);
+            $batch->update(['session_id' => 'archived_'.$batch->id]);
         }
 
         return redirect()->back()->with('success', 'Lote reiniciado, puedes comenzar otro sin borrar el histórico.');
     }
-
 
     public function xmlFiles()
     {
@@ -218,54 +216,47 @@ class CfdiValidatorController extends BaseController
         try {
             $sessionId = $request->session()->getId();
 
-
             $batch = XmlBatch::where('session_id', $sessionId)->first();
 
-            if (!$batch || $batch->valid_files === 0) {
+            if (! $batch || $batch->valid_files === 0) {
                 return redirect()->back()->withErrors([
-                    'pdf' => 'No existen XML válidos para asociar el PDF'
+                    'pdf' => 'No existen XML válidos para asociar el PDF',
                 ]);
             }
-
 
             $pdfPath = $request->file('pdf_file')->store('pdf_files', 'public');
 
-
             $pdfUuid = $this->pdfUuidExtractionService
-                ->extractUuidFromPdf(storage_path('app/public/' . $pdfPath));
+                ->extractUuidFromPdf(storage_path('app/public/'.$pdfPath));
 
-            if (!$pdfUuid) {
+            if (! $pdfUuid) {
                 return redirect()->back()->withErrors([
-                    'pdf' => 'No se pudo extraer un UUID válido del PDF'
+                    'pdf' => 'No se pudo extraer un UUID válido del PDF',
                 ]);
             }
 
-
-            if (!isset($batch->uuid_mapping[$pdfUuid])) {
+            if (! isset($batch->uuid_mapping[$pdfUuid])) {
                 return redirect()->back()->withErrors([
-                    'pdf' => 'El UUID del PDF no coincide con ningún XML cargado'
+                    'pdf' => 'El UUID del PDF no coincide con ningún XML cargado',
                 ]);
             }
-
 
             $xmlFile = XmlFile::where('batch_id', $batch->id)
                 ->where('uuid', $pdfUuid)
                 ->first();
 
-            if (!$xmlFile) {
+            if (! $xmlFile) {
                 return redirect()->back()->withErrors([
-                    'pdf' => 'No se encontró el XML correspondiente al UUID'
+                    'pdf' => 'No se encontró el XML correspondiente al UUID',
                 ]);
             }
 
-
             $xmlFile->update([
                 'pdf_path' => $pdfPath,
+                'pdf_uploaded' => true,
             ]);
 
-
             $batch->increment('uploaded_pdfs');
-
 
             FileLog::create([
                 'filename' => basename($pdfPath),
@@ -277,9 +268,10 @@ class CfdiValidatorController extends BaseController
 
             return redirect()->back()->with('success', 'PDF asociado correctamente al XML');
         } catch (\Exception $e) {
-            \Log::error("Error uploading PDF file: " . $e->getMessage());
+            \Log::error('Error uploading PDF file: '.$e->getMessage());
+
             return redirect()->back()->withErrors([
-                'pdf' => 'Ocurrió un error inesperado al procesar el archivo PDF.'
+                'pdf' => 'Ocurrió un error inesperado al procesar el archivo PDF.',
             ]);
         }
     }

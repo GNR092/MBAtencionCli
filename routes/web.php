@@ -23,9 +23,18 @@ use App\Http\Controllers\UploadFactura;
 use App\Http\Controllers\UserChatController;
 use App\Http\Controllers\UserViewController;
 use App\Http\Middleware\AuthUser;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
+    if (Auth::check()) {
+        if (Auth::user()->role === 'administrador') {
+            return redirect('/cuentas-por-pagar');
+        }
+
+        return redirect('/user/dashboard');
+    }
+
     return view('welcome');
 });
 
