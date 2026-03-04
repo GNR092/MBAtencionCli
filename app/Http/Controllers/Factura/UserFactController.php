@@ -3,20 +3,109 @@
 namespace App\Http\Controllers\Factura;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\XmlFile;
+use App\Http\Controllers\CuentasPorCobrar;
 use App\Models\Impuesto;
-use Illuminate\Support\Facades\Storage;
 use App\Models\Proyecto;
-use Illuminate\Support\Facades\Log;
+use App\Models\XmlFile;
 use App\Services\DescripcionParser;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
-use App\Http\Controllers\CuentasPorCobrar;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class UserFactController extends Controller
 {
+    public function uploadPdf(Request $request, $index)
+    {
+        $allFacturasData = session()->get('factura_data', []);
+
+        if (empty($allFacturasData) || $index < 0 || $index >= count($allFacturasData)) {
+            return response()->json(['success' => false, 'message' => 'Factura no encontrada.']);
+        }
+
+        $request->validate([
+            'pdf_file' => 'required|file|mimes:pdf|max:20480',
+        ]);
+
+        $currentFacturaData = $allFacturasData[$index];
+        $xmlData = $currentFacturaData['xmlData'];
+        $factura = $this->MapingFacturas($xmlData);
+        $uuid = $factura['uuid'] ?? null;
+
+        if (! $uuid || $uuid === 'N/A') {
+            return response()->json(['success' => false, 'message' => 'No se encontró UUID en el XML.']);
+        }
+
+        try {
+            $pdfFile = $request->file('pdf_file');
+            $originalName = $pdfFile->getClientOriginalName();
+            $extension = $pdfFile->getClientOriginalExtension();
+
+            if (! isset($allFacturasData[$index]['pdf_data'])) {
+                $allFacturasData[$index]['pdf_data'] = [];
+            }
+
+            $tempPdfPath = $pdfFile->store('tmp', 'local');
+
+            $allFacturasData[$index]['pdf_data'] = [
+                'temp_path' => $tempPdfPath,
+                'original_name' => $originalName,
+                'extension' => $extension,
+                'uuid' => $uuid,
+            ];
+
+            session()->put('factura_data', $allFacturasData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'PDF subido correctamente',
+                'filename' => $originalName,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error al subir PDF: '.$e->getMessage());
+
+            return response()->json(['success' => false, 'message' => 'Error al subir el PDF.']);
+        }
+    }
+
+    public function viewPdf($index)
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return redirect('/inicio-de-sesion');
+        }
+
+        $allFacturasData = session()->get('factura_data', []);
+
+        if (empty($allFacturasData) || $index < 0 || $index >= count($allFacturasData)) {
+            abort(404, 'Factura no encontrada.');
+        }
+
+        $currentFacturaData = $allFacturasData[$index];
+
+        if (! isset($currentFacturaData['pdf_data']) || empty($currentFacturaData['pdf_data'])) {
+            abort(404, 'PDF no encontrado.');
+        }
+
+        $pdfData = $currentFacturaData['pdf_data'];
+        $tempPath = $pdfData['temp_path'];
+
+        if (! Storage::disk('local')->exists($tempPath)) {
+            abort(404, 'Archivo PDF no encontrado.');
+        }
+
+        $path = Storage::disk('local')->path($tempPath);
+        $filename = $pdfData['original_name'] ?? 'factura.pdf';
+
+        return response()->file($path, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.$filename.'"',
+        ]);
+    }
+
     public function showInvoice(Request $request, $index = 0)
     {
         $allFacturasData = session()->get('factura_data', []);
@@ -29,12 +118,13 @@ class UserFactController extends Controller
 
         if ($index < 0 || $index >= $totalFacturas) {
             session()->forget('factura_data');
+
             return redirect()->route('facturas.index');
         }
 
         $currentFacturaData = $allFacturasData[$index];
 
-        if (!is_array($currentFacturaData) || !isset($currentFacturaData['xmlData'])) {
+        if (! is_array($currentFacturaData) || ! isset($currentFacturaData['xmlData'])) {
             return redirect()->back()->withErrors(['message' => 'Datos de factura inválidos para el índice actual.']);
         }
 
@@ -54,25 +144,49 @@ class UserFactController extends Controller
         $factura['nombre_proyecto'] = $proyecto->nombre_proyecto ?? 'Proyecto Desconocido';
 
         $AllProyects = Proyecto::all()->toArray();
-        $parser = new DescripcionParser();
+        $parser = new DescripcionParser;
 
         $des = $factura['conceptos'][0]['descripcion'];
-        $parsedProject = $parser->parsearDescripcion($des, $AllProyects);
-        $parsedProjectInfo = $parsedProject['proyecto'] ?? null;
+        $parsedData = $parser->parsearDescripcion($des, $AllProyects);
+        $parsedProjectInfo = $parsedData['proyecto'] ?? null;
         $parsedProjectId = $parsedProjectInfo['id_proyecto'] ?? null;
         $parsedProjectName = $parsedProjectInfo['nombre_proyecto'] ?? 'No detectado';
         $selectedProjectId = $currentFacturaData['select_project'];
         $selectedProjectName = $proyecto->nombre_proyecto ?? 'N/A';
 
+        $departamentos = $parsedData['departamentos'] ?? [];
+        $departamentoText = ! empty($departamentos) ? implode(', ', $departamentos) : null;
+
+        $parsedFecha = $parsedData['fecha'] ?? null;
+        $parsedMes = $parsedFecha['mes_nombre'] ?? null;
+        $parsedAnio = $parsedFecha['anio'] ?? null;
+
+        $folioPredial = $parsedData['folio_predial'] ?? null;
+
         $projectMismatch = false;
-        if ($parsedProjectId === null || (int)$parsedProjectId !== (int)$selectedProjectId) {
+        if ($parsedProjectId === null || (int) $parsedProjectId !== (int) $selectedProjectId) {
             $projectMismatch = true;
         }
+
+        $departamentoMissing = empty($departamentoText);
+        $mesMissing = empty($parsedMes);
+        $anioMissing = empty($parsedAnio);
 
         $uuid = $factura['uuid'] !== 'N/A' ? $factura['uuid'] : null;
         $uuidExists = $uuid && XmlFile::where('uuid', $uuid)->exists();
 
-        return view('User.UserFactView', compact('factura', 'totalFacturas', 'index', 'projectMismatch', 'parsedProjectId', 'parsedProjectName', 'selectedProjectId', 'selectedProjectName', 'userMismatch', 'user', 'uuidExists'));
+        $pdfUploaded = isset($currentFacturaData['pdf_data']) && ! empty($currentFacturaData['pdf_data']);
+        $pdfFilename = $pdfUploaded ? ($currentFacturaData['pdf_data']['original_name'] ?? 'documento.pdf') : null;
+
+        return view('User.UserFactView', compact(
+            'factura', 'totalFacturas', 'index',
+            'projectMismatch', 'parsedProjectId', 'parsedProjectName', 'selectedProjectId', 'selectedProjectName',
+            'userMismatch', 'user', 'uuidExists',
+            'pdfUploaded', 'pdfFilename',
+            'departamentoText', 'parsedMes', 'parsedAnio',
+            'departamentoMissing', 'mesMissing', 'anioMissing',
+            'folioPredial'
+        ));
     }
 
     private function MapingFacturas(array $xmlData): array
@@ -85,64 +199,64 @@ class UserFactController extends Controller
         $timbre = $xmlData['timbreFiscalDigital'] ?? [];
 
         $factura = [
-            'folio'          => $comprobante['Folio'] ?? 'N/A',
-            'fecha'          => $comprobante['Fecha'] ?? 'N/A',
-            'forma_pago'     => $comprobante['FormaPago'] ?? 'N/A',
+            'folio' => $comprobante['Folio'] ?? 'N/A',
+            'fecha' => $comprobante['Fecha'] ?? 'N/A',
+            'forma_pago' => $comprobante['FormaPago'] ?? 'N/A',
             'no_certificado' => $comprobante['NoCertificado'] ?? 'N/A',
-            'subtotal'       => (float) ($comprobante['SubTotal'] ?? 0),
-            'total'          => (float) ($comprobante['Total'] ?? 0),
+            'subtotal' => (float) ($comprobante['SubTotal'] ?? 0),
+            'total' => (float) ($comprobante['Total'] ?? 0),
 
-            'emisor_rfc'     => $emisor['Rfc'] ?? 'N/A',
-            'emisor_nombre'  => $emisor['Nombre'] ?? 'N/A',
+            'emisor_rfc' => $emisor['Rfc'] ?? 'N/A',
+            'emisor_nombre' => $emisor['Nombre'] ?? 'N/A',
             'emisor_regimen' => $emisor['RegimenFiscal'] ?? 'N/A',
 
-            'receptor_rfc'        => $receptor['Rfc'] ?? 'N/A',
-            'receptor_nombre'     => $receptor['Nombre'] ?? 'N/A',
-            'receptor_domicilio'  => $receptor['DomicilioFiscalReceptor'] ?? 'N/A',
-            'receptor_uso_cfdi'   => $receptor['UsoCFDI'] ?? 'N/A',
+            'receptor_rfc' => $receptor['Rfc'] ?? 'N/A',
+            'receptor_nombre' => $receptor['Nombre'] ?? 'N/A',
+            'receptor_domicilio' => $receptor['DomicilioFiscalReceptor'] ?? 'N/A',
+            'receptor_uso_cfdi' => $receptor['UsoCFDI'] ?? 'N/A',
 
-            'conceptos'              => [],
-            'impuestos_traslados'    => [],
-            'impuestos_retenciones'  => [],
-            'total_retenciones'      => (float) ($impuestos['TotalImpuestosRetenidos'] ?? 0),
+            'conceptos' => [],
+            'impuestos_traslados' => [],
+            'impuestos_retenciones' => [],
+            'total_retenciones' => (float) ($impuestos['TotalImpuestosRetenidos'] ?? 0),
 
-            'uuid'               => $timbre['UUID'] ?? 'N/A',
-            'fecha_timbrado'     => $timbre['FechaTimbrado'] ?? 'N/A',
+            'uuid' => $timbre['UUID'] ?? 'N/A',
+            'fecha_timbrado' => $timbre['FechaTimbrado'] ?? 'N/A',
             'no_certificado_sat' => $timbre['NoCertificadoSAT'] ?? 'N/A',
-            'rfc_prov_certif'    => $timbre['RfcProvCertif'] ?? 'N/A',
-            'sello_cfd'          => $xmlData['sello_cfd'] ?? 'N/A',
-            'sello_sat'          => $xmlData['sello_sat'] ?? 'N/A',
+            'rfc_prov_certif' => $timbre['RfcProvCertif'] ?? 'N/A',
+            'sello_cfd' => $xmlData['sello_cfd'] ?? 'N/A',
+            'sello_sat' => $xmlData['sello_sat'] ?? 'N/A',
         ];
 
         // Procesar conceptos con sus impuestos
         foreach ($xmlData['conceptos'] ?? [] as $concept) {
             $concepto = [
                 'clave_prod_serv' => $concept['ClaveProdServ'] ?? 'N/A',
-                'descripcion'     => $concept['Descripcion'] ?? 'N/A',
-                'cantidad'        => (float) ($concept['Cantidad'] ?? 0),
-                'unidad'          => $concept['Unidad'] ?? 'N/A',
-                'valor_unitario'  => (float) ($concept['ValorUnitario'] ?? 0),
-                'importe'         => (float) ($concept['Importe'] ?? 0),
-                'objeto_imp'      => $concept['ObjetoImp'] ?? 'N/A',
-                'traslados'       => [],
-                'retenciones'     => [],
-                'cuenta_predial'  => $concept['CuentaPredial']['Numero'] ?? null,
+                'descripcion' => $concept['Descripcion'] ?? 'N/A',
+                'cantidad' => (float) ($concept['Cantidad'] ?? 0),
+                'unidad' => $concept['Unidad'] ?? 'N/A',
+                'valor_unitario' => (float) ($concept['ValorUnitario'] ?? 0),
+                'importe' => (float) ($concept['Importe'] ?? 0),
+                'objeto_imp' => $concept['ObjetoImp'] ?? 'N/A',
+                'traslados' => [],
+                'retenciones' => [],
+                'cuenta_predial' => $concept['CuentaPredial']['Numero'] ?? null,
             ];
 
             // Traslados del concepto
             foreach ($concept['Impuestos']['Traslados'] ?? [] as $traslado) {
                 $trasladoData = [
-                    'impuesto'    => $traslado['Impuesto'] ?? 'N/A',
+                    'impuesto' => $traslado['Impuesto'] ?? 'N/A',
                     'tipo_factor' => $traslado['TipoFactor'] ?? 'N/A',
-                    'tasa'        => (float) ($traslado['TasaOCuota'] ?? 0),
-                    'importe'     => (float) ($traslado['Importe'] ?? 0),
+                    'tasa' => (float) ($traslado['TasaOCuota'] ?? 0),
+                    'importe' => (float) ($traslado['Importe'] ?? 0),
                 ];
                 $concepto['traslados'][] = $trasladoData;
 
                 $factura['impuestos_traslados'][] = [
-                    'impuesto'    => $trasladoData['impuesto'],
+                    'impuesto' => $trasladoData['impuesto'],
                     'tipo_factor' => $trasladoData['tipo_factor'],
-                    'importe'     => $trasladoData['importe'],
+                    'importe' => $trasladoData['importe'],
                 ];
             }
 
@@ -150,14 +264,14 @@ class UserFactController extends Controller
             foreach ($concept['Impuestos']['Retenciones'] ?? [] as $retencion) {
                 $retencionData = [
                     'impuesto' => $retencion['Impuesto'] ?? 'N/A',
-                    'tasa'     => (float) ($retencion['TasaOCuota'] ?? 0),
-                    'importe'  => (float) ($retencion['Importe'] ?? 0),
+                    'tasa' => (float) ($retencion['TasaOCuota'] ?? 0),
+                    'importe' => (float) ($retencion['Importe'] ?? 0),
                 ];
                 $concepto['retenciones'][] = $retencionData;
 
                 $factura['impuestos_retenciones'][] = [
                     'impuesto' => $retencionData['impuesto'],
-                    'importe'  => $retencionData['importe'],
+                    'importe' => $retencionData['importe'],
                 ];
             }
 
@@ -176,26 +290,57 @@ class UserFactController extends Controller
         }
 
         $currentFacturaData = $allFacturasData[$index];
-        $xmlData            = $currentFacturaData['xmlData'];
-        $tmpFilePath        = $currentFacturaData['file_path'];
-        $selectedProjectId  = $currentFacturaData['select_project'];
+        $xmlData = $currentFacturaData['xmlData'];
+        $tmpFilePath = $currentFacturaData['file_path'];
+        $selectedProjectId = $currentFacturaData['select_project'];
 
-        $user    = Auth::user();
+        if (! isset($currentFacturaData['pdf_data']) || empty($currentFacturaData['pdf_data'])) {
+            return redirect()->back()->withErrors(['message' => 'Debe subir el PDF de la factura antes de confirmar.']);
+        }
+
+        $user = Auth::user();
         $factura = $this->MapingFacturas($xmlData);
 
         // Extraer metadatos de la descripción del primer concepto
-        $parser      = new DescripcionParser();
+        $parser = new DescripcionParser;
         $allProyects = Proyecto::all()->toArray();
-        $des         = $factura['conceptos'][0]['descripcion'] ?? '';
-        $parsedData  = $parser->parsearDescripcion($des, $allProyects);
+        $des = $factura['conceptos'][0]['descripcion'] ?? '';
+        $parsedData = $parser->parsearDescripcion($des, $allProyects);
 
+        $parsedProjectInfo = $parsedData['proyecto'] ?? null;
+        $parsedProjectId = $parsedProjectInfo['id_proyecto'] ?? null;
         $departamento = implode(',', $parsedData['departamentos'] ?? []) ?: null;
-        $mes          = $parsedData['fecha']['mes_nombre'] ?? null;
+        $mes = $parsedData['fecha']['mes_nombre'] ?? null;
+        $anio = $parsedData['fecha']['anio'] ?? null;
+
+        // Validar que los datos de descripción estén presentes
+        $errors = [];
+        if (empty($parsedProjectId) || (int) $parsedProjectId !== (int) $selectedProjectId) {
+            $errors[] = 'No se detectó el proyecto en la descripción o no coincide con el seleccionado. Ejemplo: "Campus University City", "Aldea Borboleta"';
+        }
+        if (empty($departamento)) {
+            $errors[] = 'No se detectó el departamento en la descripción. Ejemplo: "Depto A3" o "Departamento 2203"';
+        }
+        if (empty($mes)) {
+            $errors[] = 'No se detectó el mes en la descripción. Ejemplo: "Enero 2025" o "Septiembre de 2025"';
+        }
+        if (empty($anio)) {
+            $errors[] = 'No se detectó el año en la descripción. Ejemplo: "Enero 2025"';
+        }
+
+        if (! empty($errors)) {
+            return redirect()->back()->withErrors($errors);
+        }
 
         // Ruta organizada en disco privado: facturas/{user_id}/xml/{año}/{mes}/{archivo}
         $carbonFecha = $this->parseFechaFactura($factura['fecha']);
-        $filename    = basename($tmpFilePath);
+        $filename = basename($tmpFilePath);
         $newFilePath = $this->buildXmlStoragePath($user->id, $carbonFecha, $filename);
+
+        $pdfData = $currentFacturaData['pdf_data'];
+        $uuid = $factura['uuid'] !== 'N/A' ? $factura['uuid'] : null;
+        $pdfFilename = $uuid.'.pdf';
+        $pdfNewPath = $this->buildPdfStoragePath($user->id, $carbonFecha, $pdfFilename);
 
         $xmlFile = null;
 
@@ -210,24 +355,36 @@ class UserFactController extends Controller
                 $departamento,
                 $mes,
                 $carbonFecha,
+                $pdfData,
+                $pdfFilename,
+                $pdfNewPath,
+                $uuid,
                 &$xmlFile
             ) {
                 // Mover XML de almacenamiento temporal al almacenamiento privado organizado
                 $contents = Storage::disk('tmp')->get($tmpFilePath);
                 Storage::disk('local')->put($newFilePath, $contents);
 
+                // Mover PDF del almacenamiento temporal al almacenamiento permanente
+                $pdfContents = Storage::disk('local')->get($pdfData['temp_path']);
+                Storage::disk('local')->put($pdfNewPath, $pdfContents);
+                Storage::disk('local')->delete($pdfData['temp_path']);
+
                 $xmlFile = XmlFile::create([
-                    'filename'      => $filename,
-                    'id_user'       => $user->id,
-                    'id_proyecto'   => $selectedProjectId ?: null,
-                    'uuid'          => $factura['uuid'] !== 'N/A' ? $factura['uuid'] : null,
-                    'is_valid'      => true,
-                    'fecha_inicio'  => $carbonFecha?->toDateString(),
-                    'emisor_name'   => $factura['emisor_nombre'],
+                    'filename' => $filename,
+                    'id_user' => $user->id,
+                    'id_proyecto' => $selectedProjectId ?: null,
+                    'uuid' => $uuid,
+                    'is_valid' => true,
+                    'fecha_inicio' => $carbonFecha?->toDateString(),
+                    'emisor_name' => $factura['emisor_nombre'],
                     'receptor_name' => $factura['receptor_nombre'],
-                    'file_path'     => $newFilePath,
-                    'departamento'  => $departamento,
-                    'mes'           => $mes,
+                    'file_path' => $newFilePath,
+                    'pdf_filename' => $pdfFilename,
+                    'pdf_path' => $pdfNewPath,
+                    'pdf_uploaded' => true,
+                    'departamento' => $departamento,
+                    'mes' => $mes,
                 ]);
 
                 $this->saveImpuestos($xmlFile->id, $factura, $user->id);
@@ -236,24 +393,27 @@ class UserFactController extends Controller
                 Storage::disk('tmp')->delete($tmpFilePath);
             });
         } catch (\Exception $e) {
-            Log::error('Error al confirmar factura [index=' . $index . ']: ' . $e->getMessage());
+            Log::error('Error al confirmar factura [index='.$index.']: '.$e->getMessage());
+
             return redirect()->back()->withErrors(['message' => 'Ocurrió un error al guardar la factura. Por favor intenta de nuevo.']);
         }
 
         // Vincular el XML a la cuenta por cobrar correspondiente
         if ($xmlFile) {
-            (new CuentasPorCobrar())->actualizarConXML($xmlFile);
+            (new CuentasPorCobrar)->actualizarConXML($xmlFile);
         }
 
         array_splice($allFacturasData, $index, 1);
         session()->put('factura_data', $allFacturasData);
 
-        if (!empty($allFacturasData)) {
+        if (! empty($allFacturasData)) {
             $nextIndex = ($index < count($allFacturasData)) ? $index : count($allFacturasData) - 1;
+
             return redirect()->route('user.factura.view', ['index' => $nextIndex]);
         }
 
         session()->forget('factura_data');
+
         return view('User.FacturaSuccess');
     }
 
@@ -274,12 +434,14 @@ class UserFactController extends Controller
         array_splice($allFacturasData, $index, 1);
         session()->put('factura_data', $allFacturasData);
 
-        if (!empty($allFacturasData)) {
+        if (! empty($allFacturasData)) {
             $nextIndex = ($index < count($allFacturasData)) ? $index : count($allFacturasData) - 1;
+
             return redirect()->route('user.factura.view', ['index' => $nextIndex]);
         }
 
         session()->forget('factura_data');
+
         return view('User.FacturaSuccess');
     }
 
@@ -295,6 +457,7 @@ class UserFactController extends Controller
         }
 
         session()->forget('factura_data');
+
         return redirect()->route('user.facturacion');
     }
 
@@ -314,10 +477,18 @@ class UserFactController extends Controller
      */
     private function buildXmlStoragePath(int $userId, ?Carbon $fecha, string $filename): string
     {
-        $year  = $fecha?->format('Y') ?? now()->format('Y');
+        $year = $fecha?->format('Y') ?? now()->format('Y');
         $month = $fecha?->format('m') ?? now()->format('m');
 
         return "facturas/{$userId}/xml/{$year}/{$month}/{$filename}";
+    }
+
+    private function buildPdfStoragePath(int $userId, ?Carbon $fecha, string $filename): string
+    {
+        $year = $fecha?->format('Y') ?? now()->format('Y');
+        $month = $fecha?->format('m') ?? now()->format('m');
+
+        return "facturas/{$userId}/pdf/{$year}/{$month}/{$filename}";
     }
 
     /**
@@ -362,13 +533,13 @@ class UserFactController extends Controller
                 }
 
                 Impuesto::create([
-                    'xml_file_id'   => $xmlFileId,
-                    'tipoFactor'    => $traslado['tipo_factor'],
+                    'xml_file_id' => $xmlFileId,
+                    'tipoFactor' => $traslado['tipo_factor'],
                     'regimenFiscal' => $regimenFiscal,
-                    'importeBase'   => $importeBase,
-                    'tasaCuota'     => $traslado['tasa'],
+                    'importeBase' => $importeBase,
+                    'tasaCuota' => $traslado['tasa'],
                     'tasaRetencion' => $tasaRetencion,
-                    'isr'           => $isrImporte,
+                    'isr' => $isrImporte,
                 ]);
             }
         }

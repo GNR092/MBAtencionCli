@@ -44,6 +44,8 @@ Route::middleware([AuthUser::class.':usuario'])->group(function () {
     Route::post('/validar-xml', [CfdiValidatorController::class, 'store'])->name('facturacion.validar');
     Route::get('/user-factura/reset', [UserFactController::class, 'resetFactura'])->name('user.factura.reset');
     Route::get('/user-factura/{index?}', [UserFactController::class, 'showInvoice'])->name('user.factura.view');
+    Route::get('/user-factura/{index}/view-pdf', [UserFactController::class, 'viewPdf'])->name('user.factura.view-pdf');
+    Route::post('/user-factura/{index}/upload-pdf', [UserFactController::class, 'uploadPdf'])->name('user.factura.upload-pdf');
     Route::post('/user-factura/{index}/confirm', [UserFactController::class, 'confirmFactura'])->name('user.factura.confirm');
     Route::delete('/user-factura/{index}/delete', [UserFactController::class, 'deleteFactura'])->name('user.factura.delete');
 

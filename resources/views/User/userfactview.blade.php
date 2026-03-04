@@ -23,8 +23,7 @@
         <p class="text-sm">Proyecto seleccionado: <span
                 class="font-bold uppercase tracking-widest text-dorado-200">{{ $selectedProjectName ?? 'N/A' }}</span>
         </p>
-        <p class="text-xs mt-2 text-white/60 italic">Por favor, elimine esta factura o regrese para seleccionar el
-            proyecto correcto si la descripción es diferente.</p>
+        <p class="text-xs mt-2 text-white/60 italic">Por favor, elimine esta factura y solicite una factura con el formato de descripción correcto.</p>
     </div>
     @endif
 
@@ -46,6 +45,96 @@
             Elimine esta factura para evitar duplicados.</p>
     </div>
     @endif
+
+    {{-- Datos detectados en la descripción --}}
+    <div class="bg-carbon-900 border border-white/10 rounded-xl p-6 space-y-4">
+        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <h2 class="text-lg font-semibold text-dorado-200 tracking-wide uppercase">
+                Datos de Descripción
+            </h2>
+            <button type="button" onclick="toggleDatosDescripcion()" class="flex items-center space-x-2 text-white/60 hover:text-white transition">
+                <span class="text-sm" id="datos-descripcion-label">Mostrar</span>
+                <svg id="datos-descripcion-icon" class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <div id="datos-descripcion-content" class="hidden space-y-4">
+            <p class="text-white/60 text-sm">Datos detectados automáticamente de la descripción del concepto. Verifique que sean correctos.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {{-- Proyecto --}}
+                <div class="bg-white/5 rounded-lg p-4 {{ $projectMismatch ? 'border border-red-500' : '' }}">
+                    <span class="block text-white/40 uppercase text-xs tracking-wider">Proyecto</span>
+                    @if($projectMismatch)
+                    <span class="text-red-400 font-medium text-xs">{{ $parsedProjectName }}</span>
+                    @else
+                    <span class="text-green-400 font-semibold text-sm">{{ $parsedProjectName }}</span>
+                    @endif
+                </div>
+
+            {{-- Departamento --}}
+            <div class="bg-white/5 rounded-lg p-4 {{ $departamentoMissing ? 'border border-red-500' : '' }}">
+                <span class="block text-white/40 uppercase text-xs tracking-wider">Departamento</span>
+                @if($departamentoMissing)
+                <span class="text-red-400 font-medium">No detectado</span>
+                @else
+                <span class="text-green-400 font-semibold">{{ $departamentoText }}</span>
+                @endif
+            </div>
+
+            {{-- Mes --}}
+            <div class="bg-white/5 rounded-lg p-4 {{ $mesMissing ? 'border border-red-500' : '' }}">
+                <span class="block text-white/40 uppercase text-xs tracking-wider">Mes</span>
+                @if($mesMissing)
+                <span class="text-red-400 font-medium">No detectado</span>
+                @else
+                <span class="text-green-400 font-semibold">{{ $parsedMes }}</span>
+                @endif
+            </div>
+
+            {{-- Año --}}
+            <div class="bg-white/5 rounded-lg p-4 {{ $anioMissing ? 'border border-red-500' : '' }}">
+                <span class="block text-white/40 uppercase text-xs tracking-wider">Año</span>
+                @if($anioMissing)
+                <span class="text-red-400 font-medium">No detectado</span>
+                @else
+                <span class="text-green-400 font-semibold">{{ $parsedAnio }}</span>
+                @endif
+            </div>
+        </div>
+
+        {{-- Cuenta Predial (Opcional) --}}
+        @if($folioPredial)
+        <div class="mt-4 bg-white/5 rounded-lg p-4">
+            <span class="block text-white/40 uppercase text-xs tracking-wider">Cuenta Predial</span>
+            <span class="text-blue-400 font-semibold">{{ $folioPredial }}</span>
+        </div>
+        @endif
+
+        @if($projectMismatch || $departamentoMissing || $mesMissing || $anioMissing)
+        <div class="bg-red-800/20 border border-red-700 rounded-lg p-4 text-red-200">
+            <p class="font-bold">Faltan datos obligatorios en la descripción:</p>
+            <ul class="text-sm mt-2 list-disc list-inside">
+                @if($projectMismatch)
+                <li>Proyecto: No coincide o no se detectó. Ejemplo: "Campus University City", "Aldea Borboleta"</li>
+                @endif
+                @if($departamentoMissing)
+                <li>Departamento: Ejemplo "Depto A3" o "Departamento 2203"</li>
+                @endif
+                @if($mesMissing)
+                <li>Mes: Ejemplo "Enero 2025" o "Septiembre de 2025"</li>
+                @endif
+                @if($anioMissing)
+                <li>Año: Ejemplo "Enero 2025"</li>
+                @endif
+            </ul>
+            <p class="text-xs mt-2 text-white/60 italic">Por favor, elimine esta factura y solicite una factura con el formato de descripción correcto.</p>
+        </div>
+        @endif
+        </div>
+    </div>
 
     {{-- Navegación y Confirmación/Eliminación --}}
     <div class="flex items-center justify-between mt-4">
@@ -316,6 +405,195 @@
         </div>
     </div>
 
+    {{-- Subir PDF de Factura --}}
+    <div class="bg-carbon-900 border border-white/10 rounded-xl p-6 space-y-4">
+        <h2 class="text-lg font-semibold text-dorado-200  tracking-wide uppercase border-b border-white/10 pb-3">
+            PDF de la Factura
+        </h2>
+        
+        <div class="bg-blue-900/20 border border-blue-700 rounded-lg p-4 text-blue-200">
+            <p class="text-sm">
+                <strong>Por favor suba el PDF correspondiente a la factura XML</strong> y verifique que los datos son correctos.
+            </p>
+        </div>
+
+        <div id="pdf-upload-section">
+            @if($pdfUploaded)
+            <div class="bg-green-900/20 border border-green-700 rounded-lg p-4 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <p class="text-green-200 font-medium">PDF subido correctamente</p>
+                            <p class="text-green-300/60 text-sm">{{ $pdfFilename }}</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="document.getElementById('pdf-file-input').click()" class="text-sm text-green-300 hover:text-green-200 underline">
+                        Cambiar PDF
+                    </button>
+                </div>
+                
+                <div class="flex space-x-3 pt-2">
+                    <a href="{{ route('user.factura.view-pdf', ['index' => $index]) }}" 
+                       target="_blank"
+                       class="inline-flex items-center px-4 py-2 bg-dorado-200 text-carbon-900 text-sm font-medium rounded-lg hover:bg-[#c2ae84] transition">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                        Visualizar PDF
+                    </a>
+                </div>
+            </div>
+            @else
+            <div class="border-2 border-dashed border-white/20 rounded-lg p-8 text-center hover:border-dorado-200/50 transition" 
+                 id="pdf-drop-zone"
+                 onclick="document.getElementById('pdf-file-input').click()">
+                <svg class="mx-auto h-12 w-12 text-white/40" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <p class="mt-2 text-white/60 text-sm">Haga clic para seleccionar el archivo PDF</p>
+                <p class="text-white/40 text-xs mt-1">Máximo 20MB</p>
+            </div>
+            @endif
+
+            <input type="file" id="pdf-file-input" accept="application/pdf" class="hidden" onchange="uploadPdf(this)">
+            
+            <div id="pdf-upload-loading" class="hidden mt-4 text-center">
+                <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-dorado-200"></div>
+                <p class="text-white/60 text-sm mt-2">Subiendo PDF...</p>
+            </div>
+
+            <div id="pdf-upload-error" class="hidden mt-4 bg-red-900/20 border border-red-700 rounded-lg p-3 text-red-200 text-sm"></div>
+        </div>
+    </div>
+
 </div>
+
+{{-- Modal de Confirmación --}}
+<div id="confirm-modal" class="fixed inset-0 bg-black/70 hidden z-50 flex items-center justify-center">
+    <div class="bg-carbon-900 border border-white/10 rounded-xl p-6 max-w-md mx-4">
+        <h3 class="text-lg font-semibold text-dorado-200 mb-4">Confirmar Factura</h3>
+        <p class="text-white/80 mb-6">
+            ¿El PDF y los datos de la factura son correctos?<br>
+            <span class="text-white/60 text-sm">Confirme que sí, si no vuelva a subir el PDF.</span>
+        </p>
+        <div class="flex justify-end space-x-3">
+            <button type="button" onclick="closeConfirmModal()" class="px-4 py-2 text-white/60 hover:text-white transition">
+                Cancelar
+            </button>
+            <button type="button" onclick="submitConfirmForm()" class="bg-dorado-200 text-carbon-900 font-bold py-2 px-6 rounded-lg hover:bg-[#c2ae84] transition">
+                Sí, confirmar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let confirmForm = null;
+
+function uploadPdf(input) {
+    if (!input.files || !input.files[0]) return;
+
+    const file = input.files[0];
+    if (file.type !== 'application/pdf') {
+        showPdfError('Por favor seleccione un archivo PDF válido.');
+        return;
+    }
+
+    if (file.size > 20 * 1024 * 1024) {
+        showPdfError('El archivo excede el límite de 20MB.');
+        return;
+    }
+
+    document.getElementById('pdf-upload-loading').classList.remove('hidden');
+    document.getElementById('pdf-upload-error').classList.add('hidden');
+
+    const formData = new FormData();
+    formData.append('pdf_file', file);
+
+    fetch('{{ route("user.factura.upload-pdf", ["index" => $index]) }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('pdf-upload-loading').classList.add('hidden');
+        if (data.success) {
+            location.reload();
+        } else {
+            showPdfError(data.message || 'Error al subir el PDF.');
+        }
+    })
+    .catch(error => {
+        document.getElementById('pdf-upload-loading').classList.add('hidden');
+        showPdfError('Error de conexión. Intente de nuevo.');
+    });
+}
+
+function showPdfError(message) {
+    const errorDiv = document.getElementById('pdf-upload-error');
+    errorDiv.textContent = message;
+    errorDiv.classList.remove('hidden');
+}
+
+function showConfirmModal(event, form) {
+    event.preventDefault();
+    confirmForm = form;
+    document.getElementById('confirm-modal').classList.remove('hidden');
+}
+
+function closeConfirmModal() {
+    document.getElementById('confirm-modal').classList.add('hidden');
+    confirmForm = null;
+}
+
+function submitConfirmForm() {
+    if (confirmForm) {
+        confirmForm.submit();
+    }
+}
+
+function toggleDatosDescripcion() {
+    const content = document.getElementById('datos-descripcion-content');
+    const icon = document.getElementById('datos-descripcion-icon');
+    const label = document.getElementById('datos-descripcion-label');
+    
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+        label.textContent = 'Ocultar';
+    } else {
+        content.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+        label.textContent = 'Mostrar';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmButton = document.querySelector('form[action*="confirm"] button[type="submit"]');
+    if (confirmButton) {
+        const form = confirmButton.closest('form');
+        confirmButton.addEventListener('click', function(e) {
+            @if(!$pdfUploaded)
+            e.preventDefault();
+            alert('Debe subir el PDF de la factura antes de confirmar.');
+            return false;
+            @elseif($projectMismatch || $departamentoMissing || $mesMissing || $anioMissing)
+            e.preventDefault();
+            alert('Faltan datos obligatorios en la descripción (proyecto, departamento, mes o año). Por favor elimine esta factura y solicite una con el formato de descripción correcto.');
+            return false;
+            @else
+            showConfirmModal(e, form);
+            @endif
+        });
+    }
+});
+</script>
 
 @endsection
