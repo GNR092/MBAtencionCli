@@ -98,6 +98,13 @@
         }
     }
 
+    /* Links activos del sidebar */
+    .sidebar-link.active {
+        background: rgba(255, 255, 255, 0.1);
+        color: #d8c495 !important;
+        border-left: 2px solid #d8c495;
+    }
+
     /* Tablas */
     .table-container {
         width: 100%;
@@ -237,12 +244,12 @@
                             </button>
                             <div class="accordion-content hidden space-y-1 mt-1 bg-black/20 rounded-lg">
                                 <a href="/cuentas-por-pagar"
-                                    class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Cuentas
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Cuentas
                                     por pagar</a>
                                 <a href="/facturas"
-                                    class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Facturas</a>
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Facturas</a>
                                 <a href="/impuestos"
-                                    class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Impuestos</a>
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Impuestos</a>
                             </div>
                         </div>
 
@@ -255,21 +262,21 @@
                             </button>
                             <div class="accordion-content hidden space-y-1 mt-1 bg-black/20 rounded-lg">
                                 <a href="/lista-de-inversionistas"
-                                    class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Lista
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Lista
                                     de inversionistas</a>
                                 <a href="/subir-archivo"
-                                    class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Administración
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Administración
                                     de contratos</a>
                                 <a href="/incrementos"
-                                    class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Incrementos
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Incrementos
                                     de Importe</a>
 
                                 {{-- NUEVOS BOTONES (Ajustados al diseño exacto de la captura) --}}
                                 <a href="{{ route('regimen-fiscal.index') }}"
-                                    class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Gestión
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Gestión
                                     de régimen fiscal</a>
                                 <a href="{{ route('proyectos.index') }}"
-                                    class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Altas
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Altas
                                     de proyectos</a>
                             </div>
                         </div>
@@ -282,21 +289,21 @@
                             </button>
                             <div class="accordion-content hidden space-y-1 mt-1 bg-black/20 rounded-lg">
                                 <a href="/registro_user"
-                                    class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Registro
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Registro
                                     de Usuarios</a>
                                 <a href="/admi_user"
-                                    class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Administrador
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Administrador
                                     de Usuarios</a>
                                 <a href="/enviar-avisos"
-                                    class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Avisos</a>
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Avisos</a>
                                 <a href="{{ route('admin.users.chat-directory') }}"
-                                    class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Directorio
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Directorio
                                     (Chat)</a>
                                 <a href="{{ route('admin.logos.index') }}"
-                                    class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Gestión
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Gestión
                                     Logos</a>
                                 <a href="{{ route('admin.anuncios.index') }}"
-                                    class="block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Gestión
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Gestión
                                     Anuncios</a>
                             </div>
                         </div>
@@ -332,6 +339,12 @@
         const sidebarToggle = document.getElementById('sidebar-toggle');
         const mainContent = document.getElementById('main-content');
 
+        // Restaurar estado del sidebar desde localStorage
+        const savedState = localStorage.getItem('sidebar_state');
+        if (savedState === 'collapsed' && window.innerWidth >= 1024) {
+            sidebar.classList.add('sidebar-collapsed');
+        }
+
         if (sidebarToggle) {
             sidebarToggle.addEventListener('click', function() {
                 if (window.innerWidth < 1024) {
@@ -339,6 +352,9 @@
                     sidebarOverlay.classList.toggle('active');
                 } else {
                     sidebar.classList.toggle('sidebar-collapsed');
+                    // Guardar estado en localStorage
+                    const isCollapsed = sidebar.classList.contains('sidebar-collapsed');
+                    localStorage.setItem('sidebar_state', isCollapsed ? 'collapsed' : 'expanded');
                 }
             });
         }
@@ -349,6 +365,40 @@
                 sidebarOverlay.classList.remove('active');
             });
         }
+
+        // Resaltar opción activa del menú
+        const currentPath = window.location.pathname;
+        const sidebarLinks = document.querySelectorAll('.sidebar-link');
+        
+        sidebarLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            if (href) {
+                // Normalizar paths para comparación
+                const normalizedHref = href.replace(/^\//, '').replace(/\/$/, '');
+                const normalizedCurrent = currentPath.replace(/^\//, '').replace(/\/$/, '');
+                
+                const isMatch = normalizedCurrent.startsWith(normalizedHref) || 
+                                normalizedHref.startsWith(normalizedCurrent);
+                
+                if (isMatch) {
+                    link.classList.add('active');
+                    // Abrir el dropdown padre si está cerrado
+                    const dropdownParent = link.closest('.dropdown');
+                    if (dropdownParent) {
+                        const accordionContent = dropdownParent.querySelector('.accordion-content');
+                        if (accordionContent && accordionContent.classList.contains('hidden')) {
+                            accordionContent.classList.remove('hidden');
+                        }
+                        dropdownParent.classList.add('active');
+                        const toggle = dropdownParent.querySelector('.dropdown-toggle');
+                        if (toggle) {
+                            const arrow = toggle.querySelector('.arrow');
+                            if (arrow) arrow.style.transform = 'rotate(180deg)';
+                        }
+                    }
+                }
+            }
+        });
 
 
         const startInput = document.getElementById('start');

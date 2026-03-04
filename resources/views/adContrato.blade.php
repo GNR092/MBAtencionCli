@@ -1,167 +1,183 @@
 @extends('layouts.admin')
 
-
 @section('content')
 <div class="w-full p-4 md:p-6 animate-fadeInUp">
-    <div class="mb-4">
-        <a href="{{ route('admin.contratos.index') }}"
-            class="inline-flex items-center gap-2 text-sm text-[#d8c495] hover:text-white transition-colors">
-            ← Volver a contratos
-        </a>
-    </div>
-    <h1 class="text-center text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase mb-10">CONTRATOS</h1>
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-8">
+            <a href="{{ route('admin.contratos.index') }}"
+                class="inline-flex items-center gap-2 text-sm text-[#d8c495] hover:text-white transition-colors mb-4">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Volver a contratos
+            </a>
+            <div class="flex items-baseline gap-4">
+                <span class="text-dorado-400 text-sm font-serif italic">|</span>
+                <h1 class="text-white text-5xl md:text-7xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                    Editar Contrato
+                </h1>
+            </div>
+        </header>
 
-        <form action="/subir-archivo" method="POST" enctype="multipart/form-data"
-            class="bg-[#2f2f2f] p-6 rounded-2xl shadow-lg w-full">
-        @csrf
+        <div class="bg-[#112134]/60 backdrop-blur-md rounded-2xl border border-[#d8c495]/20 shadow-2xl overflow-hidden">
+            <div class="px-8 py-6 border-b border-[#d8c495]/20">
+                <h2 class="text-[#d8c495] text-lg font-bold uppercase tracking-widest">
+                    Información del Contrato
+                </h2>
+                <p class="text-[10px] text-[#d8c495]/50 uppercase tracking-[0.3em] mt-1">
+                    Modifica los datos del contrato
+                </p>
+            </div>
 
-        <!-- Título -->
-        <h2 class="text-white text-2xl font-semibold mb-4">📄Subir contrato</h2>
+            <form action="/subir-archivo/{{ $contract->id }}/actualizar" method="POST" enctype="multipart/form-data" class="p-8">
+                @csrf
+                @method('PUT')
 
-        <!-- Input archivo -->
-        <div class="mb-6">
-            <input type="file" name="archivo" multiple required accept=".pdf"
-                class="w-full text-sm text-gray-900 bg-gray-200 border border-gray-300 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400">
-        </div>
+                <!-- Usuario -->
+                <div class="mb-6">
+                    <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                        Inversionista
+                    </label>
+                    <div class="bg-white/5 border border-[#d8c495]/20 rounded-lg px-4 py-3 text-white">
+                        {{ $contract->user->name ?? 'Sin asignar' }}
+                    </div>
+                </div>
 
-        <div class="mb-6">
-            <!-- Select solo para admin -->
-            @if($admin->role === 'administrador')
-            <label for="myInput" class="text-white">Asignar a usuario:</label>
+                <!-- Proyecto -->
+                <div class="mb-6">
+                    <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                        Proyecto
+                    </label>
+                    <div class="bg-white/5 border border-[#d8c495]/20 rounded-lg px-4 py-3 text-white">
+                        {{ $contract->userProyecto?->proyecto?->nombre_proyecto ?? 'Sin proyecto' }}
+                    </div>
+                </div>
 
-            <!-- Input de búsqueda -->
-            <input type="text" id="myInput" placeholder="Buscar usuario..."
-                class="bg-white  text-black rounded-lg px-4 py-2 w-full">
+                <!-- Fechas (solo lectura) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                            Fecha de Inicio
+                        </label>
+                        <div class="relative">
+                            <input type="text" 
+                                value="{{ \Carbon\Carbon::parse($contract->fecha_inicio)->format('d/m/Y') }}"
+                                disabled
+                                class="w-full bg-white/5 border border-[#d8c495]/20 rounded-lg px-4 py-3 text-white/70 cursor-not-allowed">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#d8c495]/50">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                            Fecha de Terminación
+                        </label>
+                        <div class="relative">
+                            <input type="text" 
+                                value="{{ $contract->fecha_terminacion ? \Carbon\Carbon::parse($contract->fecha_terminacion)->format('d/m/Y') : 'No definida' }}"
+                                disabled
+                                class="w-full bg-white/5 border border-[#d8c495]/20 rounded-lg px-4 py-3 text-white/70 cursor-not-allowed">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#d8c495]/50">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- Lista de usuarios -->
-            <ul id="myUL" class="absolute w-64 bg-white rounded-lg mt-1 shadow-md max-h-60 overflow-y-auto hidden z-50">
-                @foreach ($users as $u)
-                <li>
-                    <a href="#" onclick="selectUser('{{ $u->id }}', '{{ $u->name }}')"
-                        class="block px-4 py-2 hover:bg-gray-200 text-gray-800">
-                        {{ $u->name }}
+                <!-- Importe Bruto -->
+                <div class="mb-8">
+                    <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                        Importe Bruto de Renta *
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-[#d8c495]/50 font-bold">$</span>
+                        <input type="text" name="importe_bruto_renta" id="importe_bruto_renta" 
+                            placeholder="0.00"
+                            value="{{ number_format($contract->importe_bruto_renta, 2) }}"
+                            class="w-full bg-white/5 border border-[#d8c495]/30 rounded-lg pl-10 pr-4 py-3 text-xl text-white focus:outline-none focus:border-[#d8c495] focus:ring-1 focus:ring-[#d8c495]/30 transition-all"
+                            required>
+                    </div>
+                    <p class="text-[10px] text-white/40 mt-2">Ejemplo: $1,500,000.00</p>
+                </div>
+
+                <!-- Estado del contrato -->
+                <div class="mb-8">
+                    <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                        Estado del Contrato
+                    </label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" id="activo" name="activo" value="1"
+                                {{ $contract->estado === 'activo' ? 'checked' : '' }}
+                                class="w-5 h-5 rounded border-[#d8c495]/30 bg-white/10 text-[#d8c495] focus:ring-[#d8c495] focus:ring-offset-0">
+                            <span class="text-white/80">Activo</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" id="inactivo" name="inactivo" value="1"
+                                {{ $contract->estado === 'inactivo' ? 'checked' : '' }}
+                                class="w-5 h-5 rounded border-[#d8c495]/30 bg-white/10 text-[#d8c495] focus:ring-[#d8c495] focus:ring-offset-0">
+                            <span class="text-white/80">Inactivo</span>
+                        </label>
+                    </div>
+                    <div id="estado-error" class="hidden bg-red-500/20 border border-red-400/30 text-red-300 text-sm px-4 py-3 rounded-lg mt-3"></div>
+                </div>
+
+                <!-- Archivo -->
+                <div class="mb-8">
+                    <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                        Documento del Contrato (PDF)
+                    </label>
+                    <div class="border-2 border-dashed border-[#d8c495]/30 rounded-lg p-6 text-center hover:border-[#d8c495]/50 transition-colors">
+                        <input type="file" name="archivo" accept=".pdf" 
+                            class="hidden" id="archivoInput"
+                            onchange="document.getElementById('archivoLabel').textContent = this.files[0]?.name || 'Seleccionar archivo'">
+                        <label for="archivoInput" class="cursor-pointer">
+                            <svg class="w-10 h-10 mx-auto text-[#d8c495]/50 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span id="archivoLabel" class="text-white/70">{{ $contract->nombre ?? 'Seleccionar archivo' }}</span>
+                            <p class="text-[10px] text-white/40 mt-1">PDF máximo 2MB</p>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Botones -->
+                <div class="flex gap-4 pt-4">
+                    <button type="submit"
+                        class="bg-[#d8c495] hover:bg-[#b8a374] text-[#112134] text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg transition-all flex-1">
+                        Guardar Cambios
+                    </button>
+                    <a href="{{ route('admin.contratos.index') }}"
+                        class="border border-[#d8c495]/30 text-[#d8c495]/60 text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:border-[#d8c495] hover:text-[#d8c495] transition-all text-center">
+                        Cancelar
                     </a>
-                </li>
-                @endforeach
-            </ul>
-
-            <!-- Input oculto para guardar el id del usuario -->
-            <input type="hidden" name="user_id" id="selectedUserId">
-            @endif
-
-            <div>
-                <label for="proyect" class="text-white">Selecciona proyecto:</label>
-                <select name="proyect" id="proyect"
-                    class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200 text-black"
-                    required>
-                    <option value="" disabled selected>Selecciona proyecto</option>
-                    @if(isset($proyectos))
-                        @foreach($proyectos as $proyecto)
-                        <option value="{{ $proyecto->id_proyecto }}">{{ $proyecto->nombre_proyecto }}</option>
-                        @endforeach
-                    @endif
-                </select>
-            </div>
-
-
-            <!--importe-->
-            <div class="mb-6 mt-2">
-                <label class="text-white">
-                    Importe Bruto *
-                </label>
-                <input type="text" name="importe_bruto_renta" id="importe_bruto_renta" placeholder="$0.00"
-                    class="p-1 mt-1 block w-full border text-black border-gray-300 rounded-md shadow-sm bg-gray-200"
-                    value="{{ old('importe_bruto_renta') }}" required onblur="formatearImporte(this)">
-                <small class="text-white">Ejemplo: $1,500,000.50</small>
-            </div>
-            <!-- fecha de inicio -->
-            <div class="mb-6 mt-2">
-                <label class="text-white">
-                    Fecha de inicio*
-                </label>
-                <input type="date" name="fecha_inicio" id="fecha_inicio" placeholder="dd/mm/aaaa"
-                    class="p-1 mt-1 block w-full border text-black border-gray-300 rounded-md shadow-sm bg-gray-200"
-                    value="{{ old('fecha_inicio') }}" required>
-            </div>
-            <!--fecha de terminacion -->
-            <div class="mb-6 mt-2">
-                <label class="text-white">
-                    Fecha de terminacion*
-                </label>
-                <input type="date" name="fecha_terminacion" id="fecha_terminacion" placeholder="dd/mm/aaaa"
-                    class="p-1 mt-1 block w-full border text-black border-gray-300 rounded-md shadow-sm bg-gray-200"
-                    value="{{ old('fecha_terminacion') }}" required>
-            </div>
-            <!-- Estado del contrato -->
-            <h3 class="text-white text-xl font-semibold mb-2 mt-6">Estado del contrato</h3>
-            <div class="space-y-2 mb-4">
-                <label class="flex items-center space-x-2 text-white">
-                    <input type="checkbox" id="activo" name="activo" value="1"
-                        class="form-checkbox text-green-500 rounded">
-                    <span>Activo</span>
-                </label>
-
-                <label class="flex items-center space-x-2 text-white">
-                    <input type="checkbox" id="inactivo" name="inactivo" value="1"
-                        class="form-checkbox text-red-500 rounded">
-                    <span>Inactivo</span>
-                </label>
-            </div>
-
-            <div id="estado-error" class="hidden bg-red-500 text-white px-4 py-2 rounded-md mt-2"></div>
-
-            <!-- Botón con ping -->
-            <div class="relative inline-flex items-center mb-6">
-                <!-- Ping animado -->
-                <span class="absolute -top-1 -right-1 inline-flex h-3 w-3">
-                    <span
-                        class="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#fec127] opacity-75"></span>
-                    <span class="relative inline-flex h-3 w-3 rounded-full bg-[#ffd773]"></span>
-                </span>
-
-                <!-- Botón -->
-                <button type="submit"
-                    class="bg-dorado-400 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition duration-300 ease-in-out hover:scale-105 hover:bg-[#b58714]">
-                    SUBIR
-                </button>
-            </div>
-
-    </form>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
-<!-- Alerta de éxito -->
 @if(session('success'))
-<div id="alert"
-    class="fixed top-5 right-5 flex items-center justify-between px-4 py-3 bg-green-500 text-white rounded-lg shadow-lg animate-fade-in-down">
+<div id="alert" class="fixed top-5 right-5 flex items-center gap-3 px-6 py-4 bg-green-500/20 border border-green-400/30 text-green-300 rounded-xl shadow-2xl z-50 animate-fade-in-down">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
     <span>{{ session('success') }}</span>
-    <button onclick="document.getElementById('alert').remove()" class="ml-3 font-bold">✖</button>
+    <button onclick="document.getElementById('alert').remove()" class="ml-2 font-bold hover:text-white">✕</button>
 </div>
 @endif
-<script src="/js/validateEstado.js"></script>
-<script src="/js/filter.js"></script>
+
 <script>
-function formatearImporte(input) {
-    let valor = input.value;
-
-    
-    valor = valor.replace(/[^0-9.]/g, '');
-
-    
-    let numero = parseFloat(valor);
-
-    
-    if (!isNaN(numero)) {
-        
-        input.value = '$' + numero.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-    } else {
-        input.value = '';
-    }
-}
+document.getElementById('activo').addEventListener('change', function() {
+    if (this.checked) document.getElementById('inactivo').checked = false;
+});
+document.getElementById('inactivo').addEventListener('change', function() {
+    if (this.checked) document.getElementById('activo').checked = false;
+});
 </script>
-</div>
-</div>
 @endsection

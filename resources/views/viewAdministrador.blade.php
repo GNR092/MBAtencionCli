@@ -275,14 +275,18 @@ function openDetalleModal(grupo) {
         row.dataset.id = cuenta.id_cuentas_por_pagar;
         row.dataset.saldoNeto = cuenta.saldo_neto || 0;
         
-        const selectHtml = 
-            '<select class="estado-select bg-[#0d1f30] border border-white/20 rounded-lg px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-[#d8c495] ' + getEstadoColor(cuenta.estado) + '" ' +
-            'data-id="' + cuenta.id_cuentas_por_pagar + '" data-prev="' + cuenta.estado + '" data-saldo-neto="' + (cuenta.saldo_neto || 0) + '">' +
-            '<option value="pendiente" ' + (cuenta.estado === 'pendiente' ? 'selected' : '') + '>Pendiente</option>' +
-            '<option value="parcial" ' + (cuenta.estado === 'parcial' ? 'selected' : '') + '>Parcial</option>' +
-            '<option value="pagado" ' + (cuenta.estado === 'pagado' ? 'selected' : '') + '>Pagado</option>' +
-            '<option value="vencido" ' + (cuenta.estado === 'vencido' ? 'selected' : '') + '>Vencido</option>' +
-            '</select>';
+        const hasUuid = cuenta.uuid && cuenta.uuid.trim() !== '';
+        const estadoColor = hasUuid ? getEstadoColor(cuenta.estado) : 'text-white/50';
+        
+        const selectHtml = hasUuid 
+            ? '<select class="estado-select bg-[#0d1f30] border border-white/20 rounded-lg px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-[#d8c495] ' + estadoColor + '" ' +
+              'data-id="' + cuenta.id_cuentas_por_pagar + '" data-prev="' + cuenta.estado + '" data-saldo-neto="' + (cuenta.saldo_neto || 0) + '">' +
+              '<option value="pendiente" ' + (cuenta.estado === 'pendiente' ? 'selected' : '') + '>Pendiente</option>' +
+              '<option value="parcial" ' + (cuenta.estado === 'parcial' ? 'selected' : '') + '>Parcial</option>' +
+              '<option value="pagado" ' + (cuenta.estado === 'pagado' ? 'selected' : '') + '>Pagado</option>' +
+              '<option value="vencido" ' + (cuenta.estado === 'vencido' ? 'selected' : '') + '>Vencido</option>' +
+              '</select>'
+            : '<span class="' + estadoColor + '">' + cuenta.estado + '</span>';
         
         row.innerHTML = 
             '<td class="px-2 py-2 font-bold text-[#d8c495] hidden">' + cuenta.id_cuentas_por_pagar + '</td>' +
