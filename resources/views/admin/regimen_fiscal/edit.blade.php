@@ -18,7 +18,7 @@
         </a>
     </div>
 
-    <div class="w-full max-w-6xl mx-auto bg-[#112134]/60 backdrop-blur-md rounded-xl border border-[#d8c495]/20 overflow-hidden">
+    <div class="w-full max-w-full mx-auto bg-[#112134]/60 backdrop-blur-md rounded-xl border border-[#d8c495]/20 overflow-hidden">
         <div class="px-6 py-4 border-b border-[#d8c495]/20">
             <h2 class="text-[#d8c495] text-lg font-bold uppercase tracking-widest">Editar Régimen Fiscal</h2>
         </div>

@@ -2,7 +2,8 @@
 
 @section('content')
 <div class="w-full p-4 md:p-6 animate-fadeInUp">
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-auto
+     mx-auto">
         <header class="mb-10 px-2">
             <div class="flex items-baseline gap-4">
                 <span class="text-dorado-400 text-sm font-serif italic">|</span>

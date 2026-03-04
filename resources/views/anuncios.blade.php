@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="w-full p-4 md:p-6 animate-fadeInUp">
-        <div class="max-w-6xl mx-auto">
+        <div class="max-w-full mx-auto">
             <header class="mb-10 px-2">
                 <div class="flex items-baseline gap-4">
                     <span class="text-dorado-400 text-sm font-serif italic">|</span>
@@ -12,7 +12,7 @@
                 </div>
             </header>
 
-    <div class="max-w-6xl mx-auto p-6">
+    <div class="max-w-full mx-auto p-6">
         <div class="flex justify-end mb-4">
             <button onclick="document.getElementById('modalCrear').classList.remove('hidden')"
                 class="bg-[#d8c495] hover:bg-[#c9a143] text-black px-6 py-2 rounded font-bold shadow-md">+ NUEVO

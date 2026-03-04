@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-full mx-auto">
         <header class="mb-10 px-2">
             <div class="flex items-baseline gap-4">
                 <span class="text-dorado-400 text-sm font-serif italic">|</span>
@@ -21,7 +21,7 @@ setTimeout(() => {
 }, 4000);
 </script>
 @endif
-<div class="max-w-6xl mx-auto p-6 bg-[#112134]/60 backdrop-blur-md rounded-xl border border-[#d8c495]/20">
+<div class="max-w-full mx-auto p-6 bg-[#112134]/60 backdrop-blur-md rounded-xl border border-[#d8c495]/20">
 
     <!-- Encabezado con título y barra de búsqueda -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">

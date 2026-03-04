@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="w-full p-4 md:p-6 animate-fadeInUp">
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-full mx-auto p-4 md:p-6">
 
         {{-- HEADER GIGANTE (Igual a Facturas) --}}
         <header class="mb-10 px-2">

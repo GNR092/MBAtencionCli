@@ -11,7 +11,7 @@
         </div>
     </header>
 
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-full mx-auto p-4 md:p-6">
         <div class="w-full bg-[#112134]/60 backdrop-blur-md rounded-xl border border-[#d8c495]/20 overflow-hidden">
 
             {{-- Encabezado del Formulario --}}

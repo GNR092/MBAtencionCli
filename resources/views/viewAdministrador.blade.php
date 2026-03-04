@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-full mx-auto p-4 md:p-6">
     <header class="mb-10 px-2">
         <div class="flex items-baseline gap-4">
             <span class="text-dorado-400 text-sm font-serif italic">|</span>
@@ -11,7 +11,7 @@
         </div>
     </header>
 
-    <div class="max-w-6xl mx-auto space-y-6">
+    <div class="max-w-full mx-auto space-y-6">
 
         <!-- Barra de búsqueda -->
         <form method="GET" action="{{ route('cuentas-pagar.index') }}" class="tabla-dorada-search">

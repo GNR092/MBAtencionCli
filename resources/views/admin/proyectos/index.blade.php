@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="w-full p-4 md:p-6 animate-fadeInUp">
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-full mx-auto p-4 md:p-6">
 
         @if(session('success'))
         <div class="bg-green-800/80 text-white p-4 mb-6 rounded-xl text-sm">{{ session('success') }}</div>

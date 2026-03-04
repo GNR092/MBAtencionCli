@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="w-full p-4 md:p-6 animate-fadeInUp">
-        <div class="max-w-6xl mx-auto">
+        <div class="max-w-full mx-auto">
             <header class="mb-10 px-2">
                 <div class="flex items-baseline gap-4">
                     <span class="text-dorado-400 text-sm font-serif italic">|</span>
@@ -18,7 +18,7 @@
     </div>
     @endif
     <!-- Formulario -->
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-full mx-auto p-4 md:p-6">
         <div class="w-full relative bg-[#112134] rounded-2xl shadow-xl border border-[#d8c495]/20 overflow-hidden pb-2">
 
         <div class="bg-[#0d1f30] px-6 py-4 border-b-2 border-[#d8c495]/40">
