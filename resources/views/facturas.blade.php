@@ -49,8 +49,8 @@
                     <tr>
                         <td class="font-bold text-[#d8c495]">{{ $file->batch_id }}</td>
                         <td class="text-white/70 text-xs">{{ $file->created_at }}</td>
-                        <td class="text-white/80">{{ $file->proyecto }}</td>
-                        <td class="font-medium">{{ $file->inversor_name }}</td>
+                        <td class="text-white/80">-</td>
+                        <td class="font-medium">{{ $file->user->name ?? 'N/A' }}</td>
                         <td>
                             <a href="{{ route('facturas.descargar', $file->id) }}"
                                 class="inline-block bg-[#d8c495] text-[#0d1f30] px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#c9a143] transition shadow-sm">
@@ -58,7 +58,7 @@
                             </a>
                         </td>
                         <td>
-                            @if($file->pdf_path || $file->pdf_uploaded)
+                            @if($file->pdf_exists)
                             <a href="{{ route('facturas.descargarPdf', $file->id) }}"
                                 class="inline-block bg-white/10 text-[#d8c495] px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-white/20 transition shadow-sm border border-[#d8c495]/30">
                                 Descargar PDF

@@ -324,6 +324,17 @@
 
             <main id="main-content" class="flex-1 overflow-y-auto custom-scrollbar">
                 <div class="fade-in-content">
+                    {{-- Mensajes Flash --}}
+                    @if(session('error'))
+                        <div class="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg mb-4">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+                    @if(session('success'))
+                        <div class="bg-green-500/20 border border-green-500 text-green-200 px-4 py-3 rounded-lg mb-4">
+                            {{ session('success') }}
+                        </div>
+                    @endif
                     @yield('content')
                 </div>
             </main>

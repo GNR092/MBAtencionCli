@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
 use App\Models\XmlFile;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth; 
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class UploadFactura extends Controller
 {
@@ -18,42 +15,34 @@ class UploadFactura extends Controller
      */
     public function index(Request $request)
     {
-        // $user = Session::get('user');
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return redirect('/inicio-de-sesion');
         }
 
-        $query = DB::table('xml_files')
-            ->join('users', 'xml_files.id_user', '=', 'users.id')
-            ->select('xml_files.*', 'users.name as inversor_name', 
-            DB::raw('(SELECT GROUP_CONCAT(p.nombre_proyecto SEPARATOR ", ") FROM user_proyectos up JOIN proyectos p ON up.id_proyecto = p.id_proyecto WHERE up.id_user = users.id) as proyecto'));
-
+        $query = XmlFile::with(['user:id,name', 'user.proyectos:id_proyecto,nombre_proyecto']);
 
         if ($request->filled('month')) {
-            $year  = substr($request->month, 0, 4);
+            $year = substr($request->month, 0, 4);
             $month = substr($request->month, 5, 2);
 
-            $query->whereYear('xml_files.created_at', $year)
-                ->whereMonth('xml_files.created_at', $month);
+            $query->whereYear('created_at', $year)
+                ->whereMonth('created_at', $month);
         }
 
-
         if ($request->filled('fecha')) {
-            $query->whereDate('xml_files.created_at', $request->input('fecha'));
+            $query->whereDate('created_at', $request->input('fecha'));
         }
 
         if ($request->filled('batch_id')) {
-            $query->where('xml_files.batch_id', $request->input('batch_id'));
+            $query->where('batch_id', $request->input('batch_id'));
         }
 
         if ($request->filled('emisor_name')) {
-            $query->where('xml_files.emisor_name', 'LIKE', '%' . $request->input('emisor_name') . '%');
+            $query->where('emisor_name', 'LIKE', '%'.$request->input('emisor_name').'%');
         }
 
-
-
-        $search    = session('search');
+        $search = session('search');
         $categoria = session('categoria');
 
         if ($search && $categoria) {
@@ -62,12 +51,15 @@ class UploadFactura extends Controller
                     $query->where('batch_id', $search);
                     break;
                 case 'inversionista':
-                    $query->where('users.name', $search);
+                    $query->whereHas('user', function ($q) use ($search) {
+                        $q->where('name', 'LIKE', '%'.$search.'%');
+                    });
                     break;
                 case 'fecha':
-                    $query->whereDate('xml_files.created_at', $search);
+                    $query->whereDate('created_at', $search);
                     if ($search != Carbon::parse($search)->format('Y-m-d')) {
                         session()->forget(['search', 'categoria']);
+
                         return redirect()->back()->withErrors(['search' => 'La fecha no es válida.']);
                     }
                     break;
@@ -77,7 +69,7 @@ class UploadFactura extends Controller
         $xmlFiles = $query->paginate(6);
 
         return view('facturas', [
-            'xmlFiles' => $xmlFiles
+            'xmlFiles' => $xmlFiles,
         ], compact('search', 'categoria'));
     }
 
@@ -86,7 +78,6 @@ class UploadFactura extends Controller
 
         session()->forget(['search', 'categoria']);
 
-
         return redirect()->route('facturas.index');
     }
 
@@ -94,23 +85,27 @@ class UploadFactura extends Controller
     {
 
         session([
-            'search'    => $request->input('search'),
+            'search' => $request->input('search'),
             'categoria' => $request->input('categoria'),
         ]);
 
-
         return redirect()->route('facturas.index');
     }
+
     /**
      * Descargar un XML específico
      */
     public function descargar($id)
     {
         $user = Auth::user();
-        if (!$user) return redirect('/inicio-de-sesion');
+        if (! $user) {
+            return redirect('/inicio-de-sesion');
+        }
 
         $xmlFile = XmlFile::find($id);
-        if (!$xmlFile) return back()->with('error', 'Archivo no encontrado.');
+        if (! $xmlFile) {
+            return back()->with('error', 'Archivo no encontrado.');
+        }
 
         $filePath = $xmlFile->file_path;
 
@@ -118,8 +113,8 @@ class UploadFactura extends Controller
             $fullPath = Storage::path($filePath);
         } elseif (Storage::disk('tmp')->exists($filePath)) {
             $fullPath = Storage::disk('tmp')->path($filePath);
-        } elseif (Storage::disk('tmp')->exists('xml_files/' . basename($filePath))) {
-            $fullPath = Storage::disk('tmp')->path('xml_files/' . basename($filePath));
+        } elseif (Storage::disk('tmp')->exists('xml_files/'.basename($filePath))) {
+            $fullPath = Storage::disk('tmp')->path('xml_files/'.basename($filePath));
         } else {
             return back()->with('error', 'El archivo físico no existe.');
         }
@@ -137,17 +132,17 @@ class UploadFactura extends Controller
     public function descargarPdf($id)
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return redirect('/inicio-de-sesion');
         }
 
         $xmlFile = XmlFile::find($id);
 
-        if (!$xmlFile) {
-            return back()->with('error', 'Registro no encontrado.');
+        if (! $xmlFile) {
+            return back()->with('error', 'Registro no encontrado. ID: '.$id);
         }
 
-        if (!$xmlFile->pdf_path) {
+        if (! $xmlFile->pdf_path && ! $xmlFile->pdf_uploaded) {
             return back()->with('error', 'Este XML no tiene un PDF asociado.');
         }
 
@@ -155,19 +150,33 @@ class UploadFactura extends Controller
 
         // PDFs guardados desde CfdiValidatorController (public disk)
         if (str_starts_with($pdfPath, 'pdf_files/')) {
-            $fullPath = storage_path('app/public/' . $pdfPath);
+            $fullPath = storage_path('app/public/'.$pdfPath);
         }
         // PDFs guardados desde UserFactController (local disk)
         elseif (str_starts_with($pdfPath, 'facturas/')) {
-            $fullPath = storage_path('app/' . $pdfPath);
+            $fullPath = storage_path('app/'.$pdfPath);
         }
         // Fallback: solo nombre de archivo
         else {
-            $fullPath = storage_path('app/public/pdf_files/' . $pdfPath);
+            $fullPath = storage_path('app/public/pdf_files/'.$pdfPath);
         }
 
-        if (!file_exists($fullPath)) {
-            return back()->with('error', 'El archivo PDF físico no existe.');
+        // Si no existe, buscar en carpeta Facturas del proyecto
+        if (! file_exists($fullPath)) {
+            $filename = basename($pdfPath);
+            $projectFacturasPath = base_path('Facturas');
+
+            // Buscar recursivamente en Facturas/
+            $foundFiles = glob($projectFacturasPath.'/**/'.$filename, GLOB_BRACE);
+            if (! empty($foundFiles)) {
+                $fullPath = $foundFiles[0];
+            }
+        }
+
+        if (! file_exists($fullPath)) {
+            \Log::error('PDF no encontrado: '.$fullPath.' | pdf_path en BD: '.$pdfPath);
+
+            return back()->with('error', 'El archivo PDF físico no existe. Ruta: '.$pdfPath);
         }
 
         return response()->download($fullPath, basename($fullPath));

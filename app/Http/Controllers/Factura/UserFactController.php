@@ -47,7 +47,15 @@ class UserFactController extends Controller
                 $allFacturasData[$index]['pdf_data'] = [];
             }
 
+            // Guardar en storage/app (servidor)
             $tempPdfPath = $pdfFile->store('tmp', 'local');
+
+            // Verificar que el archivo se guardó correctamente
+            if (! $tempPdfPath || ! Storage::disk('local')->exists($tempPdfPath)) {
+                Log::error('Error: PDF no se guardo en el servidor. Path: '.$tempPdfPath);
+
+                return response()->json(['success' => false, 'message' => 'Error al guardar el PDF en el servidor.']);
+            }
 
             $allFacturasData[$index]['pdf_data'] = [
                 'temp_path' => $tempPdfPath,
@@ -57,6 +65,8 @@ class UserFactController extends Controller
             ];
 
             session()->put('factura_data', $allFacturasData);
+
+            Log::info('PDF subido correctamente al servidor: '.$tempPdfPath);
 
             return response()->json([
                 'success' => true,
@@ -337,10 +347,17 @@ class UserFactController extends Controller
         $filename = basename($tmpFilePath);
         $newFilePath = $this->buildXmlStoragePath($user->id, $carbonFecha, $filename);
 
-        $pdfData = $currentFacturaData['pdf_data'];
+        $pdfData = $currentFacturaData['pdf_data'] ?? null;
         $uuid = $factura['uuid'] !== 'N/A' ? $factura['uuid'] : null;
         $pdfFilename = $uuid.'.pdf';
         $pdfNewPath = $this->buildPdfStoragePath($user->id, $carbonFecha, $pdfFilename);
+
+        // VALIDAR QUE EL PDF EXISTA EN EL SERVIDOR ANTES DE CONTINUAR
+        if (! isset($pdfData['temp_path']) || ! Storage::disk('local')->exists($pdfData['temp_path'])) {
+            Log::error('Error: PDF temporal no encontrado. No se puede confirmar la factura. temp_path: '.($pdfData['temp_path'] ?? 'N/A'));
+
+            return redirect()->back()->withErrors(['message' => 'El PDF no se subió correctamente. Por favor, sube el PDF nuevamente antes de confirmar la factura.']);
+        }
 
         $xmlFile = null;
 
@@ -365,9 +382,29 @@ class UserFactController extends Controller
                 $contents = Storage::disk('tmp')->get($tmpFilePath);
                 Storage::disk('local')->put($newFilePath, $contents);
 
+                // Verificar que existe el PDF temporal antes de moverlo
+                if (! isset($pdfData['temp_path']) || ! Storage::disk('local')->exists($pdfData['temp_path'])) {
+                    throw new \Exception('El PDF no se encontró en el servidor. Por favor, sube el PDF nuevamente.');
+                }
+
+                Log::info('Moviendo PDF temporal a permanente: '.$pdfData['temp_path'].' -> '.$pdfNewPath);
+
                 // Mover PDF del almacenamiento temporal al almacenamiento permanente
                 $pdfContents = Storage::disk('local')->get($pdfData['temp_path']);
-                Storage::disk('local')->put($pdfNewPath, $pdfContents);
+                $saved = Storage::disk('local')->put($pdfNewPath, $pdfContents);
+
+                if (! $saved) {
+                    throw new \Exception('Error al guardar el PDF en el servidor.');
+                }
+
+                // Verificar que se guardó correctamente
+                if (! Storage::disk('local')->exists($pdfNewPath)) {
+                    throw new \Exception('El PDF no se guardo correctamente. Verifica los permisos de escritura.');
+                }
+
+                Log::info('PDF movido correctamente a: '.$pdfNewPath);
+
+                // Eliminar archivo temporal solo después de verificar que se copió
                 Storage::disk('local')->delete($pdfData['temp_path']);
 
                 $xmlFile = XmlFile::create([
