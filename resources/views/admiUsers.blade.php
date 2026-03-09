@@ -124,7 +124,7 @@
 @endsection
 
 @push('modals')
-<div id="modalUsuario" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto" onclick="cerrarModalUsuario()">
+<div id="modalUsuario" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto">
     <div class="flex min-h-full items-center justify-center p-4">
         <div onclick="event.stopPropagation()" class="bg-carbon-900 rounded-xl shadow-2xl w-full max-w-2xl border border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-black/20">
@@ -144,7 +144,7 @@
     </div>
 </div>
 
-<div id="confirmModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm items-center justify-center p-4 overflow-y-auto" onclick="closeModal()">
+<div id="confirmModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm items-center justify-center p-4 overflow-y-auto">
   <div class="flex min-h-full items-center justify-center">
     <div onclick="event.stopPropagation()" class="bg-carbon-900 rounded-xl shadow-2xl w-full max-w-4xl border border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
         <div class="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-black/20">
@@ -252,7 +252,7 @@
     </div>
 </div>
 
-<div id="deleteConfirmModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto" onclick="closeDeleteModal()">
+<div id="deleteConfirmModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto">
     <div class="flex min-h-full items-center justify-center p-4">
         <div onclick="event.stopPropagation()" class="bg-carbon-900 rounded-xl shadow-2xl w-full max-w-md border border-white/10 overflow-hidden">
             <div class="p-6 text-center">

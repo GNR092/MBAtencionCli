@@ -115,7 +115,7 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::get('/api/cuentas/meses-facturados/{year}', [CuentasPorPagar::class, 'mesesConFacturas']);
 
     // Contratos (administrador)
-    Route::post('/subir-archivo', [ContractController::class, 'subir']);
+    Route::post('/subir-archivo', [ContractController::class, 'subir'])->name('admin.contratos.store');
     Route::get('/subir-archivo', [ContractController::class, 'show'])->name('admin.contratos.index');
     Route::post('/subir-archivo/confirm-password', [ContractController::class, 'confirmPassword'])->name('admin.contratos.confirmar');
     Route::get('/subir-archivo/crear', [ContractController::class, 'crear'])->name('admin.contratos.create');

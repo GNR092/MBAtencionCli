@@ -157,7 +157,7 @@
 
     {{-- Modal de Gráficas --}}
     <div id="chartsmModal" class="fixed inset-0 z-50 flex items-center justify-center hidden p-6">
-        <div class="absolute inset-0 bg-black/95 backdrop-blur-xl" onclick="closeModal()"></div>
+        <div class="absolute inset-0 bg-black/95 backdrop-blur-xl"></div>
         <div
             class="bg-[#112134] border border-[#d8c495]/20 w-full max-w-5xl h-auto max-h-[90vh] overflow-y-auto relative z-10 shadow-3xl rounded-xl">
             <div class="p-12 md:p-20">

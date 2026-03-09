@@ -168,7 +168,7 @@
          class="fixed inset-0 z-50 flex items-center justify-center p-4"
          style="display: none;">
 
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="show=false"></div>
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
 
         <div class="relative z-10 w-full max-w-sm bg-[#111] border border-dorado-400/20 rounded-2xl shadow-2xl overflow-hidden">
 
