@@ -69,6 +69,7 @@
                                 // Asumiendo que guardas con '52' al inicio, lo quitamos para mostrar
                                 'phone' => $user->phone ? (strlen($user->phone) > 10 ? substr($user->phone, 2) : $user->phone) : '',
                                 'id_regimen' => $user->id_regimen,
+                                'fecha_nacimiento' => $user->fecha_nacimiento,
                                 'projects' => []
                                 ];
 
@@ -189,6 +190,11 @@
                             <input type="text" name="phone" id="edit_phone" required maxlength="10"
                                 class="w-full bg-white/5 border border-white/10 rounded-r px-3 py-2 text-white focus:border-[#d8c495] outline-none">
                         </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-[#d8c495] uppercase tracking-widest mb-1">Fecha de Nacimiento</label>
+                        <input type="date" name="fecha_nacimiento" id="edit_fecha_nacimiento"
+                            class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:border-[#d8c495] outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-[#d8c495] uppercase tracking-widest mb-1">Régimen
@@ -315,6 +321,7 @@ window.openEditModal = function(userData) {
     document.getElementById("edit_name").value = userData.name;
     document.getElementById("edit_email").value = userData.email;
     document.getElementById("edit_phone").value = userData.phone ?? '';
+    document.getElementById("edit_fecha_nacimiento").value = userData.fecha_nacimiento ?? '';
     document.getElementById("edit_regimen").value = userData.id_regimen ?? '';
 
     // 2. Limpiar estado anterior y listeners
@@ -553,6 +560,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("edit_name").value = '{{ old('name') }}';
     document.getElementById("edit_email").value = '{{ old('email') }}';
     document.getElementById("edit_phone").value = '{{ old('phone') }}';
+    document.getElementById("edit_fecha_nacimiento").value = '{{ old('fecha_nacimiento') }}';
     document.getElementById("edit_regimen").value = '{{ old('regimenFiscal') }}';
 });
 </script>

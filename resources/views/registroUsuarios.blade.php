@@ -89,7 +89,7 @@
                         Contraseña Generada
                     </label>
                     <div class="flex items-center gap-3">
-                        <input type="text" id="password" name="password"
+                        <input type="text" id="password"
                             class="flex-1 bg-transparent border-none text-[#d8c495] font-mono font-bold text-xl focus:ring-0 p-0"
                             value="{{ session('generated_password') }}" readonly>
                     </div>
@@ -151,7 +151,7 @@
     </div>
 </div>
 
-<script src="js/multiselect.js"></script>
+<script src="{{ asset('js/multiselect.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const proyectSelect = document.getElementById('proyect');
@@ -203,11 +203,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const deptIndex = container.children.length;
 
         const deptDiv = document.createElement('div');
-        deptDiv.className = 'bg-[#112134] p-4 rounded-lg border border-white/10 relative';
+        deptDiv.className = 'dept-item bg-[#112134] p-4 rounded-lg border border-white/10 relative';
         deptDiv.innerHTML = `
             <div class="flex justify-between items-center mb-4">
                 <span class="text-xs font-bold text-[#d8c495] uppercase tracking-wider">Departamento ${deptIndex + 1}</span>
-                ${deptIndex > 0 ? `<button type="button" onclick="this.closest('[class*=\'bg-\']').remove()" class="text-red-400 text-xs hover:underline">Eliminar</button>` : ''}
+                ${deptIndex > 0 ? `<button type="button" onclick="this.closest('.dept-item').remove()" class="text-red-400 text-xs hover:underline">Eliminar</button>` : ''}
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -225,14 +225,14 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
 
             <div class="flex items-center gap-3 mt-4">
-                <input type="checkbox" id="predial_${projectId}_${deptIndex}"
+                <input type="checkbox" id="predial_chk_${projectId}_${deptIndex}"
                     name="project_details[${projectId}][${deptIndex}][cuenta_predial]"
                     onchange="togglePredial(this, '${projectId}', ${deptIndex})"
                     class="w-4 h-4 rounded border-white/20 bg-white/5 text-[#d8c495] focus:ring-[#d8c495]">
-                <label for="predial_${projectId}_${deptIndex}" class="text-sm text-white/70">¿Cuenta Predial?</label>
+                <label for="predial_chk_${projectId}_${deptIndex}" class="text-sm text-white/70">¿Cuenta Predial?</label>
             </div>
 
-            <div id="predial_${projectId}_${deptIndex}" class="hidden mt-3">
+            <div id="predial_div_${projectId}_${deptIndex}" class="hidden mt-3">
                 <label class="block text-xs font-bold text-white/70 mb-2">Número de Cuenta:</label>
                 <input type="text" name="project_details[${projectId}][${deptIndex}][cuenta_numero]"
                     class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-[#d8c495] outline-none">
@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     window.togglePredial = function(checkbox, projectId, index) {
-        const div = document.getElementById(`predial_${projectId}_${index}`);
+        const div = document.getElementById(`predial_div_${projectId}_${index}`);
         div.classList.toggle('hidden', !checkbox.checked);
     };
 

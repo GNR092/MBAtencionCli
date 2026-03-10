@@ -27,6 +27,7 @@ class User extends Authenticatable
         'phone',
         'id_regimen',
         'foto',
+        'fecha_nacimiento',
     ];
 
     /**

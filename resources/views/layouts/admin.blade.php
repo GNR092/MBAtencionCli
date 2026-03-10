@@ -305,6 +305,8 @@
                                 <a href="{{ route('admin.anuncios.index') }}"
                                     class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Gestión
                                     Anuncios</a>
+                                <a href="{{ route('usuarios.cumpleanios') }}"
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Cumpleaños</a>
                             </div>
                         </div>
                     </nav>

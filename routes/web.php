@@ -104,6 +104,7 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::post('/users/delete', [crudUser::class, 'eliminar'])->name('usuarios.eliminar');
     Route::post('/users/buscar', [crudUser::class, 'buscar'])->name('usuarios.buscar');
     Route::get('/users/limpiar', [crudUser::class, 'limpiar'])->name('usuarios.limpiar');
+    Route::get('/cumpleanios', [crudUser::class, 'cumpleanios'])->name('usuarios.cumpleanios');
 
     // Cuentas por pagar
     Route::get('/cuentas-por-pagar', [CuentasPorPagar::class, 'index'])->name('cuentas-pagar.index');

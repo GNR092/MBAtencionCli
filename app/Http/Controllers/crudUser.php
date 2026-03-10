@@ -177,6 +177,7 @@ class crudUser extends Controller
             'phone' => 'required|string|max:20',
             'regimenFiscal' => 'required|integer',
             'password' => 'nullable|string|min:8|confirmed',
+            'fecha_nacimiento' => 'nullable|date',
         ]);
 
         DB::transaction(function () use ($request, $id) {
@@ -187,6 +188,7 @@ class crudUser extends Controller
             $user->email = $request->input('email');
             $user->phone = '52' . $request->input('phone');
             $user->id_regimen = $request->input('regimenFiscal');
+            $user->fecha_nacimiento = $request->input('fecha_nacimiento') ?: null;
 
             if ($request->filled('password')) {
                 $user->password = $request->input('password');
@@ -254,6 +256,34 @@ class crudUser extends Controller
             ->with('highlight_user', $id);
     }
 
+    public function cumpleanios()
+    {
+        $hoy = now();
+        $mesActual = $hoy->month;
+
+        // Todos los inversionistas con fecha de nacimiento
+        $todos = User::where('role', 'usuario')
+            ->whereNotNull('fecha_nacimiento')
+            ->orderByRaw('MONTH(fecha_nacimiento), DAY(fecha_nacimiento)')
+            ->get()
+            ->map(function ($user) use ($hoy) {
+                $cumple = \Carbon\Carbon::parse($user->fecha_nacimiento)->setYear($hoy->year);
+                if ($cumple->lt($hoy->startOfDay())) {
+                    $cumple->addYear();
+                }
+                $user->dias_para_cumple = $hoy->startOfDay()->diffInDays($cumple->startOfDay());
+                $user->edad = $hoy->year - \Carbon\Carbon::parse($user->fecha_nacimiento)->year;
+                return $user;
+            })
+            ->sortBy('dias_para_cumple');
+
+        $esteMes = $todos->filter(fn($u) => \Carbon\Carbon::parse($u->fecha_nacimiento)->month === $mesActual);
+        $proximoMes = $todos->filter(fn($u) => \Carbon\Carbon::parse($u->fecha_nacimiento)->month === ($mesActual % 12) + 1);
+        $restantes = $todos->reject(fn($u) => in_array(\Carbon\Carbon::parse($u->fecha_nacimiento)->month, [$mesActual, ($mesActual % 12) + 1]));
+
+        return view('cumpleanios', compact('esteMes', 'proximoMes', 'restantes', 'hoy'));
+    }
+
     public function store(Request $request)
     {
         $admin = Auth::user();
@@ -268,6 +298,7 @@ class crudUser extends Controller
             'proyect' => 'sometimes|array',
             'regimenFiscal' => 'required|integer',
             'password' => 'required|string|min:8|confirmed',
+            'fecha_nacimiento' => 'nullable|date',
         ]);
 
         $user = User::create([
@@ -277,6 +308,7 @@ class crudUser extends Controller
             'id_regimen' => $request->regimenFiscal,
             'password' => Hash::make($request->password),
             'role' => 'usuario',
+            'fecha_nacimiento' => $request->fecha_nacimiento ?: null,
         ]);
 
         if ($request->has('proyect')) {
