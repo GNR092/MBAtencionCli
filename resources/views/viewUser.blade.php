@@ -180,14 +180,14 @@
                         <div id="anuncio-container" class="relative flex-1 flex flex-col h-full">
                             @foreach($anuncios as $index => $anuncio)
                                 <div class="anuncio-slide absolute inset-0 p-4 md:p-6 flex flex-col items-center transition-all duration-500 opacity-0 {{ $index === 0 ? 'opacity-100 z-10' : 'z-0' }}"
-                                     data-titulo="{{ $anuncio->titulo }}" data-desc="{{ $anuncio->descripcion }}" data-path="{{ asset('storage/' . $anuncio->adjunto_ruta) }}" data-type="{{ str_ends_with($anuncio->adjunto_ruta, '.pdf') ? 'pdf' : 'img' }}">
+                                     data-titulo="{{ $anuncio->titulo }}" data-desc="{{ $anuncio->descripcion }}" data-path="{{ $anuncio->adjunto_ruta ? asset('storage/' . $anuncio->adjunto_ruta) : '' }}" data-type="{{ $anuncio->adjunto_ruta && str_ends_with($anuncio->adjunto_ruta, '.pdf') ? 'pdf' : 'img' }}">
                                     <h2 class="text-base md:text-lg font-bold text-[#d8c495] uppercase mb-2 md:mb-3 text-center tracking-wider">{{ $anuncio->titulo }}</h2>
                                     <div class="flex-1 w-full overflow-hidden rounded-lg bg-black/20 relative shadow-inner">
-                                        @if(str_ends_with($anuncio->adjunto_ruta, '.pdf'))
+                                        @if($anuncio->adjunto_ruta && str_ends_with($anuncio->adjunto_ruta, '.pdf'))
                                             <div class="w-full h-full overflow-y-auto bg-white custom-scroll">
                                                 <iframe src="{{ asset('storage/' . $anuncio->adjunto_ruta) }}#toolbar=0&navpanes=0&view=FitH" class="w-full h-[800px] md:h-[1200px] border-none"></iframe>
                                             </div>
-                                        @else
+                                        @elseif($anuncio->adjunto_ruta)
                                             <div class="w-full h-full flex items-center justify-center">
                                                 <img src="{{ asset('storage/' . $anuncio->adjunto_ruta) }}" class="max-h-full max-w-full object-contain">
                                             </div>
