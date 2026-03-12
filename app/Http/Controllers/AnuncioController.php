@@ -24,11 +24,16 @@ class AnuncioController extends Controller
             'prioridad' => 'required|in:baja,media,alta',
         ]);
 
+        // Si el usuario intentó subir un archivo pero PHP no lo recibió correctamente
+        if ($request->files->has('adjunto') && !$request->hasFile('adjunto')) {
+            return redirect()->back()->with('error', 'El archivo no se subió correctamente. Verifica que no supere 5 MB y sea PDF, JPG o PNG.')->withInput();
+        }
+
         try {
             $path = null;
             if ($request->hasFile('adjunto')) {
                 $path = $request->file('adjunto')->store('anuncios', 'public');
-                if ($path === false) {
+                if (!$path) {
                     return redirect()->back()->with('error', 'No se pudo guardar el archivo. Verifique los permisos del servidor.')->withInput();
                 }
             }
@@ -60,26 +65,35 @@ class AnuncioController extends Controller
         $anuncio = Anuncio::findOrFail($id);
 
         $request->validate([
-            'titulo' => 'required|string|max:255',
+            'titulo'    => 'required|string|max:255',
             'prioridad' => 'required|in:baja,media,alta',
-            'estado' => 'required|in:activo,inactivo',
+            'estado'    => 'required|in:activo,inactivo',
+            'adjunto'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
+
+        // Si intentó subir un archivo pero PHP no lo recibió correctamente
+        if ($request->files->has('adjunto') && !$request->hasFile('adjunto')) {
+            return redirect()->back()->with('error', 'El archivo no se subió correctamente. Verifica que no supere 5 MB y sea PDF, JPG o PNG.')->withInput();
+        }
 
         try {
             $data = [
-                'titulo' => $request->titulo,
+                'titulo'      => $request->titulo,
                 'descripcion' => $request->descripcion,
-                'prioridad' => $request->prioridad,
-                'estado' => $request->estado,
+                'prioridad'   => $request->prioridad,
+                'estado'      => $request->estado,
             ];
 
             if ($request->hasFile('adjunto')) {
-                if ($anuncio->adjunto_ruta) Storage::disk('public')->delete($anuncio->adjunto_ruta);
-                $path = $request->file('adjunto')->store('anuncios', 'public');
-                if ($path === false) {
+                $newPath = $request->file('adjunto')->store('anuncios', 'public');
+                if (!$newPath) {
                     return redirect()->back()->with('error', 'No se pudo guardar el archivo. Verifique los permisos del servidor.')->withInput();
                 }
-                $data['adjunto_ruta'] = $path;
+                // Solo borrar el anterior una vez confirmado que el nuevo se guardó
+                if ($anuncio->adjunto_ruta) {
+                    Storage::disk('public')->delete($anuncio->adjunto_ruta);
+                }
+                $data['adjunto_ruta'] = $newPath;
             }
 
             $anuncio->update($data);

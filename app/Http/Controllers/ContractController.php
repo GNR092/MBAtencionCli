@@ -23,7 +23,10 @@ class ContractController extends Controller
             ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
             ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
             ->select('contract.*', 'proyectos.nombre_proyecto as proyecto')
-            ->where('contract.user_id', $user->id)
+            ->where(function ($q) use ($user) {
+                $q->where('contract.user_id', $user->id)
+                  ->orWhere('user_proyectos.id_user', $user->id);
+            })
             ->orderBy('contract.created_at', 'asc');
 
         $search = session('search');
