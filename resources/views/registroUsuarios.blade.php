@@ -138,6 +138,27 @@
                         </div>
                         <p class="text-[10px] text-white/40 mt-2">10 dígitos</p>
                     </div>
+
+                    <div>
+                        <label for="fecha_nacimiento" class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                            Fecha de Nacimiento
+                        </label>
+                        <input type="date" id="fecha_nacimiento" name="fecha_nacimiento"
+                            class="w-full bg-white/5 border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495] transition-colors"
+                            value="{{ old('fecha_nacimiento') }}">
+                    </div>
+
+                    <div>
+                        <label for="metodo_pago" class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                            Método de Pago
+                        </label>
+                        <select id="metodo_pago" name="metodo_pago"
+                            class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495] transition-colors">
+                            <option value="">Sin especificar</option>
+                            <option value="efectivo" {{ old('metodo_pago') == 'efectivo' ? 'selected' : '' }}>Efectivo</option>
+                            <option value="transferencia" {{ old('metodo_pago') == 'transferencia' ? 'selected' : '' }}>Transferencia bancaria</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="pt-4">

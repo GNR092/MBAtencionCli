@@ -24,15 +24,25 @@ class AnuncioController extends Controller
             'prioridad' => 'required|in:baja,media,alta',
         ]);
 
-        $path = $request->hasFile('adjunto') ? $request->file('adjunto')->store('anuncios', 'public') : null;
+        try {
+            $path = null;
+            if ($request->hasFile('adjunto')) {
+                $path = $request->file('adjunto')->store('anuncios', 'public');
+                if ($path === false) {
+                    return redirect()->back()->with('error', 'No se pudo guardar el archivo. Verifique los permisos del servidor.')->withInput();
+                }
+            }
 
-        Anuncio::create([
-            'titulo' => $request->titulo,
-            'descripcion' => $request->descripcion,
-            'adjunto_ruta' => $path,
-            'estado' => 'activo',
-            'prioridad' => $request->prioridad,
-        ]);
+            Anuncio::create([
+                'titulo' => $request->titulo,
+                'descripcion' => $request->descripcion,
+                'adjunto_ruta' => $path,
+                'estado' => 'activo',
+                'prioridad' => $request->prioridad,
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error al crear el anuncio: ' . $e->getMessage())->withInput();
+        }
 
         return redirect()->route('admin.anuncios.index')->with('success', 'Anuncio creado');
     }
@@ -55,17 +65,27 @@ class AnuncioController extends Controller
             'estado' => 'required|in:activo,inactivo',
         ]);
 
-        if ($request->hasFile('adjunto')) {
-            if ($anuncio->adjunto_ruta) Storage::disk('public')->delete($anuncio->adjunto_ruta);
-            $anuncio->adjunto_ruta = $request->file('adjunto')->store('anuncios', 'public');
-        }
+        try {
+            $data = [
+                'titulo' => $request->titulo,
+                'descripcion' => $request->descripcion,
+                'prioridad' => $request->prioridad,
+                'estado' => $request->estado,
+            ];
 
-        $anuncio->update([
-            'titulo' => $request->titulo,
-            'descripcion' => $request->descripcion,
-            'prioridad' => $request->prioridad,
-            'estado' => $request->estado,
-        ]);
+            if ($request->hasFile('adjunto')) {
+                if ($anuncio->adjunto_ruta) Storage::disk('public')->delete($anuncio->adjunto_ruta);
+                $path = $request->file('adjunto')->store('anuncios', 'public');
+                if ($path === false) {
+                    return redirect()->back()->with('error', 'No se pudo guardar el archivo. Verifique los permisos del servidor.')->withInput();
+                }
+                $data['adjunto_ruta'] = $path;
+            }
+
+            $anuncio->update($data);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error al actualizar el anuncio: ' . $e->getMessage())->withInput();
+        }
 
         return redirect()->route('admin.anuncios.index')->with('success', 'Anuncio actualizado');
     }

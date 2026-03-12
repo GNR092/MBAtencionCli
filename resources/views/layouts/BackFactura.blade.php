@@ -53,6 +53,25 @@
 
     <div id="content-overlay">
         <div class="inner-wrapper">
+            @if(session('error'))
+                <div class="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg mb-4 mx-4 mt-4">
+                    {{ session('error') }}
+                </div>
+            @endif
+            @if($errors->any())
+                <div class="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg mb-4 mx-4 mt-4">
+                    <ul class="list-disc pl-5 space-y-1">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            @if(session('success'))
+                <div class="bg-green-500/20 border border-green-500 text-green-200 px-4 py-3 rounded-lg mb-4 mx-4 mt-4">
+                    {{ session('success') }}
+                </div>
+            @endif
             @yield('content')
         </div>
     </div>

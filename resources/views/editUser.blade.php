@@ -60,6 +60,15 @@
     </div>
 
 
+    <div class="mb-4 mt-4">
+        <label class="text-white">Método de Pago</label>
+        <select name="metodo_pago" class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200 text-black">
+            <option value="">Sin especificar</option>
+            <option value="efectivo" {{ $userToEdit->metodo_pago == 'efectivo' ? 'selected' : '' }}>Efectivo</option>
+            <option value="transferencia" {{ $userToEdit->metodo_pago == 'transferencia' ? 'selected' : '' }}>Transferencia bancaria</option>
+        </select>
+    </div>
+
     <label class="text-white">Nueva Contraseña (opcional):</label>
     <input type="password" name="password" class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200">
 

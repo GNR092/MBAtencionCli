@@ -189,6 +189,7 @@ class crudUser extends Controller
             $user->phone = '52' . $request->input('phone');
             $user->id_regimen = $request->input('regimenFiscal');
             $user->fecha_nacimiento = $request->input('fecha_nacimiento') ?: null;
+            $user->metodo_pago = $request->input('metodo_pago') ?: null;
 
             if ($request->filled('password')) {
                 $user->password = $request->input('password');

@@ -16,7 +16,7 @@
     <form method="post" action="{{ route('facturas.buscar') }}" class="tabla-dorada-search">
         @csrf
         <label for="searchInput">BUSCAR POR:</label>
-        <input type="text" id="searchInput" name="search" value="{{ $search }}" placeholder="Buscar..." class="flex-1 min-w-[160px]">
+        <input type="text" id="searchInput" name="search" value="{{ $search }}" placeholder="Buscar..." class="flex-1 min-w-40">
         <select name="categoria" id="categoria">
             <option value="id" {{ $categoria == 'id' ? 'selected' : '' }}>Factura</option>
             <option value="inversionista" {{ $categoria == 'inversionista' ? 'selected' : '' }}>Inversionista</option>
@@ -70,7 +70,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="py-10 text-white/40 italic">No se encontraron facturas</td>
+                        <td colspan="6" class="py-10 text-white/40 italic">No se encontraron inversionistas</td>
                     </tr>
                     @endforelse
                 </tbody>

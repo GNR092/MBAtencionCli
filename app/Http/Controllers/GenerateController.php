@@ -61,6 +61,7 @@ class GenerateController extends Controller
                     'rfc'               => $request->rfc ?? null,
                     'curp'              => $request->curp ?? null,
                     'email_verified_at' => now(),
+                    'metodo_pago'       => $request->metodo_pago ?? null,
                 ]);
 
                 $proyectosIds = $request->input('proyect', []);

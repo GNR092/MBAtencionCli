@@ -20,6 +20,7 @@ use App\Http\Controllers\PasswordCheckController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\RegimenFiscalController;
 use App\Http\Controllers\UploadFactura;
+use App\Http\Controllers\EfectivoController;
 use App\Http\Controllers\UserChatController;
 use App\Http\Controllers\UserViewController;
 use App\Http\Middleware\AuthUser;
@@ -73,6 +74,9 @@ Route::middleware([AuthUser::class.':usuario'])->group(function () {
     Route::post('/estado-de-cuenta/pdf', [EstadoController::class, 'descargarPdf'])->name('estados-cuenta.pdf');
 
     // Contratos (usuario)
+    // Efectivo (usuario)
+    Route::get('/user/efectivo', [EfectivoController::class, 'userIndex'])->name('user.efectivo.index');
+
     Route::get('/contratos', [ContractController::class, 'index'])->name('contratos.index');
     Route::post('/contratos/buscar', [ContractController::class, 'buscar'])->name('contratos.buscar');
     Route::get('/contratos/limpiar', [ContractController::class, 'limpiar'])->name('contratos.limpiar');
@@ -143,6 +147,10 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::get('/facturas/pdf/{id}', [UploadFactura::class, 'descargarPdf'])->name('facturas.descargarPdf');
     Route::post('/facturas/buscar', [UploadFactura::class, 'buscar'])->name('facturas.buscar');
     Route::get('/facturas/limpiar', [UploadFactura::class, 'limpiar'])->name('facturas.limpiar');
+
+    // Efectivo (admin)
+    Route::get('/efectivo', [EfectivoController::class, 'index'])->name('admin.efectivo.index');
+    Route::post('/efectivo', [EfectivoController::class, 'store'])->name('admin.efectivo.store');
 
     // Impuestos
     Route::get('/impuestos', [ImpuestoController::class, 'index'])->name('impuestos.index');

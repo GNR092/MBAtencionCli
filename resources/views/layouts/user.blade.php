@@ -100,6 +100,7 @@
                                 <a href="{{ route('user.facturacion') }}" class="block py-2.5 pl-8 text-sm text-gray-200 hover:text-[#d8c495] transition-colors">Facturación</a>
                                 <a href="/cuentas-por-cobrar" class="block py-2.5 pl-8 text-sm text-gray-200 hover:text-[#d8c495] transition-colors">Cuentas por cobrar</a>
                                 <a href="/estados-de-cuenta" class="block py-2.5 pl-8 text-sm text-gray-200 hover:text-[#d8c495] transition-colors">Estados de cuenta</a>
+                                <a href="{{ route('user.efectivo.index') }}" class="block py-2.5 pl-8 text-sm text-gray-200 hover:text-[#d8c495] transition-colors">Efectivo</a>
                                 <a href="/contratos" class="block py-2.5 pl-8 text-sm text-gray-200 hover:text-[#d8c495] transition-colors">Contratos</a>
                                 <a href="/notificaciones" class="block py-2.5 pl-8 text-sm text-gray-200 hover:text-[#d8c495] transition-colors">Notificaciones</a>
                             </div>

@@ -28,6 +28,7 @@ class User extends Authenticatable
         'id_regimen',
         'foto',
         'fecha_nacimiento',
+        'metodo_pago',
     ];
 
     /**

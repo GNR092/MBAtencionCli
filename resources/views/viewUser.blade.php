@@ -65,6 +65,25 @@
     {{-- CONTENIDO PRINCIPAL --}}
     <main class="min-h-screen relative z-10 bg-transparent">
         <div class="w-full min-h-screen p-4 md:p-8 space-y-6 md:space-y-10 font-[system-ui] bg-transparent">
+            @if(session('error'))
+                <div class="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
+                    {{ session('error') }}
+                </div>
+            @endif
+            @if($errors->any())
+                <div class="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
+                    <ul class="list-disc pl-5 space-y-1">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            @if(session('success'))
+                <div class="bg-green-500/20 border border-green-500 text-green-200 px-4 py-3 rounded-lg">
+                    {{ session('success') }}
+                </div>
+            @endif
 
             {{-- Header traslúcido --}}
             <header class="flex flex-col md:flex-row items-center justify-between w-full animate-fadeInUp py-4 px-6 gap-4 rounded-2xl shadow-2xl" style="background-color: rgba(60, 60, 60, 0.8) !important; backdrop-filter: blur(10px);">
