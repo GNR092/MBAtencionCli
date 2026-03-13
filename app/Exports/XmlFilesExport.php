@@ -8,7 +8,9 @@ use Maatwebsite\Excel\Concerns\FromView;
 class XmlFilesExport implements FromView
 {
     protected $query;
+
     protected $totalBase;
+
     protected $totalISR;
 
     public function __construct($query, $totalBase, $totalISR)
@@ -20,13 +22,13 @@ class XmlFilesExport implements FromView
 
     public function view(): View
     {
-        
+
         $xmlFiles = $this->query->get();
 
         return view('exports.xml_files', [
             'xmlFiles' => $xmlFiles,
             'totalBase' => $this->totalBase,
-            'totalISR' => $this->totalISR
+            'totalISR' => $this->totalISR,
         ]);
     }
 }

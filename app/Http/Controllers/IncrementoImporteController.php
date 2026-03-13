@@ -2,36 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\IncrementoImporte;
 use App\Models\Contract;
+use App\Models\IncrementoImporte;
+use Illuminate\Http\Request;
 
 class IncrementoImporteController extends Controller
 {
     public function index(Request $request)
     {
-        
+
         $query = IncrementoImporte::with('contract');
 
-        
         if ($request->filled('month')) {
-            $year  = substr($request->month, 0, 4);
+            $year = substr($request->month, 0, 4);
             $month = substr($request->month, 5, 2);
 
             $query->whereYear('created_at', $year)
                 ->whereMonth('created_at', $month);
         }
 
-        
         $incrementos = $query->paginate(10)->appends($request->query());
 
         return view('incrementos.index', compact('incrementos'));
     }
 
-
     public function create()
     {
         $contract = Contract::with('user')->get();
+
         return view('incrementos.create', compact('contract'));
     }
 
@@ -47,13 +45,14 @@ class IncrementoImporteController extends Controller
         IncrementoImporte::create($request->all());
 
         return redirect()->route('incrementos.index')
-                         ->with('success', 'Incremento registrado correctamente.');
+            ->with('success', 'Incremento registrado correctamente.');
     }
 
     public function destroy($id)
     {
         IncrementoImporte::findOrFail($id)->delete();
+
         return redirect()->route('incrementos.index')
-                         ->with('success', 'Incremento eliminado.');
+            ->with('success', 'Incremento eliminado.');
     }
 }

@@ -14,7 +14,7 @@ class UserProyecto extends Pivot
 
     protected $fillable = [
         'id_user',
-        'id_proyecto'
+        'id_proyecto',
     ];
 
     public function deptos()
@@ -41,5 +41,4 @@ class UserProyecto extends Pivot
     {
         return $this->belongsTo(Proyecto::class, 'id_proyecto', 'id_proyecto');
     }
-
 }

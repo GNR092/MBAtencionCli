@@ -20,10 +20,9 @@ return new class extends Migration
             $table->decimal('isr', 15, 2);
             $table->unsignedBigInteger('xml_file_id');
             $table->foreign('xml_file_id')
-                  ->references('id')
-                  ->on('xml_files')
-                  ->onDelete('cascade'); 
-
+                ->references('id')
+                ->on('xml_files')
+                ->onDelete('cascade');
 
             $table->timestamps();
         });

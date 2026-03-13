@@ -11,7 +11,7 @@ class RoleMiddleware
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect('/inicio-de-sesion');
         }
 

@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Storage;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class UserViewController extends Controller
 {
@@ -14,20 +13,15 @@ class UserViewController extends Controller
     {
         $user = Auth::user();
 
-        
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('login.form')->withErrors('Usuario no encontrado o sesión caducada.');
         }
 
-        
-        
-        
         $anuncios = \App\Models\Anuncio::where('estado', 'activo')
             ->orderByRaw("FIELD(prioridad, 'alta', 'media', 'baja')")
             ->orderBy('created_at', 'desc')
             ->get();
 
-        
         $ticketsCount = 0;
         $equiposAsignados = 0;
         $entregasCount = 0;
@@ -38,7 +32,6 @@ class UserViewController extends Controller
         $usuarios = [];
         $misResguardos = [];
 
-        
         $administradores = User::where('role', 'administrador')->get();
 
         $sumImporteCobrarRentas = $user->userProyectos()
@@ -48,7 +41,7 @@ class UserViewController extends Controller
                 return $userProyecto->deptos;
             })
             ->sum('importe');
-            
+
         $deptoCount = $user->userProyectos->flatMap->deptos->count();
 
         return view('viewUser', compact(
@@ -76,12 +69,12 @@ class UserViewController extends Controller
         ]);
 
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('login.form')->withErrors('Sesión caducada.');
         }
 
         if ($request->hasFile('foto')) {
-            if ($user->foto) { 
+            if ($user->foto) {
                 Storage::disk('public')->delete($user->foto);
             }
             $path = $request->file('foto')->store('fotos_perfil', 'public');

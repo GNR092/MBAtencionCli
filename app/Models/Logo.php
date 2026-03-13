@@ -14,6 +14,6 @@ class Logo extends Model
         'imagen_ruta',
         'url_redireccion',
         'orden',
-        'activo'
+        'activo',
     ];
 }

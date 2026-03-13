@@ -3,22 +3,17 @@
 namespace App\Services;
 
 use SimpleXMLElement;
-use Illuminate\Support\Facades\Log;
 
 class XmlValidationService
 {
-
     private function normalize($text)
     {
         $text = strtolower(trim($text));
 
-        
         $text = iconv('UTF-8', 'ASCII//TRANSLIT', $text);
 
         return $text;
     }
-
-
 
     /**
      * Valida y extrae datos de un XML CFDI 4.0
@@ -30,7 +25,6 @@ class XmlValidationService
             'errors' => [],
             'filename' => $filename,
 
-            
             'comprobante' => [],
             'emisor' => [],
             'receptor' => [],
@@ -38,11 +32,10 @@ class XmlValidationService
             'impuestos' => null,
             'timbreFiscalDigital' => [],
 
-            
             'emisor_name' => '',
             'receptor_name' => '',
             'uuid' => null,
-            'proyectos' => '', 
+            'proyectos' => '',
             'departamento' => null,
             'mes' => null,
             'anio' => null,
@@ -50,35 +43,31 @@ class XmlValidationService
             'isr' => 0.0,
             'iva' => 0.0,
             'valorUnitario' => null,
-            'TipoFactor' => null, 
-            'tasaCuota' => null,  
+            'TipoFactor' => null,
+            'tasaCuota' => null,
             'regimenFiscal' => null,
-            'cuenta_predial' => null, 
+            'cuenta_predial' => null,
         ];
 
         libxml_use_internal_errors(true);
         $xml = simplexml_load_file($filePath);
 
-        if (!$xml) {
+        if (! $xml) {
             $result['errors'][] = ['Campo' => 'Archivo', 'Error' => 'XML corrupto', 'Sug' => 'Verificar archivo'];
+
             return $result;
         }
 
-        
         $ns = $xml->getNamespaces(true);
         $xml->registerXPathNamespace('cfdi', $ns['cfdi'] ?? 'http://www.sat.gob.mx/cfd/4');
         $xml->registerXPathNamespace('tfd', $ns['tfd'] ?? 'http://www.sat.gob.mx/TimbreFiscalDigital');
 
-        
-
-        
         $tfdNode = $xml->xpath('//tfd:TimbreFiscalDigital')[0] ?? null;
         if ($tfdNode) {
             $result['timbreFiscalDigital'] = $this->getAttributesAsArray($tfdNode);
             $result['uuid'] = strtolower($result['timbreFiscalDigital']['UUID'] ?? '');
         }
 
-        
         $result['comprobante'] = $this->getAttributesAsArray($xml);
 
         $emisor = $xml->xpath('//cfdi:Comprobante/cfdi:Emisor')[0] ?? null;
@@ -94,8 +83,6 @@ class XmlValidationService
             $result['receptor_name'] = $result['receptor']['Nombre'] ?? '';
         }
 
-        
-
         $conceptosNodes = $xml->xpath('//cfdi:Comprobante/cfdi:Conceptos/cfdi:Concepto');
         $foundPeriod = false;
 
@@ -103,82 +90,71 @@ class XmlValidationService
             $data = $this->getAttributesAsArray($node);
             $descripcion = $data['Descripcion'] ?? '';
 
-            
-            $descClean = preg_replace('/\s+/', ' ', $descripcion); 
+            $descClean = preg_replace('/\s+/', ' ', $descripcion);
 
-            
-            if (!$result['mes']) {
-                
-                
+            if (! $result['mes']) {
+
                 $regexMes = '/\b(ENERO|FEBRERO|MARZO|ABRIL|MAYO|JUNIO|JULIO|AGOSTO|SEPTIEMBRE|SETIEMBRE|OCTUBRE|NOVIEMBRE|DICIEMBRE)\b/i';
                 if (preg_match($regexMes, $descClean, $matches)) {
                     $result['mes'] = strtolower($matches[1]);
                 }
             }
 
-            if (!$result['anio']) {
-                
+            if (! $result['anio']) {
+
                 if (preg_match('/\b(20[2-3][0-9])\b/', $descClean, $matches)) {
                     $result['anio'] = $matches[1];
                 }
             }
 
-            
-            if (!$result['departamento']) {
-                
-                
-                
-                
-                
-                
-                
+            if (! $result['departamento']) {
+
                 $regexDepto = '/(?:DEP(?:ARTAMENTO|TO|T)?\.?|PH|GH|LOCAL|OFICINA|UNIDAD)\s*(?:NO\.?|NUM\.?|#)?\s*([A-Z0-9\-\s]{1,10})\b/i';
 
                 if (preg_match($regexDepto, $descClean, $matches)) {
-                    
+
                     $result['departamento'] = trim(strtoupper($matches[1]));
                 }
             }
 
-            
             $data['Impuestos'] = ['Traslados' => [], 'Retenciones' => []];
 
-            
             $trasladosNodes = $node->xpath('cfdi:Impuestos/cfdi:Traslados/cfdi:Traslado');
-            if (!empty($trasladosNodes)) {
+            if (! empty($trasladosNodes)) {
                 foreach ($trasladosNodes as $tras) {
                     $data['Impuestos']['Traslados'][] = $this->getAttributesAsArray($tras);
                 }
             }
-            
+
             $retencionesNodes = $node->xpath('cfdi:Impuestos/cfdi:Retenciones/cfdi:Retencion');
-            if (!empty($retencionesNodes)) {
+            if (! empty($retencionesNodes)) {
                 foreach ($retencionesNodes as $ret) {
                     $data['Impuestos']['Retenciones'][] = $this->getAttributesAsArray($ret);
                 }
             }
 
-            
             $predialNode = $node->xpath('cfdi:CuentaPredial')[0] ?? null;
             if ($predialNode) {
                 $attr = $this->getAttributesAsArray($predialNode);
                 $data['CuentaPredial'] = $attr;
-                if (!$result['cuenta_predial']) $result['cuenta_predial'] = $attr['Numero'] ?? null;
+                if (! $result['cuenta_predial']) {
+                    $result['cuenta_predial'] = $attr['Numero'] ?? null;
+                }
             } else {
-                
+
                 if (preg_match('/(?:PREDIAL|CATASTRAL)(?:[\s\.\:\#]*)([0-9]+)/i', $descClean, $matches)) {
                     $data['CuentaPredial'] = ['Numero' => $matches[1], 'Origen' => 'Texto'];
-                    if (!$result['cuenta_predial']) $result['cuenta_predial'] = $matches[1];
+                    if (! $result['cuenta_predial']) {
+                        $result['cuenta_predial'] = $matches[1];
+                    }
                 }
             }
 
-            
             if ($i === 0) {
                 $result['valorUnitario'] = $data['ValorUnitario'] ?? null;
                 $foundTax = false;
 
-                
-                if (!empty($data['Impuestos']['Retenciones'])) {
+                if (! empty($data['Impuestos']['Retenciones'])) {
                     foreach ($data['Impuestos']['Retenciones'] as $ret) {
                         if (isset($ret['TasaOCuota'])) {
                             $result['TipoFactor'] = $ret['TipoFactor'];
@@ -188,8 +164,8 @@ class XmlValidationService
                         }
                     }
                 }
-                
-                if (!$foundTax && !empty($data['Impuestos']['Traslados'])) {
+
+                if (! $foundTax && ! empty($data['Impuestos']['Traslados'])) {
                     foreach ($data['Impuestos']['Traslados'] as $tras) {
                         $tipo = $tras['TipoFactor'] ?? '';
                         if ($tipo === 'Tasa') {
@@ -198,7 +174,7 @@ class XmlValidationService
                             $foundTax = true;
                             break;
                         }
-                        if ($tipo === 'Exento' && !$result['TipoFactor']) {
+                        if ($tipo === 'Exento' && ! $result['TipoFactor']) {
                             $result['TipoFactor'] = 'Exento';
                             $result['tasaCuota'] = '0.000000';
                         }
@@ -209,32 +185,27 @@ class XmlValidationService
             $result['conceptos'][] = $data;
         }
 
-        
         $impuestosGlobales = $xml->xpath('//cfdi:Comprobante/cfdi:Impuestos')[0] ?? null;
         if ($impuestosGlobales) {
             $result['impuestos'] = $this->getAttributesAsArray($impuestosGlobales);
             $result['isr'] = floatval($result['impuestos']['TotalImpuestosRetenidos'] ?? 0);
             $result['iva'] = floatval($result['impuestos']['TotalImpuestosTrasladados'] ?? 0);
         } else {
-            
-            
+
         }
 
-        
         if ($result['anio'] && $result['mes']) {
             $meses = ['enero' => '01', 'febrero' => '02', 'marzo' => '03', 'abril' => '04', 'mayo' => '05', 'junio' => '06', 'julio' => '07', 'agosto' => '08', 'septiembre' => '09', 'setiembre' => '09', 'octubre' => '10', 'noviembre' => '11', 'diciembre' => '12'];
             $mesNum = $meses[$result['mes']] ?? null;
             if ($mesNum) {
-                $result['periodo_pago'] = $result['anio'] . '-' . $mesNum;
+                $result['periodo_pago'] = $result['anio'].'-'.$mesNum;
             }
         }
 
-        
-        $critical_errors = []; 
-        $warnings = [];        
+        $critical_errors = [];
+        $warnings = [];
 
-        
-        if (!$result['uuid']) {
+        if (! $result['uuid']) {
             $critical_errors[] = ['Campo' => 'UUID', 'Error' => 'Falta Timbre Fiscal', 'Sug' => 'XML incompleto o sin timbrar'];
         }
         if (floatval($result['comprobante']['Total'] ?? 0) <= 0) {
@@ -244,36 +215,26 @@ class XmlValidationService
             $critical_errors[] = ['Campo' => 'RFC Receptor', 'Error' => 'Falta RFC', 'Sug' => 'El nodo Receptor es obligatorio'];
         }
 
-        
-        
-        if (!$result['mes']) {
+        if (! $result['mes']) {
             $warnings[] = ['Campo' => 'Mes', 'Error' => 'No detectado automát.', 'Sug' => 'Seleccionar mes manualmente'];
         }
-        if (!$result['anio']) {
+        if (! $result['anio']) {
             $warnings[] = ['Campo' => 'Año', 'Error' => 'No detectado automát.', 'Sug' => 'Ingresar año manualmente'];
         }
-        if (!$result['departamento']) {
+        if (! $result['departamento']) {
             $warnings[] = ['Campo' => 'Departamento', 'Error' => 'No detectado', 'Sug' => 'Asignar departamento manualmente'];
         }
 
-        
-        if (!$result['cuenta_predial']) {
+        if (! $result['cuenta_predial']) {
             $warnings[] = ['Campo' => 'Predial', 'Error' => 'No encontrado', 'Sug' => 'Verificar si aplica'];
         }
 
-        
-
-        
         $result['errors'] = array_merge($critical_errors, $warnings);
 
-        
-        
         $result['valid'] = empty($critical_errors);
 
-        
-        $result['requires_manual_check'] = !empty($warnings);
+        $result['requires_manual_check'] = ! empty($warnings);
 
-        
         unset($result['comprobante']['Sello'], $result['comprobante']['Certificado']);
         unset($result['timbreFiscalDigital']['SelloCFD'], $result['timbreFiscalDigital']['SelloSAT']);
 
@@ -288,9 +249,10 @@ class XmlValidationService
         $attributes = [];
         if ($node && $node->attributes()) {
             foreach ($node->attributes() as $key => $val) {
-                $attributes[$key] = (string)$val;
+                $attributes[$key] = (string) $val;
             }
         }
+
         return $attributes;
     }
 
@@ -298,17 +260,15 @@ class XmlValidationService
     {
         $namespaces = $xml->getNamespaces(true);
 
-        
         if (isset($namespaces['tfd'])) {
             $xml->registerXPathNamespace('tfd', $namespaces['tfd']);
         } else {
             $xml->registerXPathNamespace('tfd', 'http://www.sat.gob.mx/TimbreFiscalDigital');
         }
 
-        
         $uuidNodes = $xml->xpath('//tfd:TimbreFiscalDigital/@UUID');
-        if (!empty($uuidNodes)) {
-            return strtolower((string)$uuidNodes[0]);
+        if (! empty($uuidNodes)) {
+            return strtolower((string) $uuidNodes[0]);
         }
 
         return null;

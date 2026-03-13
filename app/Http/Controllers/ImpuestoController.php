@@ -1,14 +1,12 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session;
-use App\Models\XmlFile;
 use App\Exports\XmlFilesExport;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Services\XmlValidationService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ImpuestoController extends Controller
 {
@@ -31,16 +29,15 @@ class ImpuestoController extends Controller
                 'impuesto.isr'
             );
 
-        
         $this->aplicarFiltros($query, $request);
-                 
 
-        if ($request->filled('desde'))
-            { $query->whereDate('impuesto.created_at', '>=', $request->desde); }
-        if ($request->filled('hasta'))
-            { $query->whereDate('impuesto.created_at', '<=', $request->hasta); }
+        if ($request->filled('desde')) {
+            $query->whereDate('impuesto.created_at', '>=', $request->desde);
+        }
+        if ($request->filled('hasta')) {
+            $query->whereDate('impuesto.created_at', '<=', $request->hasta);
+        }
 
-        
         $totalISR = (clone $query)->sum('impuesto.isr');
         $totalBase = (clone $query)->sum('impuesto.importeBase');
 
@@ -54,16 +51,13 @@ class ImpuestoController extends Controller
     public function index(Request $request)
     {
 
-    
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return redirect('/inicio-de-sesion');
         }
-    
 
-    
         $query = DB::table('xml_files')
-    
+
             ->join('users', 'xml_files.id_user', '=', 'users.id')
             ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id')
             ->leftJoin('regimen_fiscals', 'users.id_regimen', '=', 'regimen_fiscals.id_regimen')
@@ -79,7 +73,6 @@ class ImpuestoController extends Controller
                 'impuesto.tipoFactor as tipoFactor'
             );
 
-        
         if ($request->filled('month')) {
             $year = substr($request->month, 0, 4);
             $month = substr($request->month, 5, 2);
@@ -88,9 +81,6 @@ class ImpuestoController extends Controller
                 ->whereMonth('xml_files.created_at', $month);
         }
 
-        
-
-    
         if ($request->filled('search') && $request->filled('categoria')) {
             $search = $request->input('search');
             $categoria = $request->input('categoria');
@@ -110,22 +100,19 @@ class ImpuestoController extends Controller
             }
         }
 
-    
         $totalISR = (clone $query)->sum('impuesto.isr');
         $totalBase = (clone $query)->sum('impuesto.importeBase');
 
-    
         $xmlFiles = $query->paginate(6)->appends($request->query());
 
-    
         return view('impuestos', compact('xmlFiles', 'totalISR', 'totalBase'));
     }
-
 
     /* ================= LIMPIAR FILTROS ================= */
     public function limpiar()
     {
         session()->forget(['search', 'categoria']);
+
         return redirect()->route('impuestos.index');
     }
 
@@ -168,7 +155,6 @@ class ImpuestoController extends Controller
             $query->where('impuesto.isr', $request->input('isr'));
         }
 
-        
         if ($request->filled('search') && $request->filled('categoria')) {
             $search = $request->input('search');
             $categoria = $request->input('categoria');

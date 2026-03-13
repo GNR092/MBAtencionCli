@@ -10,6 +10,7 @@ use App\Http\Controllers\ContractController;
 use App\Http\Controllers\crudUser;
 use App\Http\Controllers\CuentasPorCobrar;
 use App\Http\Controllers\CuentasPorPagar;
+use App\Http\Controllers\EfectivoController;
 use App\Http\Controllers\EstadoController;
 use App\Http\Controllers\Factura\UserFactController;
 use App\Http\Controllers\GenerateController;
@@ -18,9 +19,9 @@ use App\Http\Controllers\IncrementoImporteController;
 use App\Http\Controllers\ListController;
 use App\Http\Controllers\PasswordCheckController;
 use App\Http\Controllers\ProyectoController;
+use App\Http\Controllers\RazonSocialController;
 use App\Http\Controllers\RegimenFiscalController;
 use App\Http\Controllers\UploadFactura;
-use App\Http\Controllers\EfectivoController;
 use App\Http\Controllers\UserChatController;
 use App\Http\Controllers\UserViewController;
 use App\Http\Middleware\AuthUser;
@@ -173,6 +174,7 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
 
     Route::resource('regimen-fiscal', RegimenFiscalController::class);
     Route::resource('proyectos', ProyectoController::class);
+    Route::resource('razones-sociales', RazonSocialController::class);
 });
 
 Route::middleware([AuthUser::class])->group(function () {

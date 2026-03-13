@@ -17,11 +17,11 @@ class FileLog extends Model
         'emisor_name',
         'receptor_name',
         'related_file',
-        'metadata'
+        'metadata',
     ];
 
     protected $casts = [
         'is_valid' => 'boolean',
-        'metadata' => 'array'
+        'metadata' => 'array',
     ];
 }

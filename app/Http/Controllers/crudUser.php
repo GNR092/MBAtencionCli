@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
-use App\Models\RegimenFiscal;
 use App\Models\Proyecto;
-use \App\Models\UserDepto;
-
+use App\Models\RegimenFiscal;
+use App\Models\User;
+use App\Models\UserDepto;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class crudUser extends Controller
 {
@@ -24,7 +22,7 @@ class crudUser extends Controller
         $query = User::where('role', 'usuario')
             ->with([
                 'userProyectos.deptos',
-                'userProyectos.proyecto'
+                'userProyectos.proyecto',
             ]);
 
         $search = $request->input('search');
@@ -33,23 +31,23 @@ class crudUser extends Controller
         if ($search && $categoria) {
             switch ($categoria) {
                 case 'nombre':
-                    $query->where('name', 'LIKE', '%' . $search . '%');
+                    $query->where('name', 'LIKE', '%'.$search.'%');
                     break;
 
                 case 'email':
-                    $query->where('email', 'LIKE', '%' . $search . '%');
+                    $query->where('email', 'LIKE', '%'.$search.'%');
                     break;
 
                 case 'proyecto':
                     $query->whereHas('userProyectos.proyecto', function ($q) use ($search) {
-                        $q->where('nombre_proyecto', 'like', '%' . $search . '%');
+                        $q->where('nombre_proyecto', 'like', '%'.$search.'%');
                     });
                     break;
             }
         }
 
         if ($request->filled('month')) {
-            $year  = substr($request->month, 0, 4);
+            $year = substr($request->month, 0, 4);
             $month = substr($request->month, 5, 2);
 
             $query->whereYear('created_at', $year)
@@ -86,20 +84,16 @@ class crudUser extends Controller
             'password' => 'required|string',
         ]);
 
-
         $admin = Auth::user();
-        if (!$admin || $admin->role !== 'administrador') {
+        if (! $admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
-
-        if (!Hash::check($request->password, $admin->password)) {
+        if (! Hash::check($request->password, $admin->password)) {
             return back()->withErrors(['password' => 'Contraseña incorrecta']);
         }
 
-
         session(['validated_edit_user' => $request->user_id]);
-
 
         return redirect()->route('usuarios.editar', $request->user_id);
     }
@@ -108,17 +102,14 @@ class crudUser extends Controller
     {
         $admin = Auth::user();
 
-
-        if (!$admin || $admin->role !== 'administrador') {
+        if (! $admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
-
 
         if (session('validated_edit_user') != $id) {
             return redirect()->route('usuarios.index')
                 ->withErrors(['auth' => 'Debes confirmar tu contraseña antes de editar este usuario.']);
         }
-
 
         $userToEdit = User::findOrFail($id);
         $regimenesFiscales = RegimenFiscal::all();
@@ -130,11 +121,11 @@ class crudUser extends Controller
     {
         $admin = Auth::user();
 
-        if (!$admin || $admin->role !== 'administrador') {
+        if (! $admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
-        if (!Hash::check($request->input('password'), $admin->password)) {
+        if (! Hash::check($request->input('password'), $admin->password)) {
             return back()->with('error', 'Contraseña incorrecta');
         }
 
@@ -161,11 +152,10 @@ class crudUser extends Controller
         return back()->with('success', 'Usuario eliminado correctamente.');
     }
 
-
     public function editar(Request $request)
     {
         $admin = Auth::user();
-        if (!$admin || $admin->role !== 'administrador') {
+        if (! $admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
@@ -173,7 +163,7 @@ class crudUser extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $id,
+            'email' => 'required|string|email|max:255|unique:users,email,'.$id,
             'phone' => 'required|string|max:20',
             'regimenFiscal' => 'required|integer',
             'password' => 'nullable|string|min:8|confirmed',
@@ -186,7 +176,7 @@ class crudUser extends Controller
             // 1. Actualizar datos básicos del usuario
             $user->name = mb_convert_encoding($request->input('name'), 'UTF-8', 'UTF-8');
             $user->email = $request->input('email');
-            $user->phone = '52' . $request->input('phone');
+            $user->phone = '52'.$request->input('phone');
             $user->id_regimen = $request->input('regimenFiscal');
             $user->fecha_nacimiento = $request->input('fecha_nacimiento') ?: null;
             $user->metodo_pago = $request->input('metodo_pago') ?: null;
@@ -200,12 +190,12 @@ class crudUser extends Controller
             // 2. Obtener proyectos actuales y nuevos
             $projectIds = $request->input('proyect', []);
             $currentProyectos = $user->userProyectos()->get()->keyBy('id_proyecto');
-            $currentProjectIds = $currentProyectos->keys()->map(fn($k) => (int) $k)->toArray();
+            $currentProjectIds = $currentProyectos->keys()->map(fn ($k) => (int) $k)->toArray();
             $newProjectIds = array_map('intval', $projectIds);
 
             // 3. Eliminar proyectos que ya no están seleccionados (esto también elimina sus deptos por el boot del modelo)
             $projectsToRemove = array_diff($currentProjectIds, $newProjectIds);
-            if (!empty($projectsToRemove)) {
+            if (! empty($projectsToRemove)) {
                 \App\Models\UserProyecto::where('id_user', $user->id)
                     ->whereIn('id_proyecto', $projectsToRemove)
                     ->get()
@@ -252,7 +242,7 @@ class crudUser extends Controller
 
         session()->forget('validated_edit_user');
 
-        return redirect(route('usuarios.index') . '#user-' . $id)
+        return redirect(route('usuarios.index').'#user-'.$id)
             ->with('success', 'Usuario editado correctamente.')
             ->with('highlight_user', $id);
     }
@@ -274,13 +264,14 @@ class crudUser extends Controller
                 }
                 $user->dias_para_cumple = $hoy->startOfDay()->diffInDays($cumple->startOfDay());
                 $user->edad = $hoy->year - \Carbon\Carbon::parse($user->fecha_nacimiento)->year;
+
                 return $user;
             })
             ->sortBy('dias_para_cumple');
 
-        $esteMes = $todos->filter(fn($u) => \Carbon\Carbon::parse($u->fecha_nacimiento)->month === $mesActual);
-        $proximoMes = $todos->filter(fn($u) => \Carbon\Carbon::parse($u->fecha_nacimiento)->month === ($mesActual % 12) + 1);
-        $restantes = $todos->reject(fn($u) => in_array(\Carbon\Carbon::parse($u->fecha_nacimiento)->month, [$mesActual, ($mesActual % 12) + 1]));
+        $esteMes = $todos->filter(fn ($u) => \Carbon\Carbon::parse($u->fecha_nacimiento)->month === $mesActual);
+        $proximoMes = $todos->filter(fn ($u) => \Carbon\Carbon::parse($u->fecha_nacimiento)->month === ($mesActual % 12) + 1);
+        $restantes = $todos->reject(fn ($u) => in_array(\Carbon\Carbon::parse($u->fecha_nacimiento)->month, [$mesActual, ($mesActual % 12) + 1]));
 
         return view('cumpleanios', compact('esteMes', 'proximoMes', 'restantes', 'hoy'));
     }
@@ -288,7 +279,7 @@ class crudUser extends Controller
     public function store(Request $request)
     {
         $admin = Auth::user();
-        if (!$admin || $admin->role !== 'administrador') {
+        if (! $admin || $admin->role !== 'administrador') {
             return redirect('/inicio-de-sesion');
         }
 
@@ -305,7 +296,7 @@ class crudUser extends Controller
         $user = User::create([
             'name' => mb_convert_encoding($request->name, 'UTF-8', 'UTF-8'),
             'email' => $request->email,
-            'phone' => '52' . $request->phone,
+            'phone' => '52'.$request->phone,
             'id_regimen' => $request->regimenFiscal,
             'password' => Hash::make($request->password),
             'role' => 'usuario',

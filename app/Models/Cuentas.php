@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,6 +10,7 @@ class Cuentas extends Model
     use HasFactory;
 
     protected $table = 'cuentasporpagar';
+
     protected $fillable = [
         'id_cuentas_por_pagar',
         'uuid',
@@ -34,24 +36,23 @@ class Cuentas extends Model
     }
 
     public function getImporteBaseFinalAttribute()
-{
-    $mes = $this->mes_pago ?? null;
+    {
+        $mes = $this->mes_pago ?? null;
 
-    if (!$mes) {
-        return $this->importeBase;
+        if (! $mes) {
+            return $this->importeBase;
+        }
+
+        $incremento = \DB::table('incrementos_importe')
+            ->where('id_contract', $this->id_contract)
+            ->whereRaw("DATE_FORMAT(fecha_inicio, '%Y-%m') <= ?", [$mes])
+            ->where(function ($q) use ($mes) {
+                $q->whereNull('fecha_fin')
+                    ->orWhereRaw("DATE_FORMAT(fecha_fin, '%Y-%m') >= ?", [$mes]);
+            })
+            ->orderByDesc('fecha_inicio')
+            ->value('importe_base');
+
+        return $incremento ?? $this->importeBase;
     }
-
-    $incremento = \DB::table('incrementos_importe')
-        ->where('id_contract', $this->id_contract)
-        ->whereRaw("DATE_FORMAT(fecha_inicio, '%Y-%m') <= ?", [$mes])
-        ->where(function ($q) use ($mes) {
-            $q->whereNull('fecha_fin')
-              ->orWhereRaw("DATE_FORMAT(fecha_fin, '%Y-%m') >= ?", [$mes]);
-        })
-        ->orderByDesc('fecha_inicio')
-        ->value('importe_base');
-
-    return $incremento ?? $this->importeBase;
-}
-
 }

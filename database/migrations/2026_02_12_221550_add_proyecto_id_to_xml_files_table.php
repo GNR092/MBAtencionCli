@@ -12,16 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('xml_files', function (Blueprint $table) {
-            
-            
-            
+
             $table->unsignedBigInteger('id_proyecto')->nullable()->after('id_user');
 
-            
             $table->foreign('id_proyecto')
                 ->references('id_proyecto')
                 ->on('proyectos')
-                ->onDelete('set null'); 
+                ->onDelete('set null');
         });
     }
 
@@ -31,9 +28,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('xml_files', function (Blueprint $table) {
-            
+
             $table->dropForeign(['id_proyecto']);
-            
+
             $table->dropColumn('id_proyecto');
         });
     }

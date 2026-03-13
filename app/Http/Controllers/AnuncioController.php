@@ -11,7 +11,7 @@ class AnuncioController extends Controller
     public function index()
     {
         $anuncios = Anuncio::orderBy('prioridad', 'desc')->get();
-        
+
         return view('anuncios', compact('anuncios'));
     }
 
@@ -25,7 +25,7 @@ class AnuncioController extends Controller
         ]);
 
         // Si el usuario intentó subir un archivo pero PHP no lo recibió correctamente
-        if ($request->files->has('adjunto') && !$request->hasFile('adjunto')) {
+        if ($request->files->has('adjunto') && ! $request->hasFile('adjunto')) {
             return redirect()->back()->with('error', 'El archivo no se subió correctamente. Verifica que no supere 5 MB y sea PDF, JPG o PNG.')->withInput();
         }
 
@@ -33,7 +33,7 @@ class AnuncioController extends Controller
             $path = null;
             if ($request->hasFile('adjunto')) {
                 $path = $request->file('adjunto')->store('anuncios', 'public');
-                if (!$path) {
+                if (! $path) {
                     return redirect()->back()->with('error', 'No se pudo guardar el archivo. Verifique los permisos del servidor.')->withInput();
                 }
             }
@@ -46,7 +46,7 @@ class AnuncioController extends Controller
                 'prioridad' => $request->prioridad,
             ]);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error al crear el anuncio: ' . $e->getMessage())->withInput();
+            return redirect()->back()->with('error', 'Error al crear el anuncio: '.$e->getMessage())->withInput();
         }
 
         return redirect()->route('admin.anuncios.index')->with('success', 'Anuncio creado');
@@ -57,6 +57,7 @@ class AnuncioController extends Controller
         $anuncio = Anuncio::findOrFail($id);
         $anuncio->estado = ($anuncio->estado == 'activo') ? 'inactivo' : 'activo';
         $anuncio->save();
+
         return redirect()->back();
     }
 
@@ -65,28 +66,28 @@ class AnuncioController extends Controller
         $anuncio = Anuncio::findOrFail($id);
 
         $request->validate([
-            'titulo'    => 'required|string|max:255',
+            'titulo' => 'required|string|max:255',
             'prioridad' => 'required|in:baja,media,alta',
-            'estado'    => 'required|in:activo,inactivo',
-            'adjunto'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'estado' => 'required|in:activo,inactivo',
+            'adjunto' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         // Si intentó subir un archivo pero PHP no lo recibió correctamente
-        if ($request->files->has('adjunto') && !$request->hasFile('adjunto')) {
+        if ($request->files->has('adjunto') && ! $request->hasFile('adjunto')) {
             return redirect()->back()->with('error', 'El archivo no se subió correctamente. Verifica que no supere 5 MB y sea PDF, JPG o PNG.')->withInput();
         }
 
         try {
             $data = [
-                'titulo'      => $request->titulo,
+                'titulo' => $request->titulo,
                 'descripcion' => $request->descripcion,
-                'prioridad'   => $request->prioridad,
-                'estado'      => $request->estado,
+                'prioridad' => $request->prioridad,
+                'estado' => $request->estado,
             ];
 
             if ($request->hasFile('adjunto')) {
                 $newPath = $request->file('adjunto')->store('anuncios', 'public');
-                if (!$newPath) {
+                if (! $newPath) {
                     return redirect()->back()->with('error', 'No se pudo guardar el archivo. Verifique los permisos del servidor.')->withInput();
                 }
                 // Solo borrar el anterior una vez confirmado que el nuevo se guardó
@@ -98,7 +99,7 @@ class AnuncioController extends Controller
 
             $anuncio->update($data);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error al actualizar el anuncio: ' . $e->getMessage())->withInput();
+            return redirect()->back()->with('error', 'Error al actualizar el anuncio: '.$e->getMessage())->withInput();
         }
 
         return redirect()->route('admin.anuncios.index')->with('success', 'Anuncio actualizado');
@@ -107,8 +108,11 @@ class AnuncioController extends Controller
     public function destroy($id)
     {
         $anuncio = Anuncio::findOrFail($id);
-        if ($anuncio->adjunto_ruta) Storage::disk('public')->delete($anuncio->adjunto_ruta);
+        if ($anuncio->adjunto_ruta) {
+            Storage::disk('public')->delete($anuncio->adjunto_ruta);
+        }
         $anuncio->delete();
+
         return redirect()->route('admin.anuncios.index')->with('success', 'Anuncio eliminado');
     }
 }

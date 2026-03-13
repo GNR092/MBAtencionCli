@@ -10,19 +10,17 @@ return new class extends Migration
     {
         Schema::create('incrementos_importe', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_contract'); 
+            $table->unsignedBigInteger('id_contract');
             $table->date('fecha_inicio');
             $table->date('fecha_fin');
             $table->decimal('importe_base', 10, 2);
-            
-            
+
             $table->timestamps();
 
-            
             $table->foreign('id_contract')
-                  ->references('id')
-                  ->on('contract')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('contract')
+                ->onDelete('cascade');
         });
     }
 

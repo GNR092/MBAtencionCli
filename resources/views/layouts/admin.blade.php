@@ -309,6 +309,8 @@
                                     Anuncios</a>
                                 <a href="{{ route('usuarios.cumpleanios') }}"
                                     class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Cumpleaños</a>
+                                <a href="{{ route('razones-sociales.index') }}"
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Razón Social</a>
                             </div>
                         </div>
                     </nav>

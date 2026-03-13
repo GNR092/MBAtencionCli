@@ -17,13 +17,13 @@ class XmlBatch extends Model
         'uuid_mapping',
         'user_email',
         'completed',
-        'deadline'
+        'deadline',
     ];
 
     protected $casts = [
         'uuid_mapping' => 'array',
         'completed' => 'boolean',
-        'deadline' => 'datetime'
+        'deadline' => 'datetime',
     ];
 
     public function xmlFiles()

@@ -59,9 +59,9 @@ class EfectivoController extends Controller
     {
         $request->validate([
             'id_cuentas_por_pagar' => 'required|integer|exists:cuentasporpagar,id_cuentas_por_pagar',
-            'monto'                => 'required|numeric|min:0.01',
-            'fecha_pago'           => 'required|date',
-            'concepto'             => 'nullable|string|max:500',
+            'monto' => 'required|numeric|min:0.01',
+            'fecha_pago' => 'required|date',
+            'concepto' => 'nullable|string|max:500',
         ]);
 
         $cuenta = Cuentas::where('id_cuentas_por_pagar', $request->id_cuentas_por_pagar)->firstOrFail();
@@ -74,22 +74,22 @@ class EfectivoController extends Controller
             ->first();
 
         PagoEfectivo::create([
-            'id_contract'          => $cuenta->id_contract,
+            'id_contract' => $cuenta->id_contract,
             'id_cuentas_por_pagar' => $cuenta->id_cuentas_por_pagar,
-            'id_user'              => $contrato->user_id,
-            'monto'                => $request->monto,
-            'fecha_pago'           => $request->fecha_pago,
-            'mes_pago'             => $cuenta->mes_pago,
-            'concepto'             => $request->concepto,
+            'id_user' => $contrato->user_id,
+            'monto' => $request->monto,
+            'fecha_pago' => $request->fecha_pago,
+            'mes_pago' => $cuenta->mes_pago,
+            'concepto' => $request->concepto,
         ]);
 
         // Actualizar cuentasporpagar
-        $nuevoPagado   = floatval($cuenta->monto_pagado) + floatval($request->monto);
-        $saldoNeto     = floatval($cuenta->saldo_neto);
-        $nuevoSaldo    = round(max(0, $saldoNeto - $nuevoPagado), 2);
+        $nuevoPagado = floatval($cuenta->monto_pagado) + floatval($request->monto);
+        $saldoNeto = floatval($cuenta->saldo_neto);
+        $nuevoSaldo = round(max(0, $saldoNeto - $nuevoPagado), 2);
 
         if ($nuevoPagado >= $saldoNeto) {
-            $estado     = 'pagado';
+            $estado = 'pagado';
             $nuevoSaldo = 0;
         } elseif ($nuevoPagado > 0) {
             $estado = 'parcial';
@@ -100,10 +100,10 @@ class EfectivoController extends Controller
         DB::table('cuentasporpagar')
             ->where('id_cuentas_por_pagar', $cuenta->id_cuentas_por_pagar)
             ->update([
-                'monto_pagado'    => round($nuevoPagado, 2),
+                'monto_pagado' => round($nuevoPagado, 2),
                 'saldo_pendiente' => $nuevoSaldo,
-                'estado'          => $estado,
-                'updated_at'      => now(),
+                'estado' => $estado,
+                'updated_at' => now(),
             ]);
 
         return redirect()->back()->with('success', 'Pago en efectivo registrado correctamente.');

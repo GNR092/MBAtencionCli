@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->foreign('id_regimen')
-                  ->references('id_regimen') 
-                  ->on('regimen_fiscals')    
-                  ->onDelete('set null');    
+                ->references('id_regimen')
+                ->on('regimen_fiscals')
+                ->onDelete('set null');
         });
     }
 

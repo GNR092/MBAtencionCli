@@ -12,13 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('factura_validacions', function (Blueprint $table) {
-        $table->id();
-        $table->string('uuid')->nullable();
-        $table->string('emisor_name')->nullable();
-        $table->string('receptor_name')->nullable();
-        $table->boolean('valid')->default(false);
-        $table->json('errors')->nullable();
-        $table->timestamps();
+            $table->id();
+            $table->string('uuid')->nullable();
+            $table->string('emisor_name')->nullable();
+            $table->string('receptor_name')->nullable();
+            $table->boolean('valid')->default(false);
+            $table->json('errors')->nullable();
+            $table->timestamps();
         });
     }
 

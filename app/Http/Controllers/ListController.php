@@ -3,19 +3,16 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session; 
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ListController extends Controller
 {
     public function limpiar()
     {
-        
+
         session()->forget(['search', 'categoria']);
 
-        
         return redirect()->route('inversionistas.index');
     }
 
@@ -23,25 +20,21 @@ class ListController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect('/inicio-de-sesion');
         }
 
-        
         $monthParam = $request->input('month', now()->format('Y-m'));
         [$year, $month] = explode('-', $monthParam);
 
-        
         $query = DB::table('xml_files')
             ->join('users', 'xml_files.id_user', '=', 'users.id')
             ->leftJoin('proyectos', 'xml_files.id_proyecto', '=', 'proyectos.id_proyecto')
             ->select('xml_files.*', 'users.name as inversor_name', 'proyectos.nombre_proyecto');
 
-        
         $query->whereYear('xml_files.created_at', $year)
-              ->whereMonth('xml_files.created_at', $month);
+            ->whereMonth('xml_files.created_at', $month);
 
-        
         if ($request->filled('fecha')) {
             $query->whereDate('xml_files.created_at', $request->input('created_at'));
         }
@@ -51,10 +44,9 @@ class ListController extends Controller
         }
 
         if ($request->filled('emisor_name')) {
-            $query->where('xml_files.emisor_name', 'LIKE', '%' . $request->input('emisor_name') . '%');
+            $query->where('xml_files.emisor_name', 'LIKE', '%'.$request->input('emisor_name').'%');
         }
 
-        
         if ($request->filled('search') && $request->filled('categoria')) {
             $search = $request->input('search');
             $categoria = $request->input('categoria');
@@ -77,12 +69,11 @@ class ListController extends Controller
             }
         }
 
-        
         $xmlFiles = $query->paginate(10)->appends($request->query());
 
         return view('listInver', [
             'xmlFiles' => $xmlFiles,
-            'selectedMonth' => $monthParam 
+            'selectedMonth' => $monthParam,
         ]);
     }
 }

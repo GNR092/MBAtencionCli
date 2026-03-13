@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Hash;
-use App\Models\RegimenFiscal;
 use App\Models\Proyecto;
+use App\Models\RegimenFiscal;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use App\Models\UserProyecto;
 use App\Models\UserDepto;
+use App\Models\UserProyecto;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class GenerateController extends Controller
 {
@@ -20,10 +19,9 @@ class GenerateController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect('/inicio-de-sesion');
         }
-
 
         $regimenesFiscales = RegimenFiscal::all();
         $proyectos = Proyecto::all();
@@ -42,9 +40,11 @@ class GenerateController extends Controller
         ]);
 
         $user = Auth::user();
-        if (!$user) { return redirect('/inicio-de-sesion'); }
+        if (! $user) {
+            return redirect('/inicio-de-sesion');
+        }
 
-        $phone = '52' . $request->input('phone');
+        $phone = '52'.$request->input('phone');
         $passwordPlain = $this->generarContrasenia();
 
         try {
@@ -52,16 +52,16 @@ class GenerateController extends Controller
 
                 // --- CREAR USUARIO ---
                 $newUser = User::create([
-                    'name'              => mb_convert_encoding($request->name, 'UTF-8', 'UTF-8'),
-                    'email'             => $request->email,
-                    'password'          => Hash::make($passwordPlain),
-                    'role'              => 'usuario',
-                    'phone'             => $phone,
-                    'id_regimen'        => $request->regimenFiscal,
-                    'rfc'               => $request->rfc ?? null,
-                    'curp'              => $request->curp ?? null,
+                    'name' => mb_convert_encoding($request->name, 'UTF-8', 'UTF-8'),
+                    'email' => $request->email,
+                    'password' => Hash::make($passwordPlain),
+                    'role' => 'usuario',
+                    'phone' => $phone,
+                    'id_regimen' => $request->regimenFiscal,
+                    'rfc' => $request->rfc ?? null,
+                    'curp' => $request->curp ?? null,
                     'email_verified_at' => now(),
-                    'metodo_pago'       => $request->metodo_pago ?? null,
+                    'metodo_pago' => $request->metodo_pago ?? null,
                 ]);
 
                 $proyectosIds = $request->input('proyect', []);
@@ -70,8 +70,7 @@ class GenerateController extends Controller
                 // --- RECORRER PROYECTOS ---
                 foreach ($proyectosIds as $projectId) {
 
-                    
-                    $pivot = new UserProyecto();
+                    $pivot = new UserProyecto;
                     $pivot->id_user = $newUser->id;
                     $pivot->id_proyecto = $projectId;
                     $pivot->created_at = now();
@@ -81,7 +80,7 @@ class GenerateController extends Controller
                     $pivotId = $pivot->getKey();
 
                     // Si getKey retorna null
-                    if (!$pivotId) {
+                    if (! $pivotId) {
                         $pivotId = $pivot->id_user_p ?? $pivot->id;
                     }
 
@@ -91,13 +90,15 @@ class GenerateController extends Controller
                         foreach ($detallesDeptos[$projectId] as $index => $deptoData) {
 
                             // Aseguramos que vengan los datos mínimos
-                            if(empty($deptoData['nombre_depto'])) continue;
+                            if (empty($deptoData['nombre_depto'])) {
+                                continue;
+                            }
 
                             UserDepto::create([
                                 'id_user_p' => $pivotId, // Usamos la ID recuperada de forma segura
-                                'nombre'    => $deptoData['nombre_depto'],
-                                'predial'   => $deptoData['cuenta_numero'] ?? 'N/A',
-                                'importe'   => $deptoData['importe'] ?? 0,
+                                'nombre' => $deptoData['nombre_depto'],
+                                'predial' => $deptoData['cuenta_numero'] ?? 'N/A',
+                                'importe' => $deptoData['importe'] ?? 0,
                             ]);
                         }
                     }
@@ -105,12 +106,13 @@ class GenerateController extends Controller
             });
 
             return back()->with('success', '✅ Usuario registrado correctamente.')
-                         ->with('generated_password', $passwordPlain);
+                ->with('generated_password', $passwordPlain);
 
         } catch (\Throwable $e) {
             // Si falla, revertirá todo y mostrará esto:
-            Log::error("Error Fatal Registro: " . $e->getMessage());
-            return back()->with('error', 'Error técnico: ' . $e->getMessage());
+            Log::error('Error Fatal Registro: '.$e->getMessage());
+
+            return back()->with('error', 'Error técnico: '.$e->getMessage());
 
             // Depuracion
             // dd($e->getMessage(), $e->getLine(), $e->getFile());

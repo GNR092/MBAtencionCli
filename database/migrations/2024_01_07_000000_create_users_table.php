@@ -22,12 +22,8 @@ return new class extends Migration
             $table->string('proyect')->nullable();
             $table->string('phone')->nullable();
 
-            
-            
-            
-            $table->unsignedInteger('id_regimen')->nullable(); 
-            
-            
+            $table->unsignedInteger('id_regimen')->nullable();
+
             $table->rememberToken();
             $table->timestamps();
         });

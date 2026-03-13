@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('titulo');
             $table->text('descripcion')->nullable();
-            $table->string('adjunto_ruta')->nullable(); 
+            $table->string('adjunto_ruta')->nullable();
             $table->enum('estado', ['activo', 'inactivo'])->default('activo');
             $table->enum('prioridad', ['baja', 'media', 'alta'])->default('baja');
             $table->timestamps();

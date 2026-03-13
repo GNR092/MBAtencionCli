@@ -31,6 +31,7 @@ class DescripcionParser
         $texto = str_replace(["\n", "\r", "\t"], ' ', $texto);
         // Reducir espacios multiples a uno
         $texto = preg_replace('/\s+/', ' ', trim($texto));
+
         return $texto;
     }
 
@@ -66,6 +67,7 @@ class DescripcionParser
                 // Si tiene comas, separar multiples deptos
                 if (str_contains($raw, ',')) {
                     $deptos = array_map('trim', explode(',', $raw));
+
                     return array_values(array_filter($deptos));
                 }
 
@@ -159,7 +161,7 @@ class DescripcionParser
             // 2. Busqueda por palabras significativas del proyecto
             $palabrasProyecto = array_filter(
                 explode(' ', $nombreLower),
-                fn($p) => mb_strlen($p) > 2 // Ignorar: de, el, la, y, del, etc.
+                fn ($p) => mb_strlen($p) > 2 // Ignorar: de, el, la, y, del, etc.
             );
 
             if (empty($palabrasProyecto)) {
@@ -174,6 +176,7 @@ class DescripcionParser
                 // Usamos strpos en vez de word boundary para soportar truncados
                 if (mb_strpos($descripcionLower, $palabra) !== false) {
                     $palabrasEncontradas++;
+
                     continue;
                 }
 
@@ -222,7 +225,7 @@ class DescripcionParser
         $nombresMeses = implode('|', array_keys(self::MESES));
 
         // Patron 1: "mes de julio 2025" o "SEPTIEMBRE DE 2025" o "Enero 2025"
-        $patron1 = '/\b(' . $nombresMeses . ')\.?\s*(?:de|del)?\s*[-–]?\s*(\d{4})\b/iu';
+        $patron1 = '/\b('.$nombresMeses.')\.?\s*(?:de|del)?\s*[-–]?\s*(\d{4})\b/iu';
 
         if (preg_match($patron1, $descripcion, $matches)) {
             $mesTexto = mb_strtolower(trim($matches[1]));
@@ -240,7 +243,7 @@ class DescripcionParser
         }
 
         // Patron 2: "mes de julio del 2025"
-        $patron2 = '/\bmes\s+de\s+(' . $nombresMeses . ')\.?\s*(?:de|del)?\s*(\d{4})\b/iu';
+        $patron2 = '/\bmes\s+de\s+('.$nombresMeses.')\.?\s*(?:de|del)?\s*(\d{4})\b/iu';
 
         if (preg_match($patron2, $descripcion, $matches)) {
             $mesTexto = mb_strtolower(trim($matches[1]));
@@ -315,9 +318,9 @@ class DescripcionParser
 
         $tipos = [
             'arrendamiento' => '/\barrendamiento\b/iu',
-            'renta'         => '/\brenta\b/iu',
+            'renta' => '/\brenta\b/iu',
             'mantenimiento' => '/\bmantenimiento\b/iu',
-            'cuota'         => '/\bcuota\b/iu',
+            'cuota' => '/\bcuota\b/iu',
         ];
 
         foreach ($tipos as $tipo => $patron) {
@@ -335,13 +338,13 @@ class DescripcionParser
     public function parsearDescripcion(string $descripcion, array $proyectos = []): array
     {
         return [
-            'tipo_concepto'  => $this->extraerTipoConcepto($descripcion),
-            'departamentos'  => $this->extraerDepartamentos($descripcion),
-            'edificio'       => $this->extraerEdificio($descripcion),
-            'subcondominio'  => $this->extraerSubcondominio($descripcion),
-            'proyecto'       => $this->extraerProyecto($descripcion, $proyectos),
-            'fecha'          => $this->extraerFecha($descripcion),
-            'folio_predial'  => $this->extraerFolioPredial($descripcion),
+            'tipo_concepto' => $this->extraerTipoConcepto($descripcion),
+            'departamentos' => $this->extraerDepartamentos($descripcion),
+            'edificio' => $this->extraerEdificio($descripcion),
+            'subcondominio' => $this->extraerSubcondominio($descripcion),
+            'proyecto' => $this->extraerProyecto($descripcion, $proyectos),
+            'fecha' => $this->extraerFecha($descripcion),
+            'folio_predial' => $this->extraerFolioPredial($descripcion),
             'descripcion_original' => $descripcion,
         ];
     }

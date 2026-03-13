@@ -21,6 +21,6 @@ class CfdiConfirmationMail extends Mailable
     public function build()
     {
         return $this->subject('Confirmación de recepción de CFDI')
-                    ->view('emails.cfdi-confirmation');
+            ->view('emails.cfdi-confirmation');
     }
 }

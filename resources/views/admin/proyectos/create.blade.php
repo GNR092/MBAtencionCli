@@ -40,6 +40,24 @@
                 class="w-full bg-white/5 border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#d8c495] focus:ring-1 focus:ring-[#d8c495]/30 transition-colors">
         </div>
 
+        <div>
+            <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-2">
+                Razón Social
+            </label>
+            <select name="id_razon_social"
+                class="w-full bg-white/5 border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#d8c495] focus:ring-1 focus:ring-[#d8c495]/30 transition-colors">
+                <option value="" class="bg-[#112134]">-- Seleccionar razón social --</option>
+                @foreach($razonesSociales as $rs)
+                    <option value="{{ $rs->id_razon_social }}" class="bg-[#112134]">
+                        {{ $rs->nombre_razon_social }} ({{ $rs->rfc }})
+                    </option>
+                @endforeach
+            </select>
+            @if($razonesSociales->isEmpty())
+                <p class="text-yellow-400 text-xs mt-2">No hay razones sociales disponibles. Puede crear una primero.</p>
+            @endif
+        </div>
+
         <div class="flex gap-4 pt-2">
             <button type="submit"
                 class="bg-[#d8c495] hover:bg-[#b8a374] text-[#112134] text-xs font-bold tracking-[0.2em] uppercase px-8 py-3 rounded-lg transition-all">

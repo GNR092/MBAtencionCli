@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class Proyecto extends Model
 {
     protected $table = 'proyectos';
+
     protected $primaryKey = 'id_proyecto';
 
     protected $fillable = [
         'nombre_proyecto',
+        'id_razon_social',
     ];
 
     public function users()
@@ -18,5 +20,10 @@ class Proyecto extends Model
         return $this->belongsToMany(User::class, 'user_proyectos', 'id_proyecto', 'id_user')
             ->using(UserProyecto::class)
             ->withPivot(['id_user_p']);
+    }
+
+    public function razonSocial()
+    {
+        return $this->belongsTo(RazonSocial::class, 'id_razon_social', 'id_razon_social');
     }
 }

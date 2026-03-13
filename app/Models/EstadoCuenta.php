@@ -5,9 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class EstadoCuenta extends Model{
-     use HasFactory;
-         
+class EstadoCuenta extends Model
+{
+    use HasFactory;
+
     protected $table = 'estados_de_cuenta';
 
     //
@@ -21,7 +22,7 @@ class EstadoCuenta extends Model{
         'factura',
     ];
 
-        public function user()
+    public function user()
     {
         return $this->belongsTo(User::class);
     }

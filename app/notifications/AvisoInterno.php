@@ -3,14 +3,15 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
 
 class AvisoInterno extends Notification
 {
     use Queueable;
 
     protected $asunto;
+
     protected $mensaje;
 
     public function __construct($asunto, $mensaje)
@@ -19,7 +20,6 @@ class AvisoInterno extends Notification
         $this->mensaje = $mensaje;
     }
 
-    
     public function via($notifiable)
     {
         return property_exists($this, 'sendMail') && $this->sendMail
@@ -38,8 +38,8 @@ class AvisoInterno extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->subject($this->asunto)
-                    ->line($this->mensaje)
-                    ->line('Gracias por usar nuestro sistema.');
+            ->subject($this->asunto)
+            ->line($this->mensaje)
+            ->line('Gracias por usar nuestro sistema.');
     }
 }

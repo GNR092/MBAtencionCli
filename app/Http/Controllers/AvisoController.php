@@ -2,32 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Http;
 use App\Mail\AvisoMail;
-use App\Models\User;
 use App\Models\Proyecto;
+use App\Models\User;
 use App\Notifications\AvisoInterno;
+use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 
 class AvisoController extends Controller
 {
     /**
      * Returns the count of unread notifications for the authenticated user.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function unreadCount(Request $request)
     {
         $user = $request->user();
-        if (!$user) return response()->json(['count' => 0], 401);
+        if (! $user) {
+            return response()->json(['count' => 0], 401);
+        }
 
         if ($user->role === 'administrador') {
             $count = DatabaseNotification::where('type', \App\Notifications\AvisoInterno::class)
-                                         ->whereNull('read_at')
-                                         ->count();
+                ->whereNull('read_at')
+                ->count();
         } else {
             $count = $user->unreadNotifications()->count();
         }
@@ -38,26 +39,29 @@ class AvisoController extends Controller
     public function apiNotifications(Request $request)
     {
         $user = $request->user();
-        if (!$user) return response()->json(['html' => '', 'count' => 0], 401);
+        if (! $user) {
+            return response()->json(['html' => '', 'count' => 0], 401);
+        }
 
         if ($user->role === 'administrador') {
             $notificaciones = DatabaseNotification::where('type', \App\Notifications\AvisoInterno::class)
-                                                 ->whereNull('read_at')
-                                                 ->latest()
-                                                 ->take(10)
-                                                 ->get();
+                ->whereNull('read_at')
+                ->latest()
+                ->take(10)
+                ->get();
         } else {
             $notificaciones = $user->unreadNotifications()->latest()->take(10)->get();
         }
 
         $html = view('partials.notificacion-dropdown', compact('notificaciones'))->render();
+
         return response()->json(['html' => $html, 'count' => $notificaciones->count()]);
     }
 
     public function delete(Request $request, $id)
     {
         $usuario = $request->user();
-        if (!$usuario) {
+        if (! $usuario) {
             return redirect('/inicio-de-sesion');
         }
 
@@ -69,11 +73,11 @@ class AvisoController extends Controller
 
         return redirect()->back()->with('success', 'Notificación borrada.');
     }
-    
+
     public function index(Request $request)
     {
         $usuario = $request->user();
-        if (!$usuario) {
+        if (! $usuario) {
             return redirect('/inicio-de-sesion');
         }
 
@@ -83,34 +87,36 @@ class AvisoController extends Controller
         $hasNotifications = $nuevas->count() > 0;
 
         if ($request->expectsJson()) {
-            $html = view('notificaciones', compact('nuevas', 'antiguas','hasNotifications'))->render();
+            $html = view('notificaciones', compact('nuevas', 'antiguas', 'hasNotifications'))->render();
+
             return response()->json(['html' => $html]);
         }
 
-        return view('notificaciones', compact('nuevas', 'antiguas','hasNotifications'));
+        return view('notificaciones', compact('nuevas', 'antiguas', 'hasNotifications'));
     }
 
-    
-    public function markAsRead(Request $request, $id) 
+    public function markAsRead(Request $request, $id)
     {
         $usuario = $request->user();
-        if (!$usuario) {
+        if (! $usuario) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Unauthorized'], 401);
             }
+
             return redirect('/inicio-de-sesion');
         }
 
         $notificacion = $usuario->notifications()->where('id', $id)->first();
 
-        if (!$notificacion) { 
+        if (! $notificacion) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Notification not found'], 404);
             }
+
             return redirect()->back()->withErrors('Notificación no encontrada.');
         }
 
-        if ($notificacion->read_at === null) { 
+        if ($notificacion->read_at === null) {
             $notificacion->markAsRead();
         }
 
@@ -121,10 +127,10 @@ class AvisoController extends Controller
         return redirect()->back()->with('success', 'Notificación marcada como leída.');
     }
 
-    
     public function showForm()
     {
         $proyectos = Proyecto::orderBy('nombre_proyecto')->get();
+
         return view('enviarAvisos', compact('proyectos'));
     }
 
@@ -147,15 +153,14 @@ class AvisoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'usuario'     => 'nullable|string',
-            'asunto'      => 'required|string|max:255',
-            'mensaje'     => 'required|string',
-            'canales'     => 'required|array',
-            'proyect'     => 'nullable|array',
-            'proyect.*'   => 'exists:proyectos,id_proyecto',
-            'canales.*'   => 'in:interno,correo,whatsapp',
+            'usuario' => 'nullable|string',
+            'asunto' => 'required|string|max:255',
+            'mensaje' => 'required|string',
+            'canales' => 'required|array',
+            'proyect' => 'nullable|array',
+            'proyect.*' => 'exists:proyectos,id_proyecto',
+            'canales.*' => 'in:interno,correo,whatsapp',
         ]);
-
 
         if ($request->boolean('todos')) {
             $usuarios = User::all();
@@ -173,7 +178,7 @@ class AvisoController extends Controller
                 return back()->withErrors(['usuarios' => 'No se encontraron usuarios en el/los proyecto(s) seleccionado(s).']);
             }
         } else {
-            
+
             $input = $request->usuario;
             $usuario = null;
 
@@ -181,39 +186,37 @@ class AvisoController extends Controller
                 $usuario = User::find($input);
             }
 
-            if (!$usuario) {
+            if (! $usuario) {
                 $usuario = User::where('name', 'like', "%{$input}%")
-                               ->orWhere('email', $input)
-                               ->first();
+                    ->orWhere('email', $input)
+                    ->first();
             }
 
-            if (!$usuario) {
+            if (! $usuario) {
                 return back()->withErrors(['usuario' => 'Usuario no encontrado (por ID, nombre o email).']);
             }
 
             $usuarios = collect([$usuario]);
         }
 
-        
         $contadores = [
-            'interno'            => 0,
-            'correo'             => 0,
-            'whatsapp'           => 0,
-            'omitidos_whatsapp'  => 0,
-            'omitidos_correo'    => 0,
+            'interno' => 0,
+            'correo' => 0,
+            'whatsapp' => 0,
+            'omitidos_whatsapp' => 0,
+            'omitidos_correo' => 0,
         ];
 
-        $waPhoneId  = env('WHATSAPP_PHONE_ID');
-        $waToken    = env('WHATSAPP_ACCESS_TOKEN');
-        $waUrl      = $waPhoneId ? "https://graph.facebook.com/v20.0/{$waPhoneId}/messages" : null;
+        $waPhoneId = env('WHATSAPP_PHONE_ID');
+        $waToken = env('WHATSAPP_ACCESS_TOKEN');
+        $waUrl = $waPhoneId ? "https://graph.facebook.com/v20.0/{$waPhoneId}/messages" : null;
 
-        $usarInterno  = in_array('interno', $request->canales, true);
-        $usarCorreo   = in_array('correo', $request->canales, true);
+        $usarInterno = in_array('interno', $request->canales, true);
+        $usarCorreo = in_array('correo', $request->canales, true);
         $usarWhatsApp = in_array('whatsapp', $request->canales, true);
 
-        
         foreach ($usuarios as $u) {
-            
+
             if ($usarInterno) {
                 try {
                     $u->notify(new AvisoInterno($request->asunto, $request->mensaje));
@@ -223,10 +226,9 @@ class AvisoController extends Controller
                 }
             }
 
-            
             if ($usarCorreo) {
                 try {
-                    if (!empty($u->email)) {
+                    if (! empty($u->email)) {
                         Mail::to($u->email)->send(new AvisoMail($request->asunto, $request->mensaje));
                         $contadores['correo']++;
                     } else {
@@ -237,7 +239,6 @@ class AvisoController extends Controller
                 }
             }
 
-            
             if ($usarWhatsApp) {
                 try {
                     $phone = preg_replace('/[^\d]/', '', $u->phone ?? '');
@@ -254,16 +255,16 @@ class AvisoController extends Controller
                                         'type' => 'body',
                                         'parameters' => [
                                             ['type' => 'text', 'text' => $request->asunto],
-                                            ['type' => 'text', 'text' => $request->mensaje]
-                                        ]
-                                    ]
-                                ]
-                            ]
+                                            ['type' => 'text', 'text' => $request->mensaje],
+                                        ],
+                                    ],
+                                ],
+                            ],
                         ];
 
                         $resp = Http::withToken($waToken)
-                                    ->acceptJson()
-                                    ->post($waUrl, $payload);
+                            ->acceptJson()
+                            ->post($waUrl, $payload);
 
                         if ($resp->successful()) {
                             $contadores['whatsapp']++;
@@ -281,14 +282,15 @@ class AvisoController extends Controller
             }
         }
 
-        
         $resumen = [];
-        if ($usarInterno)  { $resumen[] = "Interno: {$contadores['interno']} enviados"; }
-        if ($usarCorreo)   { 
-            $extra = $contadores['omitidos_correo'] ? " (omitidos sin email: {$contadores['omitidos_correo']})" : '';
-            $resumen[] = "Correo: {$contadores['correo']} enviados{$extra}"; 
+        if ($usarInterno) {
+            $resumen[] = "Interno: {$contadores['interno']} enviados";
         }
-        if ($usarWhatsApp) { 
+        if ($usarCorreo) {
+            $extra = $contadores['omitidos_correo'] ? " (omitidos sin email: {$contadores['omitidos_correo']})" : '';
+            $resumen[] = "Correo: {$contadores['correo']} enviados{$extra}";
+        }
+        if ($usarWhatsApp) {
             $extra = $contadores['omitidos_whatsapp'] ? " (errores/omitidos: {$contadores['omitidos_whatsapp']})" : '';
             $resumen[] = "WhatsApp: {$contadores['whatsapp']} enviados{$extra}";
         }

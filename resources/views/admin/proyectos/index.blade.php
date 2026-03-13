@@ -28,42 +28,50 @@
 <div class="tabla-dorada-container">
     <div class="overflow-x-auto custom-scroll">
         <table class="tabla-dorada">
-            <thead>
+                <thead>
                 <tr>
                     <th>ID</th>
                     <th>Nombre del Proyecto</th>
+                    <th>Razón Social</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
-        <tbody>
-            @forelse($proyectos as $proyecto)
-            <tr class="border-b border-[#d8c495]/10 hover:bg-white/5 transition-colors">
-                <td class="px-6 py-4 font-bold text-[#d8c495]/50">#{{ $proyecto->id_proyecto }}</td>
-                <td class="px-4 py-4 font-medium text-white uppercase">{{ $proyecto->nombre_proyecto }}</td>
-                <td class="px-6 py-4 text-center">
-                    <div class="flex items-center justify-center gap-3">
-                        <a href="{{ route('proyectos.edit', $proyecto->id_proyecto) }}"
-                            class="text-[10px] tracking-widest uppercase font-bold text-[#d8c495] hover:text-[#112134] hover:bg-[#d8c495] border border-[#d8c495]/50 px-4 py-1.5 rounded-lg transition-all">
-                            Editar
-                        </a>
-                        <form action="{{ route('proyectos.destroy', $proyecto->id_proyecto) }}" method="POST"
-                            onsubmit="return confirm('¿Eliminar este proyecto?')">
-                            @csrf @method('DELETE')
-                            <button type="submit"
-                                class="text-[10px] tracking-widest uppercase font-bold text-red-400 hover:text-white hover:bg-red-500 border border-red-400/50 px-4 py-1.5 rounded-lg transition-all">
-                                Eliminar
-                            </button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="3" class="py-10 text-white/40 italic">
-                    No hay proyectos registrados
-                </td>
-            </tr>
-            @endforelse
+            <tbody>
+                @forelse($proyectos as $proyecto)
+                <tr class="border-b border-[#d8c495]/10 hover:bg-white/5 transition-colors">
+                    <td class="px-6 py-4 font-bold text-[#d8c495]/50">#{{ $proyecto->id_proyecto }}</td>
+                    <td class="px-4 py-4 font-medium text-white uppercase">{{ $proyecto->nombre_proyecto }}</td>
+                    <td class="px-4 py-4 text-white/70">
+                        @if($proyecto->razonSocial)
+                            {{ $proyecto->razonSocial->nombre_razon_social }}
+                        @else
+                            <span class="text-white/40 italic">Sin asignar</span>
+                        @endif
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex items-center justify-center gap-3">
+                            <a href="{{ route('proyectos.edit', $proyecto->id_proyecto) }}"
+                                class="text-[10px] tracking-widest uppercase font-bold text-[#d8c495] hover:text-[#112134] hover:bg-[#d8c495] border border-[#d8c495]/50 px-4 py-1.5 rounded-lg transition-all">
+                                Editar
+                            </a>
+                            <form action="{{ route('proyectos.destroy', $proyecto->id_proyecto) }}" method="POST"
+                                onsubmit="return confirm('¿Eliminar este proyecto?')">
+                                @csrf @method('DELETE')
+                                <button type="submit"
+                                    class="text-[10px] tracking-widest uppercase font-bold text-red-400 hover:text-white hover:bg-red-500 border border-red-400/50 px-4 py-1.5 rounded-lg transition-all">
+                                    Eliminar
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="4" class="py-10 text-white/40 italic">
+                        No hay proyectos registrados
+                    </td>
+                </tr>
+                @endforelse
         </tbody>
     </table>
 </div>

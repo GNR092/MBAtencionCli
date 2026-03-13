@@ -8,7 +8,9 @@ use Maatwebsite\Excel\Concerns\FromView;
 class cuentasExport implements FromView
 {
     protected $query;
+
     protected $totalPendiente;
+
     protected $totalPagado;
 
     public function __construct($query, $totalPendiente, $totalPagado)
@@ -20,7 +22,7 @@ class cuentasExport implements FromView
 
     public function view(): View
     {
-        
+
         $cuentas = $this->query->get();
 
         return view('exports.cuentas', [

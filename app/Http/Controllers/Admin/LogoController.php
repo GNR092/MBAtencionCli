@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -11,7 +12,8 @@ class LogoController extends Controller
     public function index()
     {
         $logos = Logo::orderBy('created_at', 'desc')->get();
-        return view('logos', compact('logos')); 
+
+        return view('logos', compact('logos'));
     }
 
     public function store(Request $request)
@@ -22,31 +24,32 @@ class LogoController extends Controller
                 'required',
                 'image',
                 'mimes:png,svg',
-                'max:2048'
+                'max:2048',
             ],
-            'url_redireccion' => 'nullable|url'
+            'url_redireccion' => 'nullable|url',
         ], [
-            
+
             'logo.mimes' => 'El logo debe ser un archivo de tipo: png, svg.',
             'logo.max' => 'El tamaño del logo no debe ser mayor a 2MB.',
         ]);
 
-        
         $path = $request->file('logo')->store('logos_carrusel', 'public');
 
         \App\Models\Logo::create([
             'nombre' => $request->nombre,
             'imagen_ruta' => $path,
             'url_redireccion' => $request->url_redireccion,
-            'activo' => true
+            'activo' => true,
         ]);
 
         return back()->with('success', 'Logo cargado correctamente.');
     }
+
     public function toggle(Logo $logo)
     {
-        $logo->activo = !$logo->activo;
+        $logo->activo = ! $logo->activo;
         $logo->save();
+
         return back();
     }
 
@@ -54,6 +57,7 @@ class LogoController extends Controller
     {
         Storage::disk('public')->delete($logo->imagen_ruta);
         $logo->delete();
+
         return back()->with('success', 'Logo eliminado.');
     }
 }

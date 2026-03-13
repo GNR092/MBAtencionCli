@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\User;
 use App\Models\Message;
-use Illuminate\Support\Facades\Session;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class AdminChatController extends Controller
 {
@@ -14,16 +14,14 @@ class AdminChatController extends Controller
     {
         $query = User::where('role', 'usuario');
 
-        
         if ($request->has('search') && $request->input('search') != '') {
             $searchTerm = $request->input('search');
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('email', 'like', '%' . $searchTerm . '%');
+                $q->where('name', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('email', 'like', '%'.$searchTerm.'%');
             });
         }
 
-        
         $sort = $request->input('sort', 'asc');
         if ($sort === 'recent') {
             $query->orderBy('created_at', 'desc');
@@ -38,15 +36,15 @@ class AdminChatController extends Controller
         return view('admin_user_chat_directory', [
             'users' => $users,
             'search' => $request->input('search'),
-            'sort' => $sort
+            'sort' => $sort,
         ]);
     }
 
     public function getMessages(Request $request, $userId)
     {
         $currentAdminId = Auth::id() ?? (Session::has('user') ? Session::get('user')->id : null);
-        
-        if (!$currentAdminId) {
+
+        if (! $currentAdminId) {
             return response()->json(['error' => 'Unauthenticated'], 401);
         }
 
@@ -68,8 +66,6 @@ class AdminChatController extends Controller
 
         $messages = $query->orderBy('created_at', 'asc')->get();
 
-        
-        
         Message::where('sender_id', $userId)
             ->whereIn('receiver_id', [0, $currentAdminId])
             ->whereNull('read_at')
@@ -87,13 +83,13 @@ class AdminChatController extends Controller
 
             $adminId = Auth::id() ?? (Session::has('user') ? Session::get('user')->id : null);
 
-            if (!$adminId) {
+            if (! $adminId) {
                 return response()->json(['error' => 'Unauthenticated'], 401);
             }
 
             $message = Message::create([
                 'sender_id' => $adminId,
-                'receiver_id' => $userId, 
+                'receiver_id' => $userId,
                 'message' => $request->input('message'),
             ]);
 
@@ -101,7 +97,7 @@ class AdminChatController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Error al enviar mensaje',
-                'detalle' => $e->getMessage()
+                'detalle' => $e->getMessage(),
             ], 500);
         }
     }

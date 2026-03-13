@@ -12,23 +12,18 @@ return new class extends Migration
     public function up()
     {
         Schema::create('user_depto', function (Blueprint $table) {
-            
+
             $table->id('id_user_depto');
 
-            
-            
-            
             $table->unsignedBigInteger('id_user_p');
             $table->foreign('id_user_p')->references('id_user_p')->on('user_proyectos');
 
-            
             $table->string('nombre');
             $table->string('predial');
 
-            
             $table->decimal('importe', 10, 2);
 
-            $table->timestamps(); 
+            $table->timestamps();
         });
     }
 

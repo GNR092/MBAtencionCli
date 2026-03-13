@@ -11,6 +11,7 @@ class AvisoMail extends Mailable
     use Queueable, SerializesModels;
 
     public $asunto;
+
     public $mensaje;
 
     public function __construct($asunto, $mensaje)
@@ -22,6 +23,6 @@ class AvisoMail extends Mailable
     public function build()
     {
         return $this->subject($this->asunto)
-                    ->view('emails.aviso'); 
+            ->view('emails.aviso');
     }
 }

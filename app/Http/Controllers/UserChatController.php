@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
-use App\Models\Message;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
@@ -13,8 +11,8 @@ class UserChatController extends Controller
     public function getMessages(Request $request)
     {
         $userId = Auth::id() ?? (Session::has('user') ? Session::get('user')->id : null);
-        
-        if (!$userId) {
+
+        if (! $userId) {
             return response()->json(['error' => 'Unauthenticated'], 401);
         }
 
@@ -45,21 +43,20 @@ class UserChatController extends Controller
 
             $userId = Auth::id() ?? (Session::has('user') ? Session::get('user')->id : null);
 
-            if (!$userId) {
+            if (! $userId) {
                 return response()->json(['error' => 'Unauthenticated'], 401);
             }
 
-            
             $firstAdmin = \App\Models\User::where('role', 'administrador')->first();
 
-            if (!$firstAdmin) {
+            if (! $firstAdmin) {
                 return response()->json(['error' => 'No hay administradores en el sistema'], 404);
             }
 
             $message = \App\Models\Message::create([
-                'sender_id'   => $userId,
-                'receiver_id' => $firstAdmin->id, 
-                'message'     => $request->input('message'),
+                'sender_id' => $userId,
+                'receiver_id' => $firstAdmin->id,
+                'message' => $request->input('message'),
             ]);
 
             return response()->json(['status' => 'Mensaje enviado', 'data' => $message]);
@@ -67,7 +64,7 @@ class UserChatController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Error de base de datos',
-                'detalle' => $e->getMessage()
+                'detalle' => $e->getMessage(),
             ], 500);
         }
     }

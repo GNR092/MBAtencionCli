@@ -23,7 +23,7 @@ return new class extends Migration
         });
 
         // Agregar fecha_inicio si todavía no existe en la tabla
-        if (!Schema::hasColumn('xml_files', 'fecha_inicio')) {
+        if (! Schema::hasColumn('xml_files', 'fecha_inicio')) {
             Schema::table('xml_files', function (Blueprint $table) {
                 $table->date('fecha_inicio')->nullable()->after('is_valid');
             });

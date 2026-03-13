@@ -2,12 +2,13 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Services\PdfUuidExtractionService;
+use Illuminate\Console\Command;
 
 class TestPdfUuid extends Command
 {
     protected $signature = 'test:pdf-uuid {file}';
+
     protected $description = 'Probar extracción de UUID desde un PDF';
 
     private $pdfService;
@@ -21,19 +22,20 @@ class TestPdfUuid extends Command
     public function handle()
     {
         $file = $this->argument('file');
-        $path = storage_path('app/pdf_files/' . $file);
+        $path = storage_path('app/pdf_files/'.$file);
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             $this->error("❌ El archivo no existe: $path");
+
             return 1;
         }
 
         $uuid = $this->pdfService->extractUuidFromPdf($path);
 
         if ($uuid) {
-            $this->info("✅ UUID detectado: " . $uuid);
+            $this->info('✅ UUID detectado: '.$uuid);
         } else {
-            $this->warn("❌ No se pudo extraer UUID del PDF.");
+            $this->warn('❌ No se pudo extraer UUID del PDF.');
         }
 
         return 0;

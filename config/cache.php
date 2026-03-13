@@ -60,7 +60,7 @@ return [
                 env('MEMCACHED_PASSWORD'),
             ],
             'options' => [
-                
+
             ],
             'servers' => [
                 [

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('batch_id')->constrained('xml_batches')->onDelete('cascade');
             $table->string('filename');
-             $table->unsignedBigInteger('id_user'); 
+            $table->unsignedBigInteger('id_user');
             $table->string('uuid')->nullable();
             $table->boolean('is_valid')->default(false);
             $table->json('validation_errors')->nullable();

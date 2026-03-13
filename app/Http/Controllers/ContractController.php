@@ -25,7 +25,7 @@ class ContractController extends Controller
             ->select('contract.*', 'proyectos.nombre_proyecto as proyecto')
             ->where(function ($q) use ($user) {
                 $q->where('contract.user_id', $user->id)
-                  ->orWhere('user_proyectos.id_user', $user->id);
+                    ->orWhere('user_proyectos.id_user', $user->id);
             })
             ->orderBy('contract.created_at', 'asc');
 

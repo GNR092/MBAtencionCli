@@ -2,50 +2,40 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session;
-use App\Models\Contract;
-use App\Models\XmlFile;
 use App\Models\Cuentas;
-use App\Models\Impuesto;
-use App\Models\IncrementoImporte;
-use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 use Barryvdh\DomPDF\Facade\Pdf;
-use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class EstadoController extends Controller
 {
+    public function Index(Request $request)
+    {
 
-public function Index(Request $request)
-{
-    
-    $user = Auth::user();
-    if (!$user) {
-        return redirect('/inicio-de-sesion');
-    }
+        $user = Auth::user();
+        if (! $user) {
+            return redirect('/inicio-de-sesion');
+        }
 
-    $yearActual = date('Y');
+        $yearActual = date('Y');
 
-    
-    $query = Cuentas::with('contract')
-        ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
-        ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
-        ->leftJoin('users', 'contract.user_id', '=', 'users.id')
-        ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
-        ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
-        ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id')
-        ->select(
-            'cuentasporpagar.*',
-            'users.name as name',
-            DB::raw('COALESCE(proyectos.nombre_proyecto, \'\') as proyecto'),
-            'contract.importe_bruto_renta as importeBase',
-        )
-        ->where('users.id', $user->id)
-        ->where('cuentasporpagar.estado', '=', 'pagado')
-        ->whereRaw("LEFT(cuentasporpagar.mes_pago, 4) <= ?", [$yearActual]);
+        $query = Cuentas::with('contract')
+            ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
+            ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
+            ->leftJoin('users', 'contract.user_id', '=', 'users.id')
+            ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
+            ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
+            ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id')
+            ->select(
+                'cuentasporpagar.*',
+                'users.name as name',
+                DB::raw('COALESCE(proyectos.nombre_proyecto, \'\') as proyecto'),
+                'contract.importe_bruto_renta as importeBase',
+            )
+            ->where('users.id', $user->id)
+            ->where('cuentasporpagar.estado', '=', 'pagado')
+            ->whereRaw('LEFT(cuentasporpagar.mes_pago, 4) <= ?', [$yearActual]);
 
         if ($request->filled('month')) {
             $query->where('cuentasporpagar.mes_pago', $request->month);
@@ -68,42 +58,43 @@ public function Index(Request $request)
             }
         }
 
+        $cuentas = $query->paginate(6)->appends($request->query());
 
-    
-    $cuentas = $query->paginate(6)->appends($request->query());
+        if ($request->expectsJson()) {
+            $html = view('estadosDeCuenta', [
+                'cuentas' => $cuentas,
+                'user' => $user,
+                'usuario' => $user,
+            ])->render();
 
-    if ($request->expectsJson()) {
-        $html = view('estadosDeCuenta', [
+            return response()->json(['html' => $html]);
+        }
+
+        $minYear = (int) DB::table('cuentasporpagar')
+            ->join('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
+            ->where('contract.user_id', $user->id)
+            ->whereNotNull('cuentasporpagar.mes_pago')
+            ->min(DB::raw('LEFT(cuentasporpagar.mes_pago, 4)'));
+        $minYear = $minYear ?: now()->year;
+
+        return view('estadosDeCuenta', [
             'cuentas' => $cuentas,
             'user' => $user,
-            'usuario' => $user
-        ])->render();
-        return response()->json(['html' => $html]);
+            'usuario' => $user,
+            'minYear' => $minYear,
+        ]);
+
     }
 
-    $minYear = (int) DB::table('cuentasporpagar')
-        ->join('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
-        ->where('contract.user_id', $user->id)
-        ->whereNotNull('cuentasporpagar.mes_pago')
-        ->min(DB::raw('LEFT(cuentasporpagar.mes_pago, 4)'));
-    $minYear = $minYear ?: now()->year;
-
-    return view('estadosDeCuenta', [
-        'cuentas'  => $cuentas,
-        'user'     => $user,
-        'usuario'  => $user,
-        'minYear'  => $minYear,
-    ]);
-
-}
-
-public function limpiar(){
+    public function limpiar()
+    {
         session()->forget(['search', 'categoria']);
-        return redirect()->route('estados-cuenta.index');
-}
 
-private function aplicarFiltros(&$query, Request $request)
-{
+        return redirect()->route('estados-cuenta.index');
+    }
+
+    private function aplicarFiltros(&$query, Request $request)
+    {
         if ($request->filled('mes')) {
             $query->whereDate('cuentasporpagar.mesesdepago', $request->input('mes'));
         }
@@ -148,77 +139,76 @@ private function aplicarFiltros(&$query, Request $request)
                     break;
             }
         }
-}
+    }
 
-public function graficaAnualPagados($year){
+    public function graficaAnualPagados($year)
+    {
         $user = Auth::user();
-    if (!$user) return response()->json([]);
+        if (! $user) {
+            return response()->json([]);
+        }
 
-    
-    $cuentas = DB::table('cuentasporpagar')
-        ->join('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
-        ->where('contract.user_id', $user->id)
-        ->whereNotNull('cuentasporpagar.mes_pago')
-        ->where('cuentasporpagar.mes_pago', 'like', $year . '-%')
-        ->select('cuentasporpagar.mes_pago', 'cuentasporpagar.monto_pagado')
-        ->get();
+        $cuentas = DB::table('cuentasporpagar')
+            ->join('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
+            ->where('contract.user_id', $user->id)
+            ->whereNotNull('cuentasporpagar.mes_pago')
+            ->where('cuentasporpagar.mes_pago', 'like', $year.'-%')
+            ->select('cuentasporpagar.mes_pago', 'cuentasporpagar.monto_pagado')
+            ->get();
 
-    $resultado = [];
+        $resultado = [];
 
-    for ($m = 1; $m <= 12; $m++) {
-        $mes = sprintf('%d-%02d', $year, $m);
-        $Pagados = $cuentas->where('mes_pago', $mes)->sum('monto_pagado');
+        for ($m = 1; $m <= 12; $m++) {
+            $mes = sprintf('%d-%02d', $year, $m);
+            $Pagados = $cuentas->where('mes_pago', $mes)->sum('monto_pagado');
 
-        $resultado[] = [
-            'mes'    => $m,
-            'pagados'=> $Pagados,
-        ];
+            $resultado[] = [
+                'mes' => $m,
+                'pagados' => $Pagados,
+            ];
+        }
+
+        return response()->json($resultado);
     }
 
-    return response()->json($resultado);
-}
+    public function descargarPdf(Request $request)
+    {
+        $usuario = Auth::user();
+        if (! $usuario) {
+            return redirect('/inicio-de-sesion');
+        }
 
+        $desde = $request->desde; // formato YYYY-MM
+        $hasta = $request->hasta;
 
-public function descargarPdf(Request $request)
-{
-    $usuario = Auth::user();
-    if (!$usuario) return redirect('/inicio-de-sesion');
+        $query = Cuentas::with('contract')
+            ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
+            ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
+            ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
+            ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
+            ->select(
+                'cuentasporpagar.*',
+                DB::raw('COALESCE(proyectos.nombre_proyecto, \'\') as proyecto'),
+                'contract.importe_bruto_renta as importeBase'
+            )
+            ->where('contract.user_id', $usuario->id)
+            ->where('cuentasporpagar.estado', 'pagado');
 
-    $desde = $request->desde; // formato YYYY-MM
-    $hasta = $request->hasta;
+        if ($desde) {
+            $query->where('cuentasporpagar.mes_pago', '>=', $desde);
+        }
 
-    $query = Cuentas::with('contract')
-        ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
-        ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
-        ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
-        ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
-        ->select(
-            'cuentasporpagar.*',
-            DB::raw('COALESCE(proyectos.nombre_proyecto, \'\') as proyecto'),
-            'contract.importe_bruto_renta as importeBase'
-        )
-        ->where('contract.user_id', $usuario->id)
-        ->where('cuentasporpagar.estado', 'pagado');
+        if ($hasta) {
+            $query->where('cuentasporpagar.mes_pago', '<=', $hasta);
+        }
 
-    if ($desde) {
-        $query->where('cuentasporpagar.mes_pago', '>=', $desde);
+        $cuentas = $query->orderBy('cuentasporpagar.mes_pago', 'ASC')->get();
+
+        $pdf = Pdf::loadView('pdf.estadodecuenta', [
+            'usuario' => $usuario,
+            'cuentas' => $cuentas,
+        ]);
+
+        return $pdf->download('EstadoDeCuenta-'.$usuario->name.'.pdf');
     }
-
-    if ($hasta) {
-        $query->where('cuentasporpagar.mes_pago', '<=', $hasta);
-    }
-
-    $cuentas = $query->orderBy('cuentasporpagar.mes_pago', 'ASC')->get();
-
-    $pdf = Pdf::loadView('pdf.estadodecuenta', [
-        'usuario' => $usuario,
-        'cuentas' => $cuentas,
-    ]);
-
-    return $pdf->download('EstadoDeCuenta-' . $usuario->name . '.pdf');
-}
-
-
-
-
 }

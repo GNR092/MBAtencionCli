@@ -10,7 +10,7 @@ class RegimenFiscalController extends Controller
     public function index()
     {
         $regimenes = RegimenFiscal::all();
-        
+
         return view('admin.regimen_fiscal.index', compact('regimenes'));
     }
 
@@ -35,6 +35,7 @@ class RegimenFiscalController extends Controller
     public function edit($id)
     {
         $regimen = RegimenFiscal::findOrFail($id);
+
         return view('admin.regimen_fiscal.edit', compact('regimen'));
     }
 
@@ -56,6 +57,7 @@ class RegimenFiscalController extends Controller
     {
         $regimen = RegimenFiscal::findOrFail($id);
         $regimen->delete();
+
         return redirect()->route('regimen-fiscal.index')->with('success', 'Régimen eliminado.');
     }
 }

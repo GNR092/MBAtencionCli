@@ -9,25 +9,23 @@ class Contract extends Model
 {
     use HasFactory;
 
-    
-     protected $table = 'contract';
-    
+    protected $table = 'contract';
+
     protected $fillable = [
         'user_id',
         'estado',
         'fecha_inicio',
         'fecha_fin',
         'nombre',
-        'tipo', 
+        'tipo',
         'contenido',
-        'folio', 
+        'folio',
         'fecha',
         'importe_bruto_renta',
         'fecha_terminacion',
         'id_user_p',
     ];
 
-    
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -37,6 +35,4 @@ class Contract extends Model
     {
         return $this->belongsTo(UserProyecto::class, 'id_user_p', 'id_user_p');
     }
-
-    
 }
