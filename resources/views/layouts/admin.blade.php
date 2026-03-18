@@ -246,6 +246,8 @@
                                 <a href="/cuentas-por-pagar"
                                     class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Cuentas
                                     por pagar</a>
+                                <a href="/retroactivo"
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Retroactivo</a>
                                 <a href="/facturas"
                                     class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Facturas</a>
                                 <a href="/impuestos"

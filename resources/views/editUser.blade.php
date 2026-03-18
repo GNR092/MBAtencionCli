@@ -1,223 +1,332 @@
 @extends('layouts.admin')
 
 @section('content')
-
 <div class="w-full p-4 md:p-6 animate-fadeInUp">
-    <h1 class="text-center text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase mb-10">Editar Usuario</h1>
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-8">
+            <div class="flex items-baseline gap-4">
+                <span class="text-dorado-400 text-sm font-serif italic">|</span>
+                <h1 class="text-white text-5xl md:text-7xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                    Editar Usuario
+                </h1>
+            </div>
+        </header>
 
-    <div class="max-w-full mx-auto p-4 md:p-6">
-        <form method="post" action="{{ route('usuarios.actualizar') }}" class="bg-[#2f2f2f] p-6 rounded-2xl shadow-lg w-full">
-    @csrf
-    <input type="hidden" name="id" value="{{ $userToEdit->id }}">
+        @if(session('success'))
+        <div id="successModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+            <div class="bg-[#112134] border border-[#d8c495]/30 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-[#d8c495] text-xl font-bold uppercase tracking-widest mb-2">¡Éxito!</h3>
+                    <p class="text-white/70 mb-4">{{ session('success') }}</p>
+                    <button onclick="document.getElementById('successModal').remove()"
+                        class="w-full bg-[#d8c495] text-[#112134] px-6 py-3 rounded-xl font-bold hover:bg-[#b8a374] transition-colors">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+        @endif
 
-    <label class="text-white">Nombre:</label>
-    <input type="text" name="name" value="{{ $userToEdit->name }}" class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200">
+        @if($errors->any())
+        <div class="bg-red-500/10 border border-red-400/30 rounded-xl p-4 mb-6">
+            <ul class="list-disc pl-5">
+                @foreach($errors->all() as $error)
+                <li class="text-red-300 text-sm">{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
 
-    <label class="text-white">Email:</label>
-    <input type="email" name="email" value="{{ $userToEdit->email }}" class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200">
+        <div class="bg-[#112134]/60 backdrop-blur-md rounded-2xl border border-[#d8c495]/20 shadow-2xl overflow-hidden">
+            <div class="px-8 py-6 border-b border-[#d8c495]/20">
+                <h2 class="text-[#d8c495] text-lg font-bold uppercase tracking-widest">
+                    Datos del Inversionista
+                </h2>
+                <p class="text-[10px] text-[#d8c495]/50 uppercase tracking-[0.3em] mt-1">
+                    Modifique los datos del usuario
+                </p>
+            </div>
 
-    <label class="text-white">Teléfono:</label>
-    <input type="text" name="phone" value="{{ preg_replace('/^52/', '', $userToEdit->phone) }}" class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200">
 
-        @php
-        
-        $selectedProyects = json_decode($userToEdit->proyect, true) ?? [];
-        if (!is_array($selectedProyects)) {
-            $selectedProyects = [$userToEdit->proyect]; 
-        }
-    @endphp
+            <form id="editUsuario" class="p-8 space-y-6" action="{{ route('usuarios.actualizar') }}" method="POST">
+                @csrf
+                <input type="hidden" name="id" value="{{ $userToEdit->id }}">
 
-    <div class="mb-4 mt-4">
-        <label class="text-white">Proyectos</label>
-        <select name="proyect[]" id="proyect" multiple required  multiselect-hide-x="true" class="text-black">
-            <option value="RESIDENT 1" {{ in_array("RESIDENT 1", $selectedProyects) ? 'selected' : '' }}>RESIDENT 1</option>
-            <option value="RESIDENT 2" {{ in_array("RESIDENT 2", $selectedProyects) ? 'selected' : '' }}>RESIDENT 2</option>
-            <option value="CAMPUS RECIDENCIA" {{ in_array("CAMPUS RECIDENCIA", $selectedProyects) ? 'selected' : '' }}>CAMPUS RECIDENCIA</option>
-            <option value="TMZN 122" {{ in_array("TMZN 122", $selectedProyects) ? 'selected' : '' }}>TMZN 122</option>
-            <option value="GRAND TEMOZON" {{ in_array("GRAND TEMOZON", $selectedProyects) ? 'selected' : '' }}>GRAND TEMOZON</option>
-            <option value="MB RESORT MERIDA" {{ in_array("MB RESORT MERIDA", $selectedProyects) ? 'selected' : '' }}>MB RESORT MÉRIDA</option>
-            <option value="Princess Village" {{ in_array("Princess Village", $selectedProyects) ? 'selected' : '' }}>Princess Village</option>
-            <option value="Royal Square Plaza" {{ in_array("Royal Square Plaza", $selectedProyects) ? 'selected' : '' }}>Royal Square Plaza</option>
-            <option value="RUM" {{ in_array("RUM", $selectedProyects) ? 'selected' : '' }}>RUM</option>
-            <option value="Avenue Temozon" {{ in_array("Avenue Temozon", $selectedProyects) ? 'selected' : '' }}>Avenue Temozón</option>
-            <option value="MB Resort Orlando" {{ in_array("MB Resort Orlando", $selectedProyects) ? 'selected' : '' }}>MB Resort Orlando</option>
-            <option value="MB Wellness Resort" {{ in_array("MB Wellness Resort", $selectedProyects) ? 'selected' : '' }}>MB Wellness Resort</option>
-            <option value="Aldea Borboleta I" {{ in_array("Aldea Borboleta I", $selectedProyects) ? 'selected' : '' }}>Aldea Borboleta I</option>
-            <option value="Aldea Borboleta II" {{ in_array("Aldea Borboleta II", $selectedProyects) ? 'selected' : '' }}>Aldea Borboleta II </option>
-            <option value="Aldea Borboleta III" {{ in_array("Aldea Borboleta III", $selectedProyects) ? 'selected' : '' }}>Aldea Borboleta III</option>
-          </select>
+                {{-- Nombre y Email --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="name" class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                            Nombre Completo
+                        </label>
+                        <input type="text" id="name" name="name"
+                            class="w-full bg-white/5 border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495] transition-colors"
+                            value="{{ old('name', $userToEdit->name) }}" required>
+                    </div>
+
+                    <div>
+                        <label for="email" class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                            Correo Electrónico
+                        </label>
+                        <input type="email" id="email" name="email"
+                            class="w-full bg-white/5 border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495] transition-colors"
+                            value="{{ old('email', $userToEdit->email) }}" required>
+                    </div>
+                </div>
+
+                {{-- Teléfono y Fecha de Nacimiento --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="phone" class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                            Teléfono
+                        </label>
+                        <div class="flex">
+                            <span class="inline-flex items-center px-4 py-3 rounded-l-lg border border-r-0 border-[#d8c495]/30 bg-white/5 text-white/50 text-sm font-bold">
+                                +52
+                            </span>
+                            <input type="tel" id="phone" name="phone"
+                                class="flex-1 bg-white/5 border border-[#d8c495]/30 rounded-r-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495] transition-colors"
+                                maxlength="10" pattern="[0-9]{10}" oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                value="{{ old('phone', preg_replace('/^52/', '', $userToEdit->phone)) }}" required>
+                        </div>
+                        <p class="text-[10px] text-white/40 mt-2">10 dígitos</p>
+                    </div>
+
+                    <div>
+                        <label for="fecha_nacimiento" class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                            Fecha de Nacimiento
+                        </label>
+                        <input type="date" id="fecha_nacimiento" name="fecha_nacimiento"
+                            class="w-full bg-white/5 border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495] transition-colors"
+                            value="{{ old('fecha_nacimiento', $userToEdit->fecha_nacimiento ? \Carbon\Carbon::parse($userToEdit->fecha_nacimiento)->format('Y-m-d') : '') }}">
+                    </div>
+                </div>
+
+                {{-- Régimen Fiscal y Método de Pago --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="regimenFiscal" class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                            Régimen Fiscal
+                        </label>
+                        <select name="regimenFiscal" id="regimenFiscal"
+                            class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495] transition-colors">
+                            @foreach($regimenesFiscales as $regimen)
+                            <option value="{{ $regimen->id_regimen }}" {{ old('regimenFiscal', $userToEdit->id_regimen) == $regimen->id_regimen ? 'selected' : '' }}>
+                                {{ $regimen->nombre_regimen }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="metodo_pago" class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                            Método de Pago
+                        </label>
+                        <select id="metodo_pago" name="metodo_pago"
+                            class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495] transition-colors">
+                            <option value="">Sin especificar</option>
+                            <option value="efectivo" {{ old('metodo_pago', $userToEdit->metodo_pago) == 'efectivo' ? 'selected' : '' }}>Efectivo</option>
+                            <option value="transferencia" {{ old('metodo_pago', $userToEdit->metodo_pago) == 'transferencia' ? 'selected' : '' }}>Transferencia bancaria</option>
+                        </select>
+                    </div>
+                </div>
+
+                {{-- Contraseña --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="password" class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                            Nueva Contraseña <span class="text-white/30 normal-case">(opcional)</span>
+                        </label>
+                        <input type="password" id="password" name="password"
+                            class="w-full bg-white/5 border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495] transition-colors"
+                            autocomplete="new-password">
+                    </div>
+
+                    <div>
+                        <label for="password_confirmation" class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                            Confirmar Contraseña <span class="text-white/30 normal-case">(opcional)</span>
+                        </label>
+                        <input type="password" id="password_confirmation" name="password_confirmation"
+                            class="w-full bg-white/5 border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495] transition-colors"
+                            autocomplete="new-password">
+                    </div>
+                </div>
+
+                {{-- Proyectos --}}
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                        Proyectos
+                    </label>
+                    <select name="proyect[]" id="proyect" multiple
+                        class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495] transition-colors h-32">
+                        @foreach($proyectos as $proyecto)
+                            <option value="{{ $proyecto->id_proyecto }}"
+                                {{ in_array((string)$proyecto->id_proyecto, $selectedProjectIds) ? 'selected' : '' }}>
+                                {{ $proyecto->nombre_proyecto }}@if($proyecto->razonSocial) - {{ $proyecto->razonSocial->nombre_razon_social }}@endif
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Contenedores dinámicos de departamentos --}}
+                <div id="dynamicProjectFields" class="space-y-4"></div>
+
+                <div class="pt-4">
+                    <button type="submit"
+                        class="w-full bg-[#d8c495] text-[#112134] font-bold uppercase tracking-widest py-4 rounded-xl shadow-lg hover:bg-[#b8a374] transition-all duration-300 hover:shadow-xl">
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-
-        <div class="mb-4 mt-4">
-        <label class="text-white">Regimen Fiscal</label>
-        <select name="regimenFiscal" id="regimenFiscal" class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200 text-black">
-            @foreach($regimenesFiscales ?? [] as $regimen)
-                <option value="{{ $regimen->id_regimen }}" {{ $userToEdit->id_regimen == $regimen->id_regimen ? 'selected' : '' }}>
-                    {{ $regimen->nombre_regimen }}
-                </option>
-            @endforeach
-        </select>
-    </div>
-
-
-    <div class="mb-4 mt-4">
-        <label class="text-white">Método de Pago</label>
-        <select name="metodo_pago" class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200 text-black">
-            <option value="">Sin especificar</option>
-            <option value="efectivo" {{ $userToEdit->metodo_pago == 'efectivo' ? 'selected' : '' }}>Efectivo</option>
-            <option value="transferencia" {{ $userToEdit->metodo_pago == 'transferencia' ? 'selected' : '' }}>Transferencia bancaria</option>
-        </select>
-    </div>
-
-    <label class="text-white">Nueva Contraseña (opcional):</label>
-    <input type="password" name="password" class="p-1 mt-1 block w-full border border-gray-300 rounded-md shadow-sm bg-gray-200">
-
-    <button type="submit" class="bg-[#d8c495] hover:bg-[#c9a143] px-4 py-2 rounded mt-6">Guardar</button>
-</form>
 </div>
 
+<script src="{{ asset('js/multiselect.js') }}"></script>
 <script>
-function MultiselectDropdown(options){
-  var config={
-    search:true,
-    height:'15rem',
-    placeholder:'selecciona',
-    txtSelected:'seleccionados',
-    txtAll:'Todos',
-    txtRemove: 'Quitar',
-    txtSearch:'Buscar...',
-    ...options
-  };
+document.addEventListener('DOMContentLoaded', function () {
+    const proyectSelect = document.getElementById('proyect');
+    const dynamicProjectFields = document.getElementById('dynamicProjectFields');
 
-  function newEl(tag,attrs){
-    var e=document.createElement(tag);
-    if(attrs!==undefined) Object.keys(attrs).forEach(k=>{
-      if(k==='class') { 
-        Array.isArray(attrs[k]) 
-          ? attrs[k].forEach(o=>o!==''?e.classList.add(o):0) 
-          : (attrs[k]!==''?e.classList.add(attrs[k]):0)
-      }
-      else if(k==='style'){  
-        Object.keys(attrs[k]).forEach(ks=>{
-          e.style[ks]=attrs[k][ks];
-        });
-       }
-      else if(k==='text'){attrs[k]===''?e.innerHTML='&nbsp;':e.innerText=attrs[k]}
-      else e[k]=attrs[k];
-    });
-    return e;
-  }
+    const projectOptions = @json($proyectos->map(fn($p) => [
+        'id'          => $p->id_proyecto,
+        'nombre'      => $p->nombre_proyecto,
+        'razon_social'=> $p->razonSocial?->nombre_razon_social,
+    ])->keyBy('id'));
 
-  document.querySelectorAll("select[multiple]").forEach((el,k)=>{
-    var div=newEl('div',{class:'multiselect-dropdown',style:{width:config.style?.width??el.clientWidth+'px',padding:config.style?.padding??''}});
-    el.style.position = 'absolute';
-    el.style.left = '-9999px';
-    el.style.visibility = 'hidden';
-    el.style.height = 0;
-    el.style.width = 0;
-    el.style.pointerEvents = 'none';
-    el.parentNode.insertBefore(div,el.nextSibling);
-    var listWrap=newEl('div',{class:'multiselect-dropdown-list-wrapper'});
-    var list=newEl('div',{class:'multiselect-dropdown-list',style:{height:config.height}});
-    var search=newEl('input',{class:['multiselect-dropdown-search'],style:{width:'95%',display:el.attributes['multiselect-search']?.value==='true'?'block':'none'},placeholder:config.txtSearch});
-    listWrap.appendChild(search);
-    div.appendChild(listWrap);
-    listWrap.appendChild(list);
+    const existingProjectsData = @json($existingProjectsData);
+    const initialSelectedIds   = @json($selectedProjectIds);
 
-    el.loadOptions=()=>{
-      list.innerHTML='';
-      
-      if(el.attributes['multiselect-select-all']?.value=='true'){
-        var op=newEl('div',{class:'multiselect-dropdown-all-selector'})
-        var ic=newEl('input',{type:'checkbox'});
-        op.appendChild(ic);
-        op.appendChild(newEl('label',{text:config.txtAll}));
-  
-        op.addEventListener('click',()=>{
-          op.classList.toggle('checked');
-          op.querySelector("input").checked=!op.querySelector("input").checked;
-          
-          var ch=op.querySelector("input").checked;
-          list.querySelectorAll(":scope > div:not(.multiselect-dropdown-all-selector)")
-            .forEach(i=>{if(i.style.display!=='none'){i.querySelector("input").checked=ch; i.optEl.selected=ch}});
-  
-          el.dispatchEvent(new Event('change'));
-        });
-        ic.addEventListener('click',(ev)=>{ ic.checked=!ic.checked; });
-        el.addEventListener('change', (ev)=>{
-          let itms=Array.from(list.querySelectorAll(":scope > div:not(.multiselect-dropdown-all-selector)")).filter(e=>e.style.display!=='none')
-          let existsNotSelected=itms.find(i=>!i.querySelector("input").checked);
-          if(ic.checked && existsNotSelected) ic.checked=false;
-          else if(ic.checked==false && existsNotSelected===undefined) ic.checked=true;
-        });
-  
-        list.appendChild(op);
-      }
+    // ─── Crea el contenedor de un proyecto (sin departamentos) ───────────
+    function renderProjectContainer(projectId) {
+        if (document.getElementById(`project_container_${projectId}`)) return;
 
-      Array.from(el.options).map(o=>{
-        var op=newEl('div',{class:o.selected?'checked':'',optEl:o})
-        var ic=newEl('input',{type:'checkbox',checked:o.selected});
-        op.appendChild(ic);
-        op.appendChild(newEl('label',{text:o.text}));
+        const project = projectOptions[projectId] || { nombre: `Proyecto ${projectId}`, razon_social: null };
+        const projectName = project.nombre + (project.razon_social ? ` - ${project.razon_social}` : '');
 
-        op.addEventListener('click',()=>{
-          op.classList.toggle('checked');
-          op.querySelector("input").checked=!op.querySelector("input").checked;
-          op.optEl.selected=!!!op.optEl.selected;
-          el.dispatchEvent(new Event('change'));
-        });
-        ic.addEventListener('click',(ev)=>{ ic.checked=!ic.checked; });
-        o.listitemEl=op;
-        list.appendChild(op);
-      });
-      div.listEl=listWrap;
-
-      div.refresh=()=>{
-        div.querySelectorAll('span.optext, span.placeholder').forEach(t=>div.removeChild(t));
-        var sels=Array.from(el.selectedOptions);
-        if(sels.length>(el.attributes['multiselect-max-items']?.value??2)){
-          div.appendChild(newEl('span',{class:['optext','maxselected'],text:sels.length+' '+config.txtSelected}));          
-        }
-        else{
-          sels.map(x=>{
-            var c=newEl('span',{class:'optext',text:x.text, srcOption: x});
-            if((el.attributes['multiselect-hide-x']?.value !== 'true'))
-              c.appendChild(newEl('span',{class:'optdel',text:'🗙',title:config.txtRemove, onclick:(ev)=>{c.srcOption.listitemEl.dispatchEvent(new Event('click'));div.refresh();ev.stopPropagation();}}));
-
-            div.appendChild(c);
-          });
-        }
-        if(0==el.selectedOptions.length) div.appendChild(newEl('span',{class:'placeholder',text:el.attributes['placeholder']?.value??config.placeholder}));
-      };
-      div.refresh();
+        const projectContainer = document.createElement('div');
+        projectContainer.id = `project_container_${projectId}`;
+        projectContainer.className = 'bg-[#0d1f30]/50 rounded-xl border border-[#d8c495]/20 p-5 space-y-4';
+        projectContainer.innerHTML = `
+            <div class="flex justify-between items-center border-b border-[#d8c495]/20 pb-3">
+                <h3 class="text-[#d8c495] font-bold uppercase tracking-wider">${projectName}</h3>
+                <button type="button" onclick="addDepartment('${projectId}')"
+                    class="bg-[#d8c495]/10 text-[#d8c495] text-xs px-4 py-2 rounded-lg border border-[#d8c495]/30 hover:bg-[#d8c495] hover:text-[#112134] transition-all font-bold uppercase">
+                    + Departamento
+                </button>
+            </div>
+            <div id="departments_container_${projectId}" class="space-y-4 pt-2"></div>
+        `;
+        dynamicProjectFields.appendChild(projectContainer);
     }
-    el.loadOptions();
-    
-    search.addEventListener('input',()=>{
-      list.querySelectorAll(":scope div:not(.multiselect-dropdown-all-selector)").forEach(d=>{
-        var txt=d.querySelector("label").innerText.toUpperCase();
-        d.style.display=txt.includes(search.value.toUpperCase())?'flex':'none';
-      });
+
+    // ─── Sincroniza contenedores con la selección actual ────────────────
+    window.renderDynamicProjectFields = function () {
+        const currentIds = Array.from(proyectSelect.selectedOptions).map(o => o.value);
+
+        // Agregar nuevos proyectos con un departamento vacío
+        currentIds.forEach(id => {
+            if (!document.getElementById(`project_container_${id}`)) {
+                renderProjectContainer(id);
+                addDepartment(id);
+            }
+        });
+
+        // Eliminar proyectos desmarcados
+        Array.from(dynamicProjectFields.children).forEach(container => {
+            const id = container.id.replace('project_container_', '');
+            if (!currentIds.includes(id)) container.remove();
+        });
+    };
+
+    // ─── Agrega un departamento (vacío o pre-rellenado) ─────────────────
+    window.addDepartment = function (projectId, prefill = null) {
+        const container = document.getElementById(`departments_container_${projectId}`);
+        const deptIndex = container.children.length;
+
+        const deptDiv = document.createElement('div');
+        deptDiv.className = 'dept-item bg-[#112134] p-4 rounded-lg border border-white/10 relative';
+        deptDiv.innerHTML = `
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-xs font-bold text-[#d8c495] uppercase tracking-wider">Departamento ${deptIndex + 1}</span>
+                <button type="button" onclick="this.closest('.dept-item').remove()" class="text-red-400 text-xs hover:underline">Eliminar</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-white/70 mb-2">Nombre Departamento:</label>
+                    <input type="text" name="project_details[${projectId}][${deptIndex}][nombre_depto]"
+                        class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-[#d8c495] outline-none" required>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-white/70 mb-2">Importe:</label>
+                    <input type="number" step="0.01" name="project_details[${projectId}][${deptIndex}][importe]"
+                        class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-[#d8c495] outline-none" required>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <label class="block text-xs font-bold text-white/70 mb-2">Tipo:</label>
+                <select name="project_details[${projectId}][${deptIndex}][tipo]"
+                    class="w-full bg-[#0d1f30] border border-white/10 rounded-lg px-3 py-2 text-white focus:border-[#d8c495] outline-none"
+                    required>
+                    <option value="">-- Seleccione tipo --</option>
+                    <option value="Campus">Campus</option>
+                    <option value="Condominios">Condominios</option>
+                </select>
+            </div>
+
+            <div class="flex items-center gap-3 mt-4">
+                <input type="checkbox" id="predial_chk_${projectId}_${deptIndex}"
+                    name="project_details[${projectId}][${deptIndex}][cuenta_predial]"
+                    onchange="togglePredial(this, '${projectId}', ${deptIndex})"
+                    class="w-4 h-4 rounded border-white/20 bg-white/5 text-[#d8c495] focus:ring-[#d8c495]">
+                <label for="predial_chk_${projectId}_${deptIndex}" class="text-sm text-white/70">¿Cuenta Predial?</label>
+            </div>
+
+            <div id="predial_div_${projectId}_${deptIndex}" class="hidden mt-3">
+                <label class="block text-xs font-bold text-white/70 mb-2">Número de Cuenta:</label>
+                <input type="text" name="project_details[${projectId}][${deptIndex}][cuenta_numero]"
+                    class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-[#d8c495] outline-none">
+            </div>
+        `;
+        container.appendChild(deptDiv);
+
+        // Pre-rellenar si se proporcionan datos
+        if (prefill) {
+            deptDiv.querySelector(`[name="project_details[${projectId}][${deptIndex}][nombre_depto]"]`).value = prefill.nombre || '';
+            deptDiv.querySelector(`[name="project_details[${projectId}][${deptIndex}][importe]"]`).value = prefill.importe || '';
+            deptDiv.querySelector(`[name="project_details[${projectId}][${deptIndex}][tipo]"]`).value = prefill.tipo || '';
+
+            if (prefill.tiene_predial) {
+                const chk = document.getElementById(`predial_chk_${projectId}_${deptIndex}`);
+                if (chk) chk.checked = true;
+                const predialDiv = document.getElementById(`predial_div_${projectId}_${deptIndex}`);
+                if (predialDiv) predialDiv.classList.remove('hidden');
+                deptDiv.querySelector(`[name="project_details[${projectId}][${deptIndex}][cuenta_numero]"]`).value = prefill.cuenta_numero || '';
+            }
+        }
+    };
+
+    window.togglePredial = function (checkbox, projectId, index) {
+        const div = document.getElementById(`predial_div_${projectId}_${index}`);
+        if (div) div.classList.toggle('hidden', !checkbox.checked);
+    };
+
+    // ─── Carga inicial: contenedores + departamentos pre-rellenados ──────
+    initialSelectedIds.forEach(id => renderProjectContainer(id));
+
+    Object.entries(existingProjectsData).forEach(([projectId, deptos]) => {
+        deptos.forEach(dept => addDepartment(projectId, dept));
     });
 
-    div.addEventListener('click',()=>{
-      div.listEl.style.display='block';
-      search.focus();
-      search.select();
-    });
-    
-    document.addEventListener('click', function(event) {
-      if (!div.contains(event.target)) {
-        listWrap.style.display='none';
-        div.refresh();
-      }
-    });    
-  });
-}
-
-window.addEventListener('load',()=>{
-  MultiselectDropdown(window.MultiselectDropdownOptions);
+    // Cambios posteriores del usuario
+    proyectSelect.addEventListener('change', window.renderDynamicProjectFields);
 });
 </script>
-</div>
 @endsection

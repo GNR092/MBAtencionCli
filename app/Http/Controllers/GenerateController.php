@@ -24,7 +24,7 @@ class GenerateController extends Controller
         }
 
         $regimenesFiscales = RegimenFiscal::all();
-        $proyectos = Proyecto::all();
+        $proyectos = Proyecto::with('razonSocial')->get();
 
         return view('registroUsuarios', compact('regimenesFiscales', 'proyectos'));
     }
@@ -62,6 +62,7 @@ class GenerateController extends Controller
                     'curp' => $request->curp ?? null,
                     'email_verified_at' => now(),
                     'metodo_pago' => $request->metodo_pago ?? null,
+                    'fecha_nacimiento' => $request->fecha_nacimiento ?: null,
                 ]);
 
                 $proyectosIds = $request->input('proyect', []);
@@ -97,6 +98,7 @@ class GenerateController extends Controller
                             UserDepto::create([
                                 'id_user_p' => $pivotId, // Usamos la ID recuperada de forma segura
                                 'nombre' => $deptoData['nombre_depto'],
+                                'tipo' => $deptoData['tipo'] ?? null,
                                 'predial' => $deptoData['cuenta_numero'] ?? 'N/A',
                                 'importe' => $deptoData['importe'] ?? 0,
                             ]);

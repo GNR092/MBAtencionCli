@@ -103,7 +103,9 @@
                     <select name="proyect[]" id="proyect" multiple required
                         class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495] transition-colors h-32">
                         @foreach($proyectos as $proyecto)
-                        <option value="{{ $proyecto->id_proyecto }}">{{ $proyecto->nombre_proyecto }}</option>
+                            <option value="{{ $proyecto->id_proyecto }}">
+                                {{ $proyecto->nombre_proyecto }}@if($proyecto->razonSocial) - {{ $proyecto->razonSocial->nombre_razon_social }}@endif
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -182,14 +184,15 @@ document.addEventListener('DOMContentLoaded', function () {
         multiselect(proyectSelect);
     }
 
-    const projectOptions = @json($proyectos->pluck('nombre_proyecto', 'id_proyecto'));
+    const projectOptions = @json($proyectos->map(fn($p) => ['id' => $p->id_proyecto, 'nombre' => $p->nombre_proyecto, 'razon_social' => $p->razonSocial?->nombre_razon_social])->keyBy('id'));
 
     window.renderDynamicProjectFields = function() {
         const selectedProjectIds = Array.from(proyectSelect.selectedOptions).map(option => option.value);
 
         selectedProjectIds.forEach(projectId => {
             if (!document.getElementById(`project_container_${projectId}`)) {
-                const projectName = projectOptions[projectId] || `Proyecto ${projectId}`;
+                const project = projectOptions[projectId] || { nombre: `Proyecto ${projectId}`, razon_social: null };
+                const projectName = project.nombre + (project.razon_social ? ` - ${project.razon_social}` : '');
 
                 const projectContainer = document.createElement('div');
                 projectContainer.id = `project_container_${projectId}`;
@@ -243,6 +246,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     <input type="number" step="0.01" name="project_details[${projectId}][${deptIndex}][importe]"
                         class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-[#d8c495] outline-none" required>
                 </div>
+            </div>
+
+            <div class="mt-4">
+                <label class="block text-xs font-bold text-white/70 mb-2">Tipo:</label>
+                <select name="project_details[${projectId}][${deptIndex}][tipo]"
+                    class="w-full bg-[#0d1f30] border border-white/10 rounded-lg px-3 py-2 text-white focus:border-[#d8c495] outline-none"
+                    required>
+                    <option value="">-- Seleccione tipo --</option>
+                    <option value="Campus">Campus</option>
+                    <option value="Condominios">Condominios</option>
+                </select>
             </div>
 
             <div class="flex items-center gap-3 mt-4">

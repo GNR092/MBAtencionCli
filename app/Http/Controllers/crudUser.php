@@ -15,7 +15,7 @@ class crudUser extends Controller
 {
     public function index(Request $request)
     {
-        $proyectos = Proyecto::all();
+        $proyectos = Proyecto::with('razonSocial')->get();
         $regimenesFiscales = RegimenFiscal::all();
         $currentUser = Auth::user();
 
@@ -111,10 +111,27 @@ class crudUser extends Controller
                 ->withErrors(['auth' => 'Debes confirmar tu contraseña antes de editar este usuario.']);
         }
 
-        $userToEdit = User::findOrFail($id);
+        $userToEdit = User::with(['userProyectos.deptos', 'userProyectos.proyecto'])->findOrFail($id);
         $regimenesFiscales = RegimenFiscal::all();
+        $proyectos = Proyecto::with('razonSocial')->get();
 
-        return view('editUser', compact('admin', 'userToEdit', 'regimenesFiscales'));
+        $selectedProjectIds = $userToEdit->userProyectos
+            ->pluck('id_proyecto')
+            ->map(fn($id) => (string) $id)
+            ->toArray();
+
+        $existingProjectsData = $userToEdit->userProyectos
+            ->mapWithKeys(function ($up) {
+                return [$up->id_proyecto => $up->deptos->map(fn($d) => [
+                    'nombre'        => $d->nombre,
+                    'tipo'          => $d->tipo,
+                    'importe'       => $d->importe,
+                    'tiene_predial' => $d->predial !== '' && $d->predial !== 'N/A' && $d->predial !== null,
+                    'cuenta_numero' => ($d->predial !== 'N/A' && $d->predial !== null) ? $d->predial : '',
+                ])->toArray()];
+            })->toArray();
+
+        return view('editUser', compact('admin', 'userToEdit', 'regimenesFiscales', 'proyectos', 'selectedProjectIds', 'existingProjectsData'));
     }
 
     public function eliminar(Request $request)
@@ -231,6 +248,7 @@ class crudUser extends Controller
                             UserDepto::create([
                                 'id_user_p' => $userProyectoId,
                                 'nombre' => $deptData['nombre_depto'],
+                                'tipo' => $deptData['tipo'] ?? null,
                                 'importe' => $deptData['importe'],
                                 'predial' => isset($deptData['cuenta_predial']) ? ($deptData['cuenta_numero'] ?? '') : '',
                             ]);

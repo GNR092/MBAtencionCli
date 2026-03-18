@@ -69,7 +69,7 @@
                                 // Asumiendo que guardas con '52' al inicio, lo quitamos para mostrar
                                 'phone' => $user->phone ? (strlen($user->phone) > 10 ? substr($user->phone, 2) : $user->phone) : '',
                                 'id_regimen' => $user->id_regimen,
-                                'fecha_nacimiento' => $user->fecha_nacimiento,
+                                'fecha_nacimiento' => $user->fecha_nacimiento ? \Carbon\Carbon::parse($user->fecha_nacimiento)->format('Y-m-d') : null,
                                 'projects' => []
                                 ];
 
@@ -81,6 +81,7 @@
 
                                 $depts[] = [
                                 'nombre_depto' => $d->nombre,
+                                'tipo' => $d->tipo,
                                 'cuenta_numero' => $d->predial,
                                 'importe' => $d->importe,
                                 'cuenta_predial' => ($d->predial && $d->predial !== 'N/A')
@@ -236,7 +237,7 @@
                     <select name="proyect[]" id="edit_proyect_select" multiple
                         class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white h-32 focus:border-[#d8c495] outline-none custom-scroll">
                         @foreach($proyectos ?? [] as $proyecto)
-                        <option value="{{ $proyecto->id_proyecto }}">{{ $proyecto->nombre_proyecto }}</option>
+                        <option value="{{ $proyecto->id_proyecto }}">{{ $proyecto->nombre_proyecto }}@if($proyecto->razonSocial) - {{ $proyecto->razonSocial->nombre_razon_social }}@endif</option>
                         @endforeach
                     </select>
                     <p class="text-[10px] text-gray-500 mt-1">* Haz clic para seleccionar o deseleccionar.</p>
@@ -306,8 +307,12 @@ window.cerrarModalUsuario = function() {
 // 2. LÓGICA DEL MODAL DE EDITAR
 // ==========================================
 
+let deptCounter = 0;
+
 // Obtenemos la lista de proyectos para usar sus nombres en los encabezados
-const projectOptions = @json($proyectos -> pluck('nombre_proyecto', 'id_proyecto'));
+const projectOptions = @json($proyectos->mapWithKeys(fn($p) => [
+    $p->id_proyecto => $p->nombre_proyecto . ($p->razonSocial ? ' - ' . $p->razonSocial->nombre_razon_social : '')
+]));
 
 window.openEditModal = function(userData) {
     const modal = document.getElementById("confirmModal");
@@ -408,11 +413,11 @@ function createProjectContainer(projectId, mainContainer) {
 // Agrega una fila de departamento (Nombre, Importe, Predial)
 window.addEditDepartment = function(projectId, data = null) {
     const list = document.getElementById(`edit_departments_list_${projectId}`);
-    // Usamos timestamp para generar índices únicos y evitar conflictos al borrar/agregar
-    const uniqueIndex = Date.now() + Math.floor(Math.random() * 1000);
+    const uniqueIndex = deptCounter++;
 
     // Valores: si viene 'data' es edición, si no, es vacío
     const nombre = data ? data.nombre_depto : '';
+    const tipo = data ? (data.tipo || '') : '';
     const importe = data ? data.importe : '';
     const predialNum = data ? data.cuenta_numero : '';
     const tienePredial = data ? data.cuenta_predial : false;
@@ -432,6 +437,15 @@ window.addEditDepartment = function(projectId, data = null) {
                     <input type="number" step="0.01" name="project_details[${projectId}][${uniqueIndex}][importe]" value="${importe}"
                            class="w-full bg-white/10 border border-white/10 rounded px-2 py-1 text-white text-xs focus:border-[#d8c495] outline-none" required>
                 </div>
+            </div>
+            <div class="mb-2">
+                <label class="block text-[10px] font-bold text-gray-400 mb-1">Tipo</label>
+                <select name="project_details[${projectId}][${uniqueIndex}][tipo]"
+                        class="w-full bg-white/10 border border-white/10 rounded px-2 py-1 text-white text-xs focus:border-[#d8c495] outline-none">
+                    <option value="" class="text-black">-- Seleccione tipo --</option>
+                    <option value="Campus" class="text-black" ${tipo === 'Campus' ? 'selected' : ''}>Campus</option>
+                    <option value="Condominios" class="text-black" ${tipo === 'Condominios' ? 'selected' : ''}>Condominios</option>
+                </select>
             </div>
 
             <div class="flex items-center gap-2">

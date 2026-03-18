@@ -11,6 +11,7 @@ use App\Http\Controllers\crudUser;
 use App\Http\Controllers\CuentasPorCobrar;
 use App\Http\Controllers\CuentasPorPagar;
 use App\Http\Controllers\EfectivoController;
+use App\Http\Controllers\RetroactivoController;
 use App\Http\Controllers\EstadoController;
 use App\Http\Controllers\Factura\UserFactController;
 use App\Http\Controllers\GenerateController;
@@ -151,6 +152,9 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
 
     // Efectivo (admin)
     Route::get('/efectivo', [EfectivoController::class, 'index'])->name('admin.efectivo.index');
+
+    // Retroactivo
+    Route::get('/retroactivo', [RetroactivoController::class, 'index'])->name('retroactivo.index');
     Route::post('/efectivo', [EfectivoController::class, 'store'])->name('admin.efectivo.store');
 
     // Impuestos

@@ -16,6 +16,7 @@ class UserDepto extends Model
     protected $fillable = [
         'id_user_p',
         'nombre',
+        'tipo',
         'predial',
         'importe',
     ];
