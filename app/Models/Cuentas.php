@@ -15,6 +15,7 @@ class Cuentas extends Model
         'id_cuentas_por_pagar',
         'uuid',
         'mes_pago',
+        'es_retroactivo',
         'estado',
         'saldo_neto',
         'monto_pagado',

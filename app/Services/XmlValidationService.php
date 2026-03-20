@@ -47,6 +47,7 @@ class XmlValidationService
             'tasaCuota' => null,
             'regimenFiscal' => null,
             'cuenta_predial' => null,
+            'retroactivo' => false,
         ];
 
         libxml_use_internal_errors(true);

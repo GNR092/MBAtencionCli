@@ -9,7 +9,7 @@ use App\Models\XmlBatch;
 use App\Models\XmlFile;
 use App\Services\PdfUuidExtractionService;
 use App\Services\XmlValidationService;
-use Carbon\Carbon;
+// use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Carbon;
 use Yasumi\Yasumi; // Import Auth facade
 
 class CfdiValidatorController extends BaseController
@@ -135,6 +136,9 @@ class CfdiValidatorController extends BaseController
                 'proyect' => 'required|string',
             ]);
 
+            $now = Carbon::now();
+            $currentM = $now->format('m-Y');
+
             $sessionId = $request->session()->getId();
             $deadline = $this->getNextQuincenaDeadline();
 
@@ -152,6 +156,9 @@ class CfdiValidatorController extends BaseController
                 $tempPath = $file->getPathname();
 
                 $validationResult = $this->xmlValidationService->validateXml($tempPath, $filename);
+                if($validationResult['mes'] != $currentM){
+
+                }
 
                 // Storage::put('validation_results.txt', json_encode($validationResult, JSON_PRETTY_PRINT));
 

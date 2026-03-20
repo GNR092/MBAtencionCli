@@ -13,7 +13,5 @@ return new class extends Migration
         DB::statement('ALTER TABLE proyectos ADD CONSTRAINT proyectos_id_razon_social_foreign FOREIGN KEY (id_razon_social) REFERENCES razones_sociales (id_razon_social) ON DELETE SET NULL');
     }
 
-    public function down(): void
-    {
-    }
+    public function down(): void {}
 };

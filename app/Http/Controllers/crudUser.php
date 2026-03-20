@@ -117,15 +117,15 @@ class crudUser extends Controller
 
         $selectedProjectIds = $userToEdit->userProyectos
             ->pluck('id_proyecto')
-            ->map(fn($id) => (string) $id)
+            ->map(fn ($id) => (string) $id)
             ->toArray();
 
         $existingProjectsData = $userToEdit->userProyectos
             ->mapWithKeys(function ($up) {
-                return [$up->id_proyecto => $up->deptos->map(fn($d) => [
-                    'nombre'        => $d->nombre,
-                    'tipo'          => $d->tipo,
-                    'importe'       => $d->importe,
+                return [$up->id_proyecto => $up->deptos->map(fn ($d) => [
+                    'nombre' => $d->nombre,
+                    'tipo' => $d->tipo,
+                    'importe' => $d->importe,
                     'tiene_predial' => $d->predial !== '' && $d->predial !== 'N/A' && $d->predial !== null,
                     'cuenta_numero' => ($d->predial !== 'N/A' && $d->predial !== null) ? $d->predial : '',
                 ])->toArray()];

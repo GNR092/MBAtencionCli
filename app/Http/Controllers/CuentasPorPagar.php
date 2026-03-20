@@ -224,6 +224,8 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             ->whereNotNull('id_user')
             ->get();
 
+        $mesActual = Carbon::now()->format('Y-m');
+
         foreach ($xmls as $xml) {
             // Sin folio fiscal no hay clave única confiable
             if (empty($xml->uuid)) {
@@ -255,11 +257,14 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 continue;
             }
 
+            $esRetroactivo = $mesXml < $mesActual;
+
             DB::table('cuentasporpagar')->insert([
                 'uuid' => $xml->uuid,
                 'id_contract' => $contract->id,
                 'xml_file_id' => $xml->id,
                 'mes_pago' => $mesXml,
+                'es_retroactivo' => $esRetroactivo,
                 'mesesdepago' => json_encode(['mes' => $mesXml]),
                 'estado' => 'pendiente',
                 'saldo_neto' => $contract->importe_bruto_renta,
@@ -275,6 +280,8 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
     {
         $contracts = Contract::whereNotNull('fecha_inicio')
             ->get();
+
+        $mesActual = Carbon::now()->format('Y-m');
 
         foreach ($contracts as $contract) {
             $fechaStart = $contract->fecha_inicio ?? $contract->fecha_creacion ?? $contract->fecha;
@@ -310,9 +317,12 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
 
                 $importeBase = $importeIncremento ?? $contract->importe_bruto_renta;
 
+                $esRetroactivo = $mes < $mesActual;
+
                 DB::table('cuentasporpagar')->insert([
                     'id_contract' => $contract->id,
                     'mes_pago' => $mes,
+                    'es_retroactivo' => $esRetroactivo,
                     'mesesdepago' => json_encode(['mes' => $mes]),
                     'estado' => 'pendiente',
                     'saldo_neto' => $importeBase,
@@ -353,6 +363,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             );
         $selectedMonth = $request->month ?? now()->format('Y-m');
         $query->where('cuentasporpagar.mes_pago', $selectedMonth);
+        $query->where('cuentasporpagar.es_retroactivo', false);
 
         $query->when($request->filled(['search', 'categoria']), function ($q) use ($request) {
             $columnas = [
