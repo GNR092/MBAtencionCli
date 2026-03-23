@@ -253,7 +253,12 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             }
 
             // El folio fiscal (UUID del CFDI) es globalmente único: un registro por factura
+            // Si ya existe en cuentasporpagar o fue eliminado a retroactivos_eliminados, no crear de nuevo
             if (DB::table('cuentasporpagar')->where('uuid', $xml->uuid)->exists()) {
+                continue;
+            }
+
+            if (! empty($xml->uuid) && DB::table('retroactivos_eliminados')->where('uuid', $xml->uuid)->exists()) {
                 continue;
             }
 

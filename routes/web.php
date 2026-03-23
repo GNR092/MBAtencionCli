@@ -155,6 +155,10 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
 
     // Retroactivo
     Route::get('/retroactivo', [RetroactivoController::class, 'index'])->name('retroactivo.index');
+    Route::get('/retroactivo/eliminados', [RetroactivoController::class, 'eliminados'])->name('retroactivo.eliminados');
+    Route::post('/retroactivo/{id}/eliminar', [RetroactivoController::class, 'eliminar'])->name('retroactivo.eliminar');
+    Route::post('/retroactivo/eliminados/{id}/restaurar', [RetroactivoController::class, 'restaurar'])->name('retroactivo.restaurar');
+    Route::delete('/retroactivo/eliminados/{id}/destroy', [RetroactivoController::class, 'destroyPermanente'])->name('retroactivo.destroy');
     Route::post('/efectivo', [EfectivoController::class, 'store'])->name('admin.efectivo.store');
 
     // Impuestos

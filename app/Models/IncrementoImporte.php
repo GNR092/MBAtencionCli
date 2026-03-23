@@ -12,7 +12,7 @@ class IncrementoImporte extends Model
 
     protected $table = 'incrementos_importe';
 
-    protected $primarykey = 'id';
+    protected $primaryKey = 'id';
 
     public $incrementing = true;
 

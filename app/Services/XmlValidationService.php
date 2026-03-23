@@ -29,6 +29,7 @@ class XmlValidationService
             'emisor' => [],
             'receptor' => [],
             'conceptos' => [],
+            'conceptosAgrupados' => [],
             'impuestos' => null,
             'timbreFiscalDigital' => [],
 
@@ -48,6 +49,7 @@ class XmlValidationService
             'regimenFiscal' => null,
             'cuenta_predial' => null,
             'retroactivo' => false,
+            'periodosDetectados' => [],
         ];
 
         libxml_use_internal_errors(true);
@@ -86,6 +88,11 @@ class XmlValidationService
 
         $conceptosNodes = $xml->xpath('//cfdi:Comprobante/cfdi:Conceptos/cfdi:Concepto');
         $foundPeriod = false;
+        $periodosDetectados = [];
+
+        $meses = ['enero' => '01', 'febrero' => '02', 'marzo' => '03', 'abril' => '04', 'mayo' => '05', 'junio' => '06', 'julio' => '07', 'agosto' => '08', 'septiembre' => '09', 'setiembre' => '09', 'octubre' => '10', 'noviembre' => '11', 'diciembre' => '12'];
+        $regexMes = '/\b(ENERO|FEBRERO|MARZO|ABRIL|MAYO|JUNIO|JULIO|AGOSTO|SEPTIEMBRE|SETIEMBRE|OCTUBRE|NOVIEMBRE|DICIEMBRE)\b/i';
+        $regexDepto = '/(?:DEP(?:ARTAMENTO|TO|T)?\.?|PH|GH|LOCAL|OFICINA|UNIDAD)\s*(?:NO\.?|NUM\.?|#)?\s*([A-Z0-9\-\s]{1,10})\b/i';
 
         foreach ($conceptosNodes as $i => $node) {
             $data = $this->getAttributesAsArray($node);
@@ -93,32 +100,48 @@ class XmlValidationService
 
             $descClean = preg_replace('/\s+/', ' ', $descripcion);
 
-            if (! $result['mes']) {
+            $conceptoMes = null;
+            $conceptoAnio = null;
+            $conceptoPeriodo = null;
+            $conceptoDepartamento = null;
 
-                $regexMes = '/\b(ENERO|FEBRERO|MARZO|ABRIL|MAYO|JUNIO|JULIO|AGOSTO|SEPTIEMBRE|SETIEMBRE|OCTUBRE|NOVIEMBRE|DICIEMBRE)\b/i';
-                if (preg_match($regexMes, $descClean, $matches)) {
-                    $result['mes'] = strtolower($matches[1]);
+            if (preg_match($regexMes, $descClean, $matches)) {
+                $conceptoMes = strtolower($matches[1]);
+            }
+
+            if (preg_match('/\b(20[2-3][0-9])\b/', $descClean, $matches)) {
+                $conceptoAnio = $matches[1];
+            }
+
+            if (preg_match($regexDepto, $descClean, $matches)) {
+                $conceptoDepartamento = trim(strtoupper($matches[1]));
+            }
+
+            if ($conceptoMes && $conceptoAnio) {
+                $mesNum = $meses[$conceptoMes] ?? null;
+                if ($mesNum) {
+                    $conceptoPeriodo = $conceptoAnio.'-'.$mesNum;
+                    $periodosDetectados[$conceptoPeriodo] = true;
                 }
             }
 
-            if (! $result['anio']) {
-
-                if (preg_match('/\b(20[2-3][0-9])\b/', $descClean, $matches)) {
-                    $result['anio'] = $matches[1];
-                }
+            if (! $result['mes'] && $conceptoMes) {
+                $result['mes'] = $conceptoMes;
             }
 
-            if (! $result['departamento']) {
+            if (! $result['anio'] && $conceptoAnio) {
+                $result['anio'] = $conceptoAnio;
+            }
 
-                $regexDepto = '/(?:DEP(?:ARTAMENTO|TO|T)?\.?|PH|GH|LOCAL|OFICINA|UNIDAD)\s*(?:NO\.?|NUM\.?|#)?\s*([A-Z0-9\-\s]{1,10})\b/i';
-
-                if (preg_match($regexDepto, $descClean, $matches)) {
-
-                    $result['departamento'] = trim(strtoupper($matches[1]));
-                }
+            if (! $result['departamento'] && $conceptoDepartamento) {
+                $result['departamento'] = $conceptoDepartamento;
             }
 
             $data['Impuestos'] = ['Traslados' => [], 'Retenciones' => []];
+            $data['concepto_mes'] = $conceptoMes;
+            $data['concepto_anio'] = $conceptoAnio;
+            $data['concepto_periodo'] = $conceptoPeriodo;
+            $data['concepto_departamento'] = $conceptoDepartamento;
 
             $trasladosNodes = $node->xpath('cfdi:Impuestos/cfdi:Traslados/cfdi:Traslado');
             if (! empty($trasladosNodes)) {
@@ -186,6 +209,8 @@ class XmlValidationService
             $result['conceptos'][] = $data;
         }
 
+        $result['periodosDetectados'] = array_keys($periodosDetectados);
+
         $impuestosGlobales = $xml->xpath('//cfdi:Comprobante/cfdi:Impuestos')[0] ?? null;
         if ($impuestosGlobales) {
             $result['impuestos'] = $this->getAttributesAsArray($impuestosGlobales);
@@ -196,10 +221,19 @@ class XmlValidationService
         }
 
         if ($result['anio'] && $result['mes']) {
-            $meses = ['enero' => '01', 'febrero' => '02', 'marzo' => '03', 'abril' => '04', 'mayo' => '05', 'junio' => '06', 'julio' => '07', 'agosto' => '08', 'septiembre' => '09', 'setiembre' => '09', 'octubre' => '10', 'noviembre' => '11', 'diciembre' => '12'];
             $mesNum = $meses[$result['mes']] ?? null;
             if ($mesNum) {
                 $result['periodo_pago'] = $result['anio'].'-'.$mesNum;
+            }
+        }
+
+        $currentPeriod = date('Y-m');
+        if (! empty($result['periodosDetectados'])) {
+            foreach ($result['periodosDetectados'] as $periodo) {
+                if ($periodo !== $currentPeriod) {
+                    $result['retroactivo'] = true;
+                    break;
+                }
             }
         }
 
@@ -214,6 +248,16 @@ class XmlValidationService
         }
         if (empty($result['receptor']['Rfc'])) {
             $critical_errors[] = ['Campo' => 'RFC Receptor', 'Error' => 'Falta RFC', 'Sug' => 'El nodo Receptor es obligatorio'];
+        }
+
+        foreach ($result['conceptos'] as $idx => $concepto) {
+            if (! $concepto['concepto_periodo']) {
+                $critical_errors[] = [
+                    'Campo' => 'Concepto '.($idx + 1),
+                    'Error' => 'No se detectó el mes/año en la descripción',
+                    'Sug' => 'Agregar formato correcto: "Enero 2025" o "Septiembre de 2025"',
+                ];
+            }
         }
 
         if (! $result['mes']) {

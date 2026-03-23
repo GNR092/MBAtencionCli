@@ -150,6 +150,8 @@ class CuentasPorCobrar extends Controller
             return;
         }
 
+        $esRetroactivo = $xml->retroactivo ?? ($mesXml < date('Y-m'));
+
         // Find the contract for this specific user + project combination.
         $userProyecto = \App\Models\UserProyecto::where('id_user', $xml->id_user)
             ->where('id_proyecto', $xml->id_proyecto)
@@ -185,8 +187,10 @@ class CuentasPorCobrar extends Controller
 
                 $id = DB::table('cuentasporpagar')->insertGetId([
                     'id_contract' => $contract->id,
+                    'mes_pago' => $mesXml,
                     'mesesdepago' => json_encode(['mes' => $mesXml]),
                     'xml_file_id' => $xml->id,
+                    'es_retroactivo' => $esRetroactivo,
                     'estado' => 'pendiente',
                     'saldo_neto' => $importeBase,
                     'monto_pagado' => 0,
@@ -250,6 +254,7 @@ class CuentasPorCobrar extends Controller
                     'isr' => $isrXml,
                     'saldo_pendiente' => $saldoPendiente,
                     'estado' => $estado,
+                    'es_retroactivo' => $esRetroactivo,
                     'updated_at' => now(),
                 ]);
 

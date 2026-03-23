@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\FileLog;
-use App\Models\Proyecto;
 use App\Models\UserProyecto;
 use App\Models\XmlBatch;
 use App\Models\XmlFile;
@@ -14,11 +13,9 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Yasumi\Yasumi; // Import Auth facade
 
 class CfdiValidatorController extends BaseController
@@ -28,43 +25,6 @@ class CfdiValidatorController extends BaseController
     private $xmlValidationService;
 
     private $pdfUuidExtractionService;
-
-    private $maxBatchSize = 2;
-
-    // validar que el usuario tenga el proyecto asignado
-    private function getProyectos()
-    {
-        $user = Auth::user();
-
-        $usuario = DB::table('users')->where('id', $user->id)->first();
-
-        if (! $usuario || empty($usuario->proyect)) {
-            return null;
-        }
-
-        $proyectos = json_decode($usuario->proyect, true);
-
-        if (! is_array($proyectos)) {
-
-            $proyectos = is_object($proyectos) ? array_values((array) $proyectos) : [$proyectos];
-        }
-
-        return $proyectos;
-    }
-
-    // funcion para validar el email
-    private function getMail()
-    {
-        $user = Auth::user();
-
-        $usuario = DB::table('users')->where('id', $user->id)->first();
-
-        if (! $usuario || empty($usuario->email)) {
-            return null;
-        } else {
-            return $usuario->email;
-        }
-    }
 
     // valida los servicios
     public function __construct(
@@ -156,11 +116,6 @@ class CfdiValidatorController extends BaseController
                 $tempPath = $file->getPathname();
 
                 $validationResult = $this->xmlValidationService->validateXml($tempPath, $filename);
-                if($validationResult['mes'] != $currentM){
-
-                }
-
-                // Storage::put('validation_results.txt', json_encode($validationResult, JSON_PRETTY_PRINT));
 
                 if (! $validationResult['valid']) {
                     $flatErrors = collect($validationResult['errors'])->flatten();

@@ -46,6 +46,22 @@
     </div>
     @endif
 
+    {{-- Aviso: Factura Retroactiva --}}
+    @if(isset($retroactivo) && $retroactivo)
+    <div class="bg-orange-800/20 border border-orange-600 rounded-xl p-4 text-orange-200">
+        <p class="font-bold">Factura Retroactiva</p>
+        <p class="text-sm">Esta factura corresponde a un periodo diferente al actual. Se marcará como retroactiva en el sistema.</p>
+    </div>
+    @endif
+
+    {{-- Advertencia: Meses Mezclados --}}
+    @if(isset($hayMesesMezclados) && $hayMesesMezclados)
+    <div class="bg-blue-800/20 border border-blue-600 rounded-xl p-4 text-blue-200">
+        <p class="font-bold">Factura con Meses Mezclados</p>
+        <p class="text-sm">Esta factura contiene conceptos de {{ count($periodosDetectados) }} meses diferentes ({{ implode(', ', $periodosDetectados) }}). Se creará una cuenta por cobrar por cada mes.</p>
+    </div>
+    @endif
+
     {{-- Datos detectados en la descripción --}}
     <div class="bg-carbon-900 border border-white/10 rounded-xl p-6 space-y-4">
         <div class="flex items-center justify-between border-b border-white/10 pb-3">
@@ -91,6 +107,11 @@
                 <span class="text-red-400 font-medium">No detectado</span>
                 @else
                 <span class="text-green-400 font-semibold">{{ $parsedMes }}</span>
+                @if(isset($hayMesesMezclados) && $hayMesesMezclados && isset($gruposFactura) && isset($gruposFactura[0]))
+                    <span class="ml-2 px-1.5 py-0.5 text-xs rounded {{ $gruposFactura[0]['retroactivo'] ? 'bg-orange-800 text-orange-200' : 'bg-green-800 text-green-200' }}">
+                        {{ $gruposFactura[0]['periodo'] }}
+                    </span>
+                @endif
                 @endif
             </div>
 
@@ -110,6 +131,41 @@
         <div class="mt-4 bg-white/5 rounded-lg p-4">
             <span class="block text-white/40 uppercase text-xs tracking-wider">Cuenta Predial</span>
             <span class="text-blue-400 font-semibold">{{ $folioPredial }}</span>
+        </div>
+        @endif
+
+        {{-- Grupos de meses adicionales (cuando hay meses mezclados) --}}
+        @if(isset($hayMesesMezclados) && $hayMesesMezclados && isset($gruposFactura) && count($gruposFactura) > 1)
+        <div class="mt-4 border-t border-white/10 pt-4">
+            <h3 class="text-sm font-semibold text-dorado-200 mb-3">Periodos Adicionales Detectados</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                @foreach($gruposFactura as $index => $grupo)
+                    @if($index > 0)
+                    <div class="bg-white/5 rounded-lg p-3 {{ $grupo['retroactivo'] ? 'border border-orange-500/50' : '' }}">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs text-white/40 uppercase tracking-wider">Periodo</span>
+                            @if($grupo['retroactivo'])
+                            <span class="px-2 py-0.5 text-xs bg-orange-800 text-orange-200 rounded">Retroactivo</span>
+                            @else
+                            <span class="px-2 py-0.5 text-xs bg-green-800 text-green-200 rounded">Actual</span>
+                            @endif
+                        </div>
+                        <p class="text-lg font-bold text-dorado-200">{{ $grupo['periodo'] }}</p>
+                        @if(!empty($grupo['departamentos']))
+                        <p class="text-xs text-white/60 mt-1">
+                            Deptos: {{ implode(', ', $grupo['departamentos']) }}
+                        </p>
+                        @endif
+                        <p class="text-sm text-white/70 mt-1">
+                            Total: <span class="text-dorado-200 font-semibold">${{ number_format($grupo['total'], 2) }}</span>
+                        </p>
+                        <p class="text-xs text-white/50 mt-1">
+                            {{ count($grupo['conceptos']) }} concepto(s)
+                        </p>
+                    </div>
+                    @endif
+                @endforeach
+            </div>
         </div>
         @endif
 
@@ -282,7 +338,14 @@
                 <tbody>
                     @foreach($factura['conceptos'] as $concepto)
                     <tr class="border-b border-white/5 hover:bg-white/5 transition">
-                        <td class="py-3 px-2 text-white font-mono">{{ $concepto['clave_prod_serv'] }}</td>
+                        <td class="py-3 px-2 text-white font-mono">
+                            {{ $concepto['clave_prod_serv'] }}
+                            @if(isset($hayMesesMezclados) && $hayMesesMezclados && !empty($concepto['periodo']))
+                                <span class="ml-2 px-1.5 py-0.5 text-xs rounded {{ $concepto['periodo'] < date('Y-m') ? 'bg-orange-800 text-orange-200' : 'bg-green-800 text-green-200' }}">
+                                    {{ $concepto['periodo'] }}
+                                </span>
+                            @endif
+                        </td>
                         <td class="py-3 px-2 text-white max-w-xs">{{ $concepto['descripcion'] }}</td>
                         <td class="py-3 px-2 text-white text-center">{{ $concepto['cantidad'] }}</td>
                         <td class="py-3 px-2 text-white">{{ $concepto['unidad'] }}</td>

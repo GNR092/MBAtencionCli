@@ -26,6 +26,7 @@ class XmlFile extends Model
         'pdf_uploaded',
         'departamento',
         'mes',
+        'retroactivo',
     ];
 
     protected $casts = [

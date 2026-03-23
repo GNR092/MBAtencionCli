@@ -92,6 +92,10 @@
                 class="bg-[#d8c495] text-[#0d1f30] px-8 py-3 rounded-xl font-bold hover:bg-[#c9a143] transition shadow-lg w-full md:w-auto text-center">
                 IR A PAGAR CUENTAS
             </a>
+            <a href="{{ route('retroactivo.eliminados') }}"
+                class="bg-red-800/50 text-white px-8 py-3 rounded-xl font-bold hover:bg-red-700/50 transition shadow-lg w-full md:w-auto text-center border border-red-600/50">
+                VER ELIMINADOS
+            </a>
         </div>
     </div>
 </div>
@@ -122,16 +126,18 @@
                         <th class="px-2 py-2">Neto</th>
                         <th class="px-2 py-2">Pagado</th>
                         <th class="px-2 py-2">Pendiente</th>
+                        <th class="px-2 py-2">Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="detalleCuerpo">
                 </tbody>
                 <tfoot class="sticky bottom-0 bg-[#0d1f30]">
                     <tr>
-                        <td colspan="8" class="text-right px-2 py-2 text-white/60">Total:</td>
+                        <td colspan="9" class="text-right px-2 py-2 text-white/60">Total:</td>
                         <td id="detalleTotalNeto" class="text-[#d8c495] font-bold px-2 py-2"></td>
                         <td id="detalleTotalPagado" class="text-green-400 font-bold px-2 py-2"> </td>
                         <td id="detalleTotalPendiente" class="text-red-400 font-bold px-2 py-2"></td>
+                        <td></td>
                     </tr>
                 </tfoot>
             </table>
@@ -140,6 +146,33 @@
             <button type="button" onclick="closeDetalleModal()"
                 class="bg-white/10 text-white px-6 py-2 rounded-xl font-bold hover:bg-white/20 transition">CERRAR</button>
         </div>
+    </div>
+</div>
+
+<!-- Modal eliminar retroactivo -->
+<div id="eliminarModal"
+    class="bg-black/60 backdrop-blur-sm fixed inset-0 z-[99999] flex items-center justify-center hidden p-4">
+    <div class="bg-[#112134] border border-red-600/50 rounded-3xl shadow-2xl p-6 relative w-full max-w-md">
+        <div class="flex justify-between items-center mb-4 border-b border-red-600/30 pb-3">
+            <h2 class="text-xl font-bold text-red-400">Eliminar Retroactivo</h2>
+            <button type="button" onclick="closeEliminarModal()" class="text-white/50 hover:text-white text-2xl">&times;</button>
+        </div>
+        <p class="text-white/70 mb-4">¿Está seguro de eliminar este retroactivo? Esta acción lo moverá a la papelera de eliminados.</p>
+        <form id="eliminarForm" method="POST" action="">
+            @csrf
+            <div class="mb-4">
+                <label for="motivo" class="block text-white/50 text-sm mb-1">Motivo (opcional):</label>
+                <textarea id="motivo" name="motivo" rows="2" 
+                    class="w-full bg-white/10 border border-white/20 rounded-lg p-3 text-white focus:border-red-500 focus:outline-none resize-none"
+                    placeholder="Ej: No se pagará por falta de documentos"></textarea>
+            </div>
+            <div class="flex gap-3 justify-end">
+                <button type="button" onclick="closeEliminarModal()"
+                    class="bg-white/10 text-white px-6 py-2 rounded-xl font-bold hover:bg-white/20 transition">CANCELAR</button>
+                <button type="submit"
+                    class="bg-red-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-red-500 transition">ELIMINAR</button>
+            </div>
+        </form>
     </div>
 </div>
 @endpush
@@ -177,6 +210,12 @@ function openDetalleModal(grupo) {
             <td class="px-2 py-2 text-[#d8c495] font-bold text-right">$${parseFloat(cuenta.saldo_neto || 0).toFixed(2)}</td>
             <td class="px-2 py-2 text-green-400 text-right">$${parseFloat(cuenta.monto_pagado || 0).toFixed(2)}</td>
             <td class="px-2 py-2 text-red-400 text-right">$${parseFloat(cuenta.saldo_pendiente || 0).toFixed(2)}</td>
+            <td class="px-2 py-2">
+                <button type="button" onclick="openEliminarModal(${cuenta.id_cuentas_por_pagar})"
+                    class="bg-red-800/50 hover:bg-red-700/50 text-red-300 px-3 py-1 rounded-lg text-xs font-bold transition border border-red-600/30">
+                    ELIMINAR
+                </button>
+            </td>
         `;
         
         tbody.appendChild(tr);
@@ -195,6 +234,16 @@ function openDetalleModal(grupo) {
 
 function closeDetalleModal() {
     document.getElementById('detalleModal').classList.add('hidden');
+}
+
+function openEliminarModal(id) {
+    const form = document.getElementById('eliminarForm');
+    form.action = '/retroactivo/' + id + '/eliminar';
+    document.getElementById('eliminarModal').classList.remove('hidden');
+}
+
+function closeEliminarModal() {
+    document.getElementById('eliminarModal').classList.add('hidden');
 }
 </script>
 @endpush

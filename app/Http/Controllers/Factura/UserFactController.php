@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Factura;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\CuentasPorCobrar;
 use App\Models\Impuesto;
 use App\Models\Proyecto;
 use App\Models\XmlFile;
@@ -142,6 +141,33 @@ class UserFactController extends Controller
 
         $factura = $this->MapingFacturas($xmlData);
 
+        $periodosDetectados = $xmlData['periodosDetectados'] ?? [];
+        $hayMesesMezclados = count($periodosDetectados) > 1;
+
+        $conceptosPorPeriodo = [];
+        foreach ($factura['conceptos'] as $concepto) {
+            $periodo = $concepto['periodo'] ?? 'sin-periodo';
+            if (! isset($conceptosPorPeriodo[$periodo])) {
+                $conceptosPorPeriodo[$periodo] = [];
+            }
+            $conceptosPorPeriodo[$periodo][] = $concepto;
+        }
+
+        $gruposFactura = [];
+        $currentPeriod = date('Y-m');
+        foreach ($conceptosPorPeriodo as $periodo => $conceptos) {
+            $esRetroactivoGrupo = $periodo !== 'sin-periodo' && $periodo !== $currentPeriod;
+            $totalImporte = array_sum(array_column($conceptos, 'importe'));
+            $departamentosGrupo = array_unique(array_filter(array_column($conceptos, 'departamento')));
+            $gruposFactura[] = [
+                'periodo' => $periodo,
+                'conceptos' => $conceptos,
+                'total' => $totalImporte,
+                'departamentos' => $departamentosGrupo,
+                'retroactivo' => $esRetroactivoGrupo,
+            ];
+        }
+
         // Validar que el emisor de la factura coincida con el usuario autenticado
         $user = Auth::user();
         $userMismatch = false;
@@ -156,7 +182,7 @@ class UserFactController extends Controller
         $AllProyects = Proyecto::all()->toArray();
         $parser = new DescripcionParser;
 
-        $des = $factura['conceptos'][0]['descripcion'];
+        $des = $factura['conceptos'][0]['descripcion'] ?? '';
         $parsedData = $parser->parsearDescripcion($des, $AllProyects);
         $parsedProjectInfo = $parsedData['proyecto'] ?? null;
         $parsedProjectId = $parsedProjectInfo['id_proyecto'] ?? null;
@@ -188,6 +214,8 @@ class UserFactController extends Controller
         $pdfUploaded = isset($currentFacturaData['pdf_data']) && ! empty($currentFacturaData['pdf_data']);
         $pdfFilename = $pdfUploaded ? ($currentFacturaData['pdf_data']['original_name'] ?? 'documento.pdf') : null;
 
+        $retroactivo = $currentFacturaData['xmlData']['retroactivo'] ?? false;
+
         return view('User.UserFactView', compact(
             'factura', 'totalFacturas', 'index',
             'projectMismatch', 'parsedProjectId', 'parsedProjectName', 'selectedProjectId', 'selectedProjectName',
@@ -195,7 +223,8 @@ class UserFactController extends Controller
             'pdfUploaded', 'pdfFilename',
             'departamentoText', 'parsedMes', 'parsedAnio',
             'departamentoMissing', 'mesMissing', 'anioMissing',
-            'folioPredial'
+            'folioPredial', 'retroactivo',
+            'gruposFactura', 'hayMesesMezclados', 'periodosDetectados'
         ));
     }
 
@@ -251,6 +280,8 @@ class UserFactController extends Controller
                 'traslados' => [],
                 'retenciones' => [],
                 'cuenta_predial' => $concept['CuentaPredial']['Numero'] ?? null,
+                'periodo' => $concept['concepto_periodo'] ?? null,
+                'departamento' => $concept['concepto_departamento'] ?? null,
             ];
 
             // Traslados del concepto
@@ -311,7 +342,29 @@ class UserFactController extends Controller
         $user = Auth::user();
         $factura = $this->MapingFacturas($xmlData);
 
-        // Extraer metadatos de la descripción del primer concepto
+        $periodosDetectados = $xmlData['periodosDetectados'] ?? [];
+
+        if (empty($periodosDetectados)) {
+            return redirect()->back()->withErrors(['message' => 'No se detectaron meses en los conceptos de la factura.']);
+        }
+
+        $conceptosPorPeriodo = [];
+        foreach ($factura['conceptos'] as $concepto) {
+            $periodo = $concepto['periodo'] ?? 'sin-periodo';
+            if (! isset($conceptosPorPeriodo[$periodo])) {
+                $conceptosPorPeriodo[$periodo] = [];
+            }
+            $conceptosPorPeriodo[$periodo][] = $concepto;
+        }
+
+        // Validar que TODOS los conceptos tengan periodo
+        foreach ($conceptosPorPeriodo as $periodo => $conceptos) {
+            if ($periodo === 'sin-periodo') {
+                return redirect()->back()->withErrors(['message' => 'Hay conceptos sin mes/año detectable. Por favor corrija las facturas.']);
+            }
+        }
+
+        // Extraer metadatos del primer concepto para validaciones
         $parser = new DescripcionParser;
         $allProyects = Proyecto::all()->toArray();
         $des = $factura['conceptos'][0]['descripcion'] ?? '';
@@ -320,29 +373,18 @@ class UserFactController extends Controller
         $parsedProjectInfo = $parsedData['proyecto'] ?? null;
         $parsedProjectId = $parsedProjectInfo['id_proyecto'] ?? null;
         $departamento = implode(',', $parsedData['departamentos'] ?? []) ?: null;
-        $mes = $parsedData['fecha']['mes_nombre'] ?? null;
-        $anio = $parsedData['fecha']['anio'] ?? null;
 
-        // Validar que los datos de descripción estén presentes
+        // Validar proyecto
         $errors = [];
         if (empty($parsedProjectId) || (int) $parsedProjectId !== (int) $selectedProjectId) {
-            $errors[] = 'No se detectó el proyecto en la descripción o no coincide con el seleccionado. Ejemplo: "Campus University City", "Aldea Borboleta"';
-        }
-        if (empty($departamento)) {
-            $errors[] = 'No se detectó el departamento en la descripción. Ejemplo: "Depto A3" o "Departamento 2203"';
-        }
-        if (empty($mes)) {
-            $errors[] = 'No se detectó el mes en la descripción. Ejemplo: "Enero 2025" o "Septiembre de 2025"';
-        }
-        if (empty($anio)) {
-            $errors[] = 'No se detectó el año en la descripción. Ejemplo: "Enero 2025"';
+            $errors[] = 'No se detectó el proyecto en la descripción o no coincide con el seleccionado.';
         }
 
         if (! empty($errors)) {
             return redirect()->back()->withErrors($errors);
         }
 
-        // Ruta organizada en disco privado: facturas/{user_id}/xml/{año}/{mes}/{archivo}
+        // Ruta organizada en disco privado
         $carbonFecha = $this->parseFechaFactura($factura['fecha']);
         $filename = basename($tmpFilePath);
         $newFilePath = $this->buildXmlStoragePath($user->id, $carbonFecha, $filename);
@@ -351,10 +393,10 @@ class UserFactController extends Controller
         $uuid = $factura['uuid'] !== 'N/A' ? $factura['uuid'] : null;
         $pdfFilename = $uuid.'.pdf';
         $pdfNewPath = $this->buildPdfStoragePath($user->id, $carbonFecha, $pdfFilename);
+        $retroactivo = $currentFacturaData['xmlData']['retroactivo'] ?? false;
 
-        // VALIDAR QUE EL PDF EXISTA EN EL SERVIDOR ANTES DE CONTINUAR
         if (! isset($pdfData['temp_path']) || ! Storage::disk('local')->exists($pdfData['temp_path'])) {
-            Log::error('Error: PDF temporal no encontrado. No se puede confirmar la factura. temp_path: '.($pdfData['temp_path'] ?? 'N/A'));
+            Log::error('Error: PDF temporal no encontrado. temp_path: '.($pdfData['temp_path'] ?? 'N/A'));
 
             return redirect()->back()->withErrors(['message' => 'El PDF no se subió correctamente. Por favor, sube el PDF nuevamente antes de confirmar la factura.']);
         }
@@ -370,26 +412,24 @@ class UserFactController extends Controller
                 $newFilePath,
                 $filename,
                 $departamento,
-                $mes,
                 $carbonFecha,
                 $pdfData,
+                $retroactivo,
                 $pdfFilename,
                 $pdfNewPath,
                 $uuid,
+                $conceptosPorPeriodo,
                 &$xmlFile
             ) {
-                // Mover XML de almacenamiento temporal al almacenamiento privado organizado
                 $contents = Storage::disk('tmp')->get($tmpFilePath);
                 Storage::disk('local')->put($newFilePath, $contents);
 
-                // Verificar que existe el PDF temporal antes de moverlo
                 if (! isset($pdfData['temp_path']) || ! Storage::disk('local')->exists($pdfData['temp_path'])) {
                     throw new \Exception('El PDF no se encontró en el servidor. Por favor, sube el PDF nuevamente.');
                 }
 
                 Log::info('Moviendo PDF temporal a permanente: '.$pdfData['temp_path'].' -> '.$pdfNewPath);
 
-                // Mover PDF del almacenamiento temporal al almacenamiento permanente
                 $pdfContents = Storage::disk('local')->get($pdfData['temp_path']);
                 $saved = Storage::disk('local')->put($pdfNewPath, $pdfContents);
 
@@ -397,14 +437,12 @@ class UserFactController extends Controller
                     throw new \Exception('Error al guardar el PDF en el servidor.');
                 }
 
-                // Verificar que se guardó correctamente
                 if (! Storage::disk('local')->exists($pdfNewPath)) {
                     throw new \Exception('El PDF no se guardo correctamente. Verifica los permisos de escritura.');
                 }
 
                 Log::info('PDF movido correctamente a: '.$pdfNewPath);
 
-                // Eliminar archivo temporal solo después de verificar que se copió
                 Storage::disk('local')->delete($pdfData['temp_path']);
 
                 $xmlFile = XmlFile::create([
@@ -421,23 +459,72 @@ class UserFactController extends Controller
                     'pdf_path' => $pdfNewPath,
                     'pdf_uploaded' => true,
                     'departamento' => $departamento,
-                    'mes' => $mes,
+                    'mes' => $conceptosPorPeriodo[array_key_first($conceptosPorPeriodo)][0]['periodo'] ?? null,
+                    'retroactivo' => $retroactivo,
                 ]);
 
                 $this->saveImpuestos($xmlFile->id, $factura, $user->id);
 
-                // Eliminar el XML temporal solo si el registro en BD fue exitoso
+                $userProyecto = \App\Models\UserProyecto::where('id_user', $user->id)
+                    ->where('id_proyecto', $selectedProjectId)
+                    ->first();
+
+                $contract = $userProyecto
+                    ? \App\Models\Contract::where('id_user_p', $userProyecto->id_user_p)->first()
+                    : null;
+
+                if ($contract) {
+                    $currentPeriod = date('Y-m');
+
+                    foreach ($conceptosPorPeriodo as $periodo => $conceptos) {
+                        $esRetroactivo = $periodo !== $currentPeriod;
+
+                        $importeIncremento = DB::table('incrementos_importe')
+                            ->where('id_contract', $contract->id)
+                            ->whereDate('fecha_inicio', '<=', $periodo.'-01')
+                            ->where(function ($q) use ($periodo) {
+                                $q->whereNull('fecha_fin')
+                                    ->orWhereDate('fecha_fin', '>=', $periodo.'-01');
+                            })
+                            ->value('importe_base');
+
+                        $importeBase = $importeIncremento ?? $contract->importe_bruto_renta;
+
+                        $totalImpuestos = 0;
+                        foreach ($conceptos as $c) {
+                            foreach ($c['traslados'] as $traslado) {
+                                $totalImpuestos += $traslado['importe'];
+                            }
+                            foreach ($c['retenciones'] as $retencion) {
+                                $totalImpuestos -= $retencion['importe'];
+                            }
+                        }
+
+                        $totalNeto = max(0, $importeBase - abs($totalImpuestos));
+
+                        DB::table('cuentasporpagar')->insert([
+                            'id_contract' => $contract->id,
+                            'uuid' => $uuid,
+                            'mes_pago' => $periodo,
+                            'es_retroactivo' => $esRetroactivo,
+                            'xml_file_id' => $xmlFile->id,
+                            'estado' => 'pendiente',
+                            'saldo_neto' => $totalNeto,
+                            'monto_pagado' => 0,
+                            'mesesdepago' => json_encode(['mes' => $periodo]),
+                            'mesespagados' => json_encode([]),
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
+                }
+
                 Storage::disk('tmp')->delete($tmpFilePath);
             });
         } catch (\Exception $e) {
             Log::error('Error al confirmar factura [index='.$index.']: '.$e->getMessage());
 
             return redirect()->back()->withErrors(['message' => 'Ocurrió un error al guardar la factura. Por favor intenta de nuevo.']);
-        }
-
-        // Vincular el XML a la cuenta por cobrar correspondiente
-        if ($xmlFile) {
-            (new CuentasPorCobrar)->actualizarConXML($xmlFile);
         }
 
         array_splice($allFacturasData, $index, 1);
