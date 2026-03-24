@@ -182,20 +182,22 @@ class UserFactController extends Controller
         $AllProyects = Proyecto::all()->toArray();
         $parser = new DescripcionParser;
 
-        $des = $factura['conceptos'][0]['descripcion'] ?? '';
-        $parsedData = $parser->parsearDescripcion($des, $AllProyects);
+        $allParsedConcepts = $parser->parsearConceptos($factura['conceptos'], $AllProyects);
+        $parsedData = $allParsedConcepts[0] ?? [];
+
         $parsedProjectInfo = $parsedData['proyecto'] ?? null;
         $parsedProjectId = $parsedProjectInfo['id_proyecto'] ?? null;
         $parsedProjectName = $parsedProjectInfo['nombre_proyecto'] ?? 'No detectado';
         $selectedProjectId = $currentFacturaData['select_project'];
         $selectedProjectName = $proyecto->nombre_proyecto ?? 'N/A';
 
-        $departamentos = $parsedData['departamentos'] ?? [];
-        $departamentoText = ! empty($departamentos) ? implode(', ', $departamentos) : null;
+        $allDepartamentos = collect($allParsedConcepts)->pluck('departamentos')->flatten()->unique()->values()->all();
+        $allMeses = collect($allParsedConcepts)->pluck('fecha.mes_nombre')->filter()->unique()->values()->all();
+        $allAnios = collect($allParsedConcepts)->pluck('fecha.anio')->filter()->unique()->values()->all();
 
-        $parsedFecha = $parsedData['fecha'] ?? null;
-        $parsedMes = $parsedFecha['mes_nombre'] ?? null;
-        $parsedAnio = $parsedFecha['anio'] ?? null;
+        $departamentoText = ! empty($allDepartamentos) ? implode(', ', $allDepartamentos) : null;
+        $parsedMes = $allMeses[0] ?? null;
+        $parsedAnio = $allAnios[0] ?? null;
 
         $folioPredial = $parsedData['folio_predial'] ?? null;
 
@@ -207,6 +209,10 @@ class UserFactController extends Controller
         $departamentoMissing = empty($departamentoText);
         $mesMissing = empty($parsedMes);
         $anioMissing = empty($parsedAnio);
+
+        $multipleDepartamentos = count($allDepartamentos) > 1;
+        $multipleMeses = count($allMeses) > 1;
+        $multipleAnios = count($allAnios) > 1;
 
         $uuid = $factura['uuid'] !== 'N/A' ? $factura['uuid'] : null;
         $uuidExists = $uuid && XmlFile::where('uuid', $uuid)->exists();
@@ -224,7 +230,8 @@ class UserFactController extends Controller
             'departamentoText', 'parsedMes', 'parsedAnio',
             'departamentoMissing', 'mesMissing', 'anioMissing',
             'folioPredial', 'retroactivo',
-            'gruposFactura', 'hayMesesMezclados', 'periodosDetectados'
+            'gruposFactura', 'hayMesesMezclados', 'periodosDetectados',
+            'multipleDepartamentos', 'multipleMeses', 'multipleAnios'
         ));
     }
 
@@ -364,15 +371,16 @@ class UserFactController extends Controller
             }
         }
 
-        // Extraer metadatos del primer concepto para validaciones
+        // Extraer metadatos de todos los conceptos para validaciones
         $parser = new DescripcionParser;
         $allProyects = Proyecto::all()->toArray();
-        $des = $factura['conceptos'][0]['descripcion'] ?? '';
-        $parsedData = $parser->parsearDescripcion($des, $allProyects);
+        $allParsedConcepts = $parser->parsearConceptos($factura['conceptos'], $allProyects);
+        $parsedData = $allParsedConcepts[0] ?? [];
 
         $parsedProjectInfo = $parsedData['proyecto'] ?? null;
         $parsedProjectId = $parsedProjectInfo['id_proyecto'] ?? null;
-        $departamento = implode(',', $parsedData['departamentos'] ?? []) ?: null;
+        $allDepartamentos = collect($allParsedConcepts)->pluck('departamentos')->flatten()->unique()->values()->all();
+        $departamento = ! empty($allDepartamentos) ? implode(',', $allDepartamentos) : null;
 
         // Validar proyecto
         $errors = [];

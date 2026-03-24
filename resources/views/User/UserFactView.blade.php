@@ -97,6 +97,9 @@
                 <span class="text-red-400 font-medium">No detectado</span>
                 @else
                 <span class="text-green-400 font-semibold">{{ $departamentoText }}</span>
+                @if($multipleDepartamentos ?? false)
+                <span class="ml-2 text-xs text-yellow-400">(mezclados)</span>
+                @endif
                 @endif
             </div>
 
@@ -107,6 +110,9 @@
                 <span class="text-red-400 font-medium">No detectado</span>
                 @else
                 <span class="text-green-400 font-semibold">{{ $parsedMes }}</span>
+                @if($multipleMeses ?? false)
+                <span class="ml-2 text-xs text-yellow-400">(mezclados)</span>
+                @endif
                 @if(isset($hayMesesMezclados) && $hayMesesMezclados && isset($gruposFactura) && isset($gruposFactura[0]))
                     <span class="ml-2 px-1.5 py-0.5 text-xs rounded {{ $gruposFactura[0]['retroactivo'] ? 'bg-orange-800 text-orange-200' : 'bg-green-800 text-green-200' }}">
                         {{ $gruposFactura[0]['periodo'] }}
@@ -122,6 +128,9 @@
                 <span class="text-red-400 font-medium">No detectado</span>
                 @else
                 <span class="text-green-400 font-semibold">{{ $parsedAnio }}</span>
+                @if($multipleAnios ?? false)
+                <span class="ml-2 text-xs text-yellow-400">(mezclados)</span>
+                @endif
                 @endif
             </div>
         </div>

@@ -359,12 +359,19 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id')
             ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
             ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
+            ->leftJoin('razones_sociales', 'proyectos.id_razon_social', '=', 'razones_sociales.id_razon_social')
+            ->leftJoin('regimen_fiscals', 'users.id_regimen', '=', 'regimen_fiscals.id_regimen')
             ->select(
                 'cuentasporpagar.*',
                 'users.name as name',
                 'contract.importe_bruto_renta as importeBase',
+                'contract.tipo as contract_tipo',
                 DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'),
+                DB::raw('COALESCE(razones_sociales.nombre_razon_social, "Sin razón social") as razon_social'),
+                'xml_files.departamento',
+                'users.metodo_pago',
                 DB::raw('DATE_FORMAT(xml_files.created_at, "%Y-%m") as mes_subida'),
+                DB::raw('COALESCE(impuesto.isr, 0) as retencion_iva'),
             );
         $selectedMonth = $request->month ?? now()->format('Y-m');
         $query->where('cuentasporpagar.mes_pago', $selectedMonth);

@@ -1,42 +1,42 @@
 <table>
     <thead>
         <tr>
-            <th>ID</th>
-            <th>INVERSIONISTA</th>
+            <th>NO</th>
+            <th>RAZON SOCIAL</th>
+            <th>TIPO</th>
+            <th>DEPARTAMENTO</th>
             <th>PROYECTO</th>
-            <th>ESTADO</th>
+            <th>PERSONA</th>
+            <th>FORMA DE PAGO</th>
+            <th>NOMBRE INVERSIONISTA</th>
+            <th>IMPORTE RENTA</th>
+            <th>RETENCIÓN ISR</th>
+            <th>RETENCIÓN IVA</th>
+            <th>IMPORTE NETO</th>
+            <th>IMPORTE PAGADA</th>
             <th>MES</th>
-            <th>IMPORTE BASE</th>
-            <th>IMPORTE ISR</th>
-            <th>SALDO NETO</th>
-            <th>MONTO PAGADO</th>
-            <th>SALDO PENDIENTE</th>
+            <th>PAGADO / NO PAGADO</th>
         </tr>
     </thead>
     <tbody>
         @foreach($cuentas as $cuenta)
             <tr>
-                <td>{{$cuenta->id_cuentas_por_pagar}}</td>
+                <td>{{ $cuenta->id_cuentas_por_pagar }}</td>
+                <td>{{ $cuenta->razon_social }}</td>
+                <td>{{ $cuenta->contract_tipo }}</td>
+                <td>{{ $cuenta->departamento ?? 'N/A' }}</td>
+                <td>{{ $cuenta->proyecto }}</td>
                 <td>{{ $cuenta->name }}</td>
-                <td>{{$cuenta->proyecto}}</td>
-                <td>{{ $cuenta->estado }}</td>
+                <td>{{ $cuenta->metodo_pago ?? 'N/A' }}</td>
+                <td>{{ $cuenta->name }}</td>
+                <td>{{ number_format($cuenta->importeBase, 2) }}</td>
+                <td>{{ number_format($cuenta->isr ?? 0, 2) }}</td>
+                <td>{{ number_format($cuenta->retencion_iva ?? 0, 2) }}</td>
+                <td>{{ number_format($cuenta->saldo_neto, 2) }}</td>
+                <td>{{ number_format($cuenta->monto_pagado, 2) }}</td>
                 <td>{{ $cuenta->mes_pago ?? 'Sin mes' }}</td>
-                <td>{{ number_format($cuenta->importe_base_final,2)}}</td>
-                <td>{{ number_format($cuenta->isr,2) }}</td>
-                <td>{{ number_format($cuenta->saldo_neto,2)}}</td>
-                <td>{{ number_format($cuenta->monto_pagado,2)}}</td>
-                <td>{{ number_format($cuenta->saldo_pendiente,2) }}</td>
+                <td>{{ strtoupper($cuenta->estado) }}</td>
             </tr>
         @endforeach
-
-        <tr style="font-weight: bold; background-color: #f8f9fa;">
-            <td colspan="4" align="right">TOTAL CUENTAS POR PAGAR:</td>
-            <td>{{  number_format($totalPendiente, 2)}}</td>
-        </tr>
-        <tr style="font-weight: bold; background-color: #f8f9fa;">
-            <td colspan="4" align="right">TOTAL CUENTAS PAGADAS:</td>
-            <td>{{  number_format($totalPagado, 2)}}</td>
-        </tr>
     </tbody>
 </table>
-
