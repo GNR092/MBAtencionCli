@@ -7,6 +7,7 @@ use App\Models\RetroactivoEliminado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RetroactivoController extends Controller
 {
@@ -21,7 +22,6 @@ class RetroactivoController extends Controller
             ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
             ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
             ->leftJoin('users', 'contract.user_id', '=', 'users.id')
-            ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id')
             ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
             ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
             ->select(
@@ -33,6 +33,7 @@ class RetroactivoController extends Controller
             );
 
         $query->where('cuentasporpagar.es_retroactivo', true);
+        $query->where('cuentasporpagar.mes_pago', '<', now()->format('Y-m'));
 
         $query->when($request->filled(['search', 'categoria']), function ($q) use ($request) {
             $columnas = [
@@ -80,6 +81,30 @@ class RetroactivoController extends Controller
         try {
             DB::beginTransaction();
 
+            $mesesdepago = $cuenta->mesesdepago;
+            if (is_string($mesesdepago)) {
+                $mesesdepago = json_decode($mesesdepago, true);
+            }
+            if (! is_array($mesesdepago)) {
+                $mesesdepago = ['mes' => $cuenta->mes_pago];
+            }
+
+            $mesespagados = $cuenta->mesespagados;
+            if (is_string($mesespagados)) {
+                $mesespagados = json_decode($mesespagados, true);
+            }
+            if (! is_array($mesespagados)) {
+                $mesespagados = [];
+            }
+
+            $mesespendientes = $cuenta->mesespendientes;
+            if (is_string($mesespendientes)) {
+                $mesespendientes = json_decode($mesespendientes, true);
+            }
+            if (! is_array($mesespendientes)) {
+                $mesespendientes = [];
+            }
+
             RetroactivoEliminado::create([
                 'cuenta_original_id' => $cuenta->id_cuentas_por_pagar,
                 'id_contract' => $cuenta->id_contract,
@@ -93,9 +118,9 @@ class RetroactivoController extends Controller
                 'saldo_pendiente' => $cuenta->saldo_pendiente,
                 'isr' => $cuenta->isr,
                 'tasaCuota' => $cuenta->tasaCuota,
-                'mesesdepago' => $cuenta->mesesdepago,
-                'mesespagados' => $cuenta->mesespagados,
-                'mesespendientes' => $cuenta->mesespendientes,
+                'mesesdepago' => $mesesdepago,
+                'mesespagados' => $mesespagados,
+                'mesespendientes' => $mesespendientes,
                 'eliminado_por' => $user->name,
                 'motivo' => $request->input('motivo'),
             ]);
@@ -107,6 +132,11 @@ class RetroactivoController extends Controller
             return redirect()->back()->with('success', 'Retroactivo eliminado correctamente.');
         } catch (\Exception $e) {
             DB::rollBack();
+
+            Log::error('Error al eliminar retroactivo', [
+                'id_cuenta' => $id,
+                'error' => $e->getMessage(),
+            ]);
 
             return redirect()->back()->withErrors(['message' => 'Error al eliminar el retroactivo.']);
         }

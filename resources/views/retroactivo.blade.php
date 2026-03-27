@@ -179,37 +179,52 @@
 
 @push('scripts')
 <script>
+let grupoActualNombre = '';
+let grupoActual = null;
+let gruposData = @json($grupos->toArray());
+
 function openDetalleModal(grupo) {
+    const nombre = grupo.nombre;
+    const grupoActualizado = gruposData.find(function(g) { return g.nombre === nombre; });
+    if (grupoActualizado) {
+        grupo = grupoActualizado;
+        grupoActual = grupoActualizado;
+    }
+    grupoActualNombre = nombre;
+
     document.getElementById('detalleTitulo').textContent = 'Detalle de Retroactivos - ' + grupo.nombre;
-    
+
     const tbody = document.getElementById('detalleCuerpo');
     tbody.innerHTML = '';
-    
+
     let totalNeto = 0, totalPagado = 0, totalPendiente = 0;
-    
+
     grupo.cuentas.forEach(cuenta => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-white/5 border-b border-[#d8c495]/10';
-        
-        const estadoClass = {
-            'pagado': 'text-green-400',
-            'parcial': 'text-yellow-400',
-            'pendiente': 'text-red-400'
-        }[cuenta.estado] || 'text-white';
-        
+
+        const estadoColor = getEstadoColor(cuenta.estado);
+        const selectHtml = '<select class="estado-select bg-[#0d1f30] border border-white/20 rounded-lg px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-[#d8c495] ' + estadoColor + '" ' +
+            'data-id="' + cuenta.id_cuentas_por_pagar + '" data-prev="' + (cuenta.estado || 'pendiente') + '" data-saldo-neto="' + (cuenta.saldo_neto || 0) + '">' +
+            '<option value="pendiente" ' + (cuenta.estado === 'pendiente' ? 'selected' : '') + '>Pendiente</option>' +
+            '<option value="parcial" ' + (cuenta.estado === 'parcial' ? 'selected' : '') + '>Parcial</option>' +
+            '<option value="pagado" ' + (cuenta.estado === 'pagado' ? 'selected' : '') + '>Pagado</option>' +
+            '<option value="vencido" ' + (cuenta.estado === 'vencido' ? 'selected' : '') + '>Vencido</option>' +
+            '</select>';
+
         tr.innerHTML = `
             <td class="px-2 py-2 hidden">${cuenta.id_cuentas_por_pagar || ''}</td>
             <td class="px-2 py-2 text-white/70 font-mono text-[10px]">${cuenta.uuid ? cuenta.uuid.substring(0, 8) + '...' : 'N/A'}</td>
             <td class="px-2 py-2 text-white">${grupo.nombre}</td>
             <td class="px-2 py-2 text-white/70">${cuenta.proyecto || 'Sin proyecto'}</td>
-            <td class="px-2 py-2 ${estadoClass} font-bold uppercase">${cuenta.estado || 'N/A'}</td>
+            <td class="px-2 py-2">${selectHtml}</td>
             <td class="px-2 py-2 text-white/70">${cuenta.mes_pago || 'N/A'}</td>
             <td class="px-2 py-2 text-white/70">${cuenta.mes_subida || 'N/A'}</td>
             <td class="px-2 py-2 text-white/70 text-right">$${parseFloat(cuenta.importeBase || 0).toFixed(2)}</td>
             <td class="px-2 py-2 text-white/70 text-right">$${parseFloat(cuenta.isr || 0).toFixed(2)}</td>
             <td class="px-2 py-2 text-[#d8c495] font-bold text-right">$${parseFloat(cuenta.saldo_neto || 0).toFixed(2)}</td>
-            <td class="px-2 py-2 text-green-400 text-right">$${parseFloat(cuenta.monto_pagado || 0).toFixed(2)}</td>
-            <td class="px-2 py-2 text-red-400 text-right">$${parseFloat(cuenta.saldo_pendiente || 0).toFixed(2)}</td>
+            <td class="px-2 py-2 text-green-400 text-right cell-pagado">$${parseFloat(cuenta.monto_pagado || 0).toFixed(2)}</td>
+            <td class="px-2 py-2 text-red-400 text-right cell-pendiente">$${parseFloat(cuenta.saldo_pendiente || 0).toFixed(2)}</td>
             <td class="px-2 py-2">
                 <button type="button" onclick="openEliminarModal(${cuenta.id_cuentas_por_pagar})"
                     class="bg-red-800/50 hover:bg-red-700/50 text-red-300 px-3 py-1 rounded-lg text-xs font-bold transition border border-red-600/30">
@@ -224,12 +239,144 @@ function openDetalleModal(grupo) {
         totalPagado += parseFloat(cuenta.monto_pagado || 0);
         totalPendiente += parseFloat(cuenta.saldo_pendiente || 0);
     });
-    
+
     document.getElementById('detalleTotalNeto').textContent = '$' + totalNeto.toFixed(2);
     document.getElementById('detalleTotalPagado').textContent = '$' + totalPagado.toFixed(2);
     document.getElementById('detalleTotalPendiente').textContent = '$' + totalPendiente.toFixed(2);
-    
+
+    attachEstadoListeners();
     document.getElementById('detalleModal').classList.remove('hidden');
+}
+
+function getEstadoColor(estado) {
+    const colors = {
+        pendiente: 'text-red-300',
+        parcial: 'text-yellow-300',
+        pagado: 'text-green-300',
+        vencido: 'text-orange-300',
+    };
+
+    return colors[estado] || 'text-white/70';
+}
+
+function updateEstadoSelect(sel, estado) {
+    sel.classList.remove('text-red-300', 'text-yellow-300', 'text-green-300', 'text-orange-300', 'text-white/70');
+    sel.classList.add(getEstadoColor(estado));
+}
+
+function attachEstadoListeners() {
+    document.querySelectorAll('#detalleCuerpo .estado-select').forEach(function(sel) {
+        sel.addEventListener('change', function() {
+            const prev = this.dataset.prev;
+            const id = this.dataset.id;
+            const selectEl = this;
+
+            fetch('/cuentasporpagar/' + id + '/estado', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+                body: JSON.stringify({ estado: selectEl.value }),
+            })
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (!d.success) {
+                        selectEl.value = prev;
+                        updateEstadoSelect(selectEl, prev);
+                        return;
+                    }
+
+                    updateEstadoSelect(selectEl, selectEl.value);
+                    selectEl.dataset.prev = selectEl.value;
+
+                    const row = selectEl.closest('tr');
+                    row.querySelector('.cell-pagado').textContent = '$' + Number((d.montoPagado || '0').replace(/,/g, '')).toFixed(2);
+                    row.querySelector('.cell-pendiente').textContent = '$' + Number((d.saldoPendiente || '0').replace(/,/g, '')).toFixed(2);
+
+                    if (grupoActual) {
+                        const cuentaId = parseInt(id, 10);
+                        const idx = grupoActual.cuentas.findIndex(function(c) { return c.id_cuentas_por_pagar === cuentaId; });
+                        if (idx !== -1) {
+                            grupoActual.cuentas[idx].estado = selectEl.value;
+                            grupoActual.cuentas[idx].monto_pagado = Number((d.montoPagado || '0').replace(/,/g, ''));
+                            grupoActual.cuentas[idx].saldo_pendiente = Number((d.saldoPendiente || '0').replace(/,/g, ''));
+                        }
+
+                        const idxGlobal = gruposData.findIndex(function(g) { return g.nombre === grupoActual.nombre; });
+                        if (idxGlobal !== -1) {
+                            gruposData[idxGlobal] = grupoActual;
+                        }
+                    }
+
+                    recalcularTotalesModal();
+                    recalcularTotalesGlobales();
+                    actualizarFilaGrupo();
+                })
+                .catch(function() {
+                    selectEl.value = prev;
+                    updateEstadoSelect(selectEl, prev);
+                });
+        });
+    });
+}
+
+function recalcularTotalesModal() {
+    let totalNeto = 0;
+    let totalPagado = 0;
+    let totalPendiente = 0;
+
+    document.querySelectorAll('#detalleCuerpo tr').forEach(function(row) {
+        const neto = parseFloat(row.querySelector('td:nth-child(10)').textContent.replace(/[^0-9.-]/g, '')) || 0;
+        const pagado = parseFloat(row.querySelector('.cell-pagado').textContent.replace(/[^0-9.-]/g, '')) || 0;
+        const pendiente = parseFloat(row.querySelector('.cell-pendiente').textContent.replace(/[^0-9.-]/g, '')) || 0;
+
+        totalNeto += neto;
+        totalPagado += pagado;
+        totalPendiente += pendiente;
+    });
+
+    document.getElementById('detalleTotalNeto').textContent = '$' + totalNeto.toFixed(2);
+    document.getElementById('detalleTotalPagado').textContent = '$' + totalPagado.toFixed(2);
+    document.getElementById('detalleTotalPendiente').textContent = '$' + totalPendiente.toFixed(2);
+}
+
+function actualizarFilaGrupo() {
+    if (!grupoActualNombre || !grupoActual) {
+        return;
+    }
+
+    const grupoRow = document.querySelector('[data-grupo-nombre="' + grupoActualNombre + '"]');
+    if (!grupoRow) {
+        return;
+    }
+
+    const totalPagado = grupoActual.cuentas.reduce(function(acc, c) { return acc + Number(c.monto_pagado || 0); }, 0);
+    const totalPendiente = grupoActual.cuentas.reduce(function(acc, c) { return acc + Number(c.saldo_pendiente || 0); }, 0);
+
+    const pagadoEl = grupoRow.querySelector('.grupo-pagado');
+    const pendienteEl = grupoRow.querySelector('.grupo-pendiente');
+    if (pagadoEl) {
+        pagadoEl.textContent = 'Pag: $' + totalPagado.toFixed(2);
+    }
+    if (pendienteEl) {
+        pendienteEl.textContent = 'Pen: $' + totalPendiente.toFixed(2);
+    }
+}
+
+function recalcularTotalesGlobales() {
+    let totalPagado = 0;
+    let totalPendiente = 0;
+
+    gruposData.forEach(function(grupo) {
+        (grupo.cuentas || []).forEach(function(cuenta) {
+            totalPagado += Number(cuenta.monto_pagado || 0);
+            totalPendiente += Number(cuenta.saldo_pendiente || 0);
+        });
+    });
+
+    document.getElementById('totalPagado').textContent = '$' + totalPagado.toFixed(2);
+    document.getElementById('totalPendiente').textContent = '$' + totalPendiente.toFixed(2);
 }
 
 function closeDetalleModal() {

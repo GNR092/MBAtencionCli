@@ -114,6 +114,7 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
 
     // Cuentas por pagar
     Route::get('/cuentas-por-pagar', [CuentasPorPagar::class, 'index'])->name('cuentas-pagar.index');
+    Route::get('/tablas-control', [CuentasPorPagar::class, 'tablasControl'])->name('tablas-control.index');
     Route::post('/cuentasporpagar/{id}/estado', [App\Http\Controllers\CuentasPorPagar::class, 'actualizarEstado']);
     Route::get('/cuentas-por-pagar/limpiar', [CuentasPorPagar::class, 'limpiar'])->name('cuentas-pagar.limpiar');
     Route::post('/cuentas-por-pagar/export', [CuentasPorPagar::class, 'export'])->name('cuentas-pagar.export');

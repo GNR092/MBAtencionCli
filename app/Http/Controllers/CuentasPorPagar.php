@@ -262,7 +262,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 continue;
             }
 
-            $esRetroactivo = $mesXml < $mesActual;
+            $esRetroactivo = $mesXml !== $mesActual;
 
             DB::table('cuentasporpagar')->insert([
                 'uuid' => $xml->uuid,
@@ -290,12 +290,18 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
 
         foreach ($contracts as $contract) {
             $fechaStart = $contract->fecha_inicio ?? $contract->fecha_creacion ?? $contract->fecha;
-            $fechaEnd = $contract->fecha_terminacion
+            $fechaEndContrato = $contract->fecha_terminacion
                 ? Carbon::parse($contract->fecha_terminacion)->startOfMonth()
                 : Carbon::now()->addMonths(12)->startOfMonth();
+            $fechaMaxGeneracion = Carbon::now()->startOfMonth();
+            $fechaEnd = $fechaEndContrato->lessThan($fechaMaxGeneracion) ? $fechaEndContrato : $fechaMaxGeneracion;
 
             $inicio = Carbon::parse($fechaStart)->startOfMonth();
             $fin = $fechaEnd;
+
+            if ($inicio->greaterThan($fin)) {
+                continue;
+            }
 
             $periodo = CarbonPeriod::create($inicio, '1 month', $fin);
 
@@ -311,6 +317,15 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                     continue;
                 }
 
+                $fueEliminado = DB::table('retroactivos_eliminados')
+                    ->where('id_contract', $contract->id)
+                    ->where('mes_pago', $mes)
+                    ->exists();
+
+                if ($fueEliminado) {
+                    continue;
+                }
+
                 $importeIncremento = DB::table('incrementos_importe')
                     ->where('id_contract', $contract->id)
                     ->whereDate('fecha_inicio', '<=', $mes.'-01')
@@ -322,7 +337,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
 
                 $importeBase = $importeIncremento ?? $contract->importe_bruto_renta;
 
-                $esRetroactivo = $mes < $mesActual;
+                $esRetroactivo = $mes !== $mesActual;
 
                 DB::table('cuentasporpagar')->insert([
                     'id_contract' => $contract->id,
@@ -356,7 +371,6 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
             ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
             ->leftJoin('users', 'contract.user_id', '=', 'users.id')
-            ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id')
             ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
             ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
             ->leftJoin('razones_sociales', 'proyectos.id_razon_social', '=', 'razones_sociales.id_razon_social')
@@ -367,15 +381,28 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 'contract.importe_bruto_renta as importeBase',
                 'contract.tipo as contract_tipo',
                 DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'),
-                DB::raw('COALESCE(razones_sociales.nombre_razon_social, "Sin razón social") as razon_social'),
+                DB::raw('COALESCE(razones_sociales.nombre_razon_social, "Sin razon social") as razon_social'),
                 'xml_files.departamento',
+                DB::raw('(SELECT GROUP_CONCAT(CONCAT_WS("|", ud.nombre, COALESCE(NULLIF(ud.predial, ""), "N/A"), COALESCE(NULLIF(ud.tipo, ""), "N/A")) SEPARATOR ";") FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p) as depto_detalle_map'),
+                DB::raw('(SELECT GROUP_CONCAT(DISTINCT ud.nombre ORDER BY ud.nombre SEPARATOR ", ") FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p) as departamentos_usuario'),
+                DB::raw('(SELECT GROUP_CONCAT(DISTINCT ud.predial ORDER BY ud.predial SEPARATOR ", ") FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p AND ud.predial IS NOT NULL AND ud.predial != "" AND ud.predial != "N/A") as prediales_usuario'),
+                DB::raw('(SELECT GROUP_CONCAT(DISTINCT ud.tipo ORDER BY ud.tipo SEPARATOR ", ") FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p AND ud.tipo IS NOT NULL AND ud.tipo != "") as tipos_usuario'),
                 'users.metodo_pago',
                 DB::raw('DATE_FORMAT(xml_files.created_at, "%Y-%m") as mes_subida'),
-                DB::raw('COALESCE(impuesto.isr, 0) as retencion_iva'),
             );
         $selectedMonth = $request->month ?? now()->format('Y-m');
         $query->where('cuentasporpagar.mes_pago', $selectedMonth);
         $query->where('cuentasporpagar.es_retroactivo', false);
+        $query->where(function ($q) {
+            $q->whereNotNull('cuentasporpagar.uuid')
+                ->orWhereNotExists(function ($sub) {
+                    $sub->select(DB::raw(1))
+                        ->from('cuentasporpagar as c2')
+                        ->whereColumn('c2.id_contract', 'cuentasporpagar.id_contract')
+                        ->whereColumn('c2.mes_pago', 'cuentasporpagar.mes_pago')
+                        ->whereNotNull('c2.uuid');
+                });
+        });
 
         $query->when($request->filled(['search', 'categoria']), function ($q) use ($request) {
             $columnas = [
@@ -413,6 +440,114 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
 
         return view('viewAdministrador', compact('grupos', 'totalPendiente', 'totalPagado', 'proyectos', 'minYear', 'selectedMonth', 'cuentasRaw'))
             ->with('selectedMonth', $selectedMonth);
+    }
+
+    public function tablasControl(Request $request)
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return redirect('/inicio-de-sesion');
+        }
+
+        $selectedMonth = $request->month ?? now()->format('Y-m');
+
+        $registros = Cuentas::query()
+            ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
+            ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
+            ->leftJoin('users', 'contract.user_id', '=', 'users.id')
+            ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
+            ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
+            ->leftJoin('razones_sociales', 'proyectos.id_razon_social', '=', 'razones_sociales.id_razon_social')
+            ->select(
+                'cuentasporpagar.id_cuentas_por_pagar',
+                'cuentasporpagar.estado',
+                'cuentasporpagar.mes_pago',
+                'cuentasporpagar.mesesdepago',
+                'cuentasporpagar.saldo_neto',
+                'cuentasporpagar.monto_pagado',
+                'cuentasporpagar.saldo_pendiente',
+                'cuentasporpagar.isr',
+                'users.name as inversionista',
+                'users.metodo_pago',
+                'contract.id_user_p',
+                'contract.importe_bruto_renta as contrato_importe',
+                DB::raw('(SELECT ii.importe_base FROM incrementos_importe ii WHERE ii.id_contract = contract.id AND DATE_FORMAT(ii.fecha_inicio, "%Y-%m") <= cuentasporpagar.mes_pago AND (ii.fecha_fin IS NULL OR DATE_FORMAT(ii.fecha_fin, "%Y-%m") >= cuentasporpagar.mes_pago) ORDER BY ii.fecha_inicio DESC LIMIT 1) as incremento_vigente'),
+                DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'),
+                DB::raw('COALESCE(razones_sociales.nombre_razon_social, "Sin razón social") as razon_social'),
+                DB::raw('COALESCE(razones_sociales.rfc, "") as rfc_oculto'),
+                'xml_files.departamento as xml_departamentos'
+            )
+            ->where('cuentasporpagar.mes_pago', $selectedMonth)
+            ->where(function ($query) {
+                $query->whereNotNull('cuentasporpagar.xml_file_id')
+                    ->orWhereNotNull('cuentasporpagar.uuid');
+            })
+            ->orderBy('users.name')
+            ->orderBy('cuentasporpagar.id_cuentas_por_pagar')
+            ->get();
+
+        $deptosPorUserProyecto = DB::table('user_depto')
+            ->select('id_user_p', 'nombre', 'tipo', 'predial', 'importe')
+            ->get()
+            ->groupBy('id_user_p');
+
+        $normalizarNombre = function (?string $nombre): string {
+            return strtolower(preg_replace('/\s+/', '', trim((string) $nombre)));
+        };
+
+        $registros = $registros->map(function ($registro) use ($deptosPorUserProyecto, $normalizarNombre) {
+            $conceptoIdx = null;
+            $meses = json_decode((string) $registro->mesesdepago, true);
+            if (is_array($meses) && array_key_exists('concepto_idx', $meses)) {
+                $conceptoIdx = is_numeric($meses['concepto_idx']) ? (int) $meses['concepto_idx'] : null;
+            }
+
+            $departamentosXml = collect(preg_split('/[,;]+/', (string) ($registro->xml_departamentos ?? '')))
+                ->map(fn ($item) => trim($item))
+                ->filter()
+                ->values();
+
+            $departamento = $departamentosXml->isNotEmpty()
+                ? ($conceptoIdx !== null ? ($departamentosXml->get($conceptoIdx) ?? $departamentosXml->first()) : $departamentosXml->first())
+                : null;
+
+            $deptoData = null;
+            $deptosUsuario = $deptosPorUserProyecto->get($registro->id_user_p, collect());
+            if ($deptosUsuario->isNotEmpty()) {
+                $deptoData = $deptosUsuario->first(function ($d) use ($departamento, $normalizarNombre) {
+                    return $normalizarNombre($d->nombre) === $normalizarNombre($departamento);
+                });
+
+                if (! $deptoData) {
+                    $deptoData = $deptosUsuario->first();
+                }
+            }
+
+            $tipoRaw = strtolower(trim((string) ($deptoData->tipo ?? '')));
+            if ($tipoRaw === 'campus') {
+                $tipoDepartamento = 'Campus';
+            } elseif (in_array($tipoRaw, ['condominio', 'condominios'], true)) {
+                $tipoDepartamento = 'Condominios';
+            } else {
+                $tipoDepartamento = 'N/A';
+            }
+
+            $registro->departamento = $departamento ?: ($deptoData->nombre ?? 'N/A');
+            $registro->tipo_departamento = $tipoDepartamento;
+            $registro->cuenta_predial = ! empty($deptoData->predial) ? $deptoData->predial : 'N/A';
+            $registro->importe_renta = $registro->incremento_vigente
+                ?? ($deptoData->importe ?? null)
+                ?? ($registro->contrato_importe ?? 0);
+
+            return $registro;
+        });
+
+        $totalesBase = $registros->unique('id_cuentas_por_pagar');
+        $totalNeto = $totalesBase->sum('saldo_neto');
+        $totalPagado = $totalesBase->sum('monto_pagado');
+        $totalPendiente = $totalesBase->sum('saldo_pendiente');
+
+        return view('tablas-control', compact('registros', 'selectedMonth', 'totalNeto', 'totalPagado', 'totalPendiente'));
     }
 
     public function actualizarEstado(Request $request, $id)

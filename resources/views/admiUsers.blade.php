@@ -414,6 +414,9 @@ function createProjectContainer(projectId, mainContainer) {
 window.addEditDepartment = function(projectId, data = null) {
     const list = document.getElementById(`edit_departments_list_${projectId}`);
     const uniqueIndex = deptCounter++;
+    const deptNumber = list.children.length + 1;
+    const selectedOption = document.querySelector(`#edit_proyect_select option[value="${projectId}"]`);
+    const projectLabel = projectOptions[projectId] || selectedOption?.textContent?.trim() || `Proyecto ${projectId}`;
 
     // Valores: si viene 'data' es edición, si no, es vacío
     const nombre = data ? data.nombre_depto : '';
@@ -426,6 +429,10 @@ window.addEditDepartment = function(projectId, data = null) {
     deptDiv.className = 'bg-black/20 p-3 rounded border border-white/5 relative fade-in-content';
 
     deptDiv.innerHTML = `
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-bold text-[#d8c495] uppercase tracking-wider">Departamento ${deptNumber}</span>
+                <span class="text-[10px] text-gray-400 text-right ml-3">${projectLabel}</span>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
                 <div>
                     <label class="block text-[10px] font-bold text-gray-400 mb-1">Nombre Depto</label>
@@ -441,7 +448,8 @@ window.addEditDepartment = function(projectId, data = null) {
             <div class="mb-2">
                 <label class="block text-[10px] font-bold text-gray-400 mb-1">Tipo</label>
                 <select name="project_details[${projectId}][${uniqueIndex}][tipo]"
-                        class="w-full bg-white/10 border border-white/10 rounded px-2 py-1 text-white text-xs focus:border-[#d8c495] outline-none">
+                        class="w-full bg-white/10 border border-white/10 rounded px-2 py-1 text-white text-xs focus:border-[#d8c495] outline-none"
+                        required>
                     <option value="" class="text-black">-- Seleccione tipo --</option>
                     <option value="Campus" class="text-black" ${tipo === 'Campus' ? 'selected' : ''}>Campus</option>
                     <option value="Condominios" class="text-black" ${tipo === 'Condominios' ? 'selected' : ''}>Condominios</option>

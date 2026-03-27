@@ -350,7 +350,7 @@
                         <td class="py-3 px-2 text-white font-mono">
                             {{ $concepto['clave_prod_serv'] }}
                             @if(isset($hayMesesMezclados) && $hayMesesMezclados && !empty($concepto['periodo']))
-                                <span class="ml-2 px-1.5 py-0.5 text-xs rounded {{ $concepto['periodo'] < date('Y-m') ? 'bg-orange-800 text-orange-200' : 'bg-green-800 text-green-200' }}">
+                                <span class="ml-2 px-1.5 py-0.5 text-xs rounded {{ $concepto['periodo'] !== date('Y-m') ? 'bg-orange-800 text-orange-200' : 'bg-green-800 text-green-200' }}">
                                     {{ $concepto['periodo'] }}
                                 </span>
                             @endif

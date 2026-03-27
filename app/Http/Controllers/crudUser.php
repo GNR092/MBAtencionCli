@@ -185,6 +185,12 @@ class crudUser extends Controller
             'regimenFiscal' => 'required|integer',
             'password' => 'nullable|string|min:8|confirmed',
             'fecha_nacimiento' => 'nullable|date',
+            'project_details' => 'nullable|array',
+            'project_details.*' => 'nullable|array',
+            'project_details.*.*.nombre_depto' => 'required_with:project_details|string|max:255',
+            'project_details.*.*.importe' => 'required_with:project_details|numeric|min:0',
+            'project_details.*.*.tipo' => 'required_with:project_details|in:Campus,Condominios',
+            'project_details.*.*.cuenta_numero' => 'nullable|string|max:255',
         ]);
 
         DB::transaction(function () use ($request, $id) {
@@ -248,7 +254,7 @@ class crudUser extends Controller
                             UserDepto::create([
                                 'id_user_p' => $userProyectoId,
                                 'nombre' => $deptData['nombre_depto'],
-                                'tipo' => $deptData['tipo'] ?? null,
+                                'tipo' => $deptData['tipo'],
                                 'importe' => $deptData['importe'],
                                 'predial' => isset($deptData['cuenta_predial']) ? ($deptData['cuenta_numero'] ?? '') : '',
                             ]);

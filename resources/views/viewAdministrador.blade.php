@@ -4,8 +4,8 @@
     <div class="max-w-full mx-auto p-4 md:p-6">
     <header class="mb-10 px-2">
         <div class="flex items-baseline gap-4">
-            <span class="text-dorado-400 text-sm font-serif italic">|</span>
-            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+            
+            <h1 class="text-white text-2xl md:text-4xl font-extralight tracking-[-0.02em] leading-none uppercase">
                 Pagar Cuentas
             </h1>
         </div>
@@ -210,6 +210,9 @@
                         <th class="px-2 py-2">Folio Fiscal</th>
                         <th class="px-2 py-2">Inversionista</th>
                         <th class="px-2 py-2">Proyecto</th>
+                        <th class="px-2 py-2">Departamento</th>
+                        <th class="px-2 py-2">Cuenta Predial</th>
+                        <th class="px-2 py-2">Tipo</th>
                         <th class="px-2 py-2">Estado</th>
                         <th class="px-2 py-2">Mes Correspondiente</th>
                         <th class="px-2 py-2">Mes Subida</th>
@@ -224,7 +227,7 @@
                 </tbody>
                 <tfoot class="sticky bottom-0 bg-[#0d1f30]">
                     <tr>
-                        <td colspan="8" class="text-right px-2 py-2 text-white/60">Total:</td>
+                        <td colspan="11" class="text-right px-2 py-2 text-white/60">Total:</td>
                         <td id="detalleTotalNeto" class="text-[#d8c495] font-bold px-2 py-2"></td>
                         <td id="detalleTotalPagado" class="text-green-400 font-bold px-2 py-2"> </td>
                         <td id="detalleTotalPendiente" class="text-red-400 font-bold px-2 py-2"></td>
@@ -266,9 +269,67 @@ function openDetalleModal(grupo) {
     tbody.innerHTML = '';
     
     let totalNeto = 0, totalPagado = 0, totalPendiente = 0;
-    
-    grupo.cuentas.forEach(function(cuenta) {
-        const mesPago = cuenta.mesesdepago ? JSON.parse(cuenta.mesesdepago).mes : 'N/A';
+
+    const cuentasUnicas = [];
+    const idsVistos = new Set();
+    (grupo.cuentas || []).forEach(function(cuenta) {
+        if (idsVistos.has(cuenta.id_cuentas_por_pagar)) {
+            return;
+        }
+        idsVistos.add(cuenta.id_cuentas_por_pagar);
+        cuentasUnicas.push(cuenta);
+    });
+
+    grupo.cuentas = cuentasUnicas;
+
+    cuentasUnicas.forEach(function(cuenta) {
+        let mesPago = 'N/A';
+        let conceptoIdx = null;
+        if (cuenta.mesesdepago) {
+            try {
+                const mesData = JSON.parse(cuenta.mesesdepago);
+                if (mesData && typeof mesData === 'object') {
+                    mesPago = mesData.mes || 'N/A';
+                    if (mesData.concepto_idx !== undefined && mesData.concepto_idx !== null && mesData.concepto_idx !== '') {
+                        conceptoIdx = Number(mesData.concepto_idx);
+                    }
+                }
+            } catch (e) {
+                mesPago = 'N/A';
+            }
+        }
+
+        const departamentosXml = (cuenta.departamento || '')
+            .split(',')
+            .map(function(v) { return v.trim(); })
+            .filter(function(v) { return v !== ''; });
+
+        let departamento = 'N/A';
+        if (Number.isInteger(conceptoIdx) && conceptoIdx >= 0 && departamentosXml[conceptoIdx]) {
+            departamento = departamentosXml[conceptoIdx];
+        } else if (departamentosXml.length === 1) {
+            departamento = departamentosXml[0];
+        } else if (cuenta.departamentos_usuario) {
+            departamento = cuenta.departamentos_usuario;
+        }
+
+        const deptoDetalleMap = {};
+        (cuenta.depto_detalle_map || '').split(';').forEach(function(item) {
+            if (!item) return;
+            const parts = item.split('|');
+            const nombre = (parts[0] || '').trim();
+            if (!nombre) return;
+            deptoDetalleMap[nombre] = {
+                predial: (parts[1] || 'N/A').trim() || 'N/A',
+                tipo: (parts[2] || 'N/A').trim() || 'N/A'
+            };
+        });
+
+        const cuentaPredial = deptoDetalleMap[departamento]?.predial || 'N/A';
+        const tipoUnicoUsuario = (cuenta.tipos_usuario && !String(cuenta.tipos_usuario).includes(','))
+            ? String(cuenta.tipos_usuario).trim()
+            : null;
+        const tipo = deptoDetalleMap[departamento]?.tipo || tipoUnicoUsuario || 'N/A';
         
         const row = document.createElement('tr');
         row.className = 'border-b border-white/5 hover:bg-white/5';
@@ -293,6 +354,9 @@ function openDetalleModal(grupo) {
             '<td class="px-2 py-2 text-xs font-mono text-white/50">' + (cuenta.uuid || 'N/A') + '</td>' +
             '<td class="px-2 py-2">' + cuenta.name + '</td>' +
             '<td class="px-2 py-2 text-white/80">' + cuenta.proyecto + '</td>' +
+            '<td class="px-2 py-2 text-white/80">' + departamento + '</td>' +
+            '<td class="px-2 py-2 text-white/70 text-xs">' + cuentaPredial + '</td>' +
+            '<td class="px-2 py-2 text-white/70 text-xs">' + tipo + '</td>' +
             '<td class="px-2 py-2">' + selectHtml + '</td>' +
             '<td class="px-2 py-2 text-white/70 text-xs">' + mesPago + '</td>' +
             '<td class="px-2 py-2 text-white/70 text-xs">' + (cuenta.mes_subida || 'N/A') + '</td>' +
@@ -472,4 +536,3 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @endpush
-

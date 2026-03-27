@@ -247,6 +247,8 @@ document.addEventListener('DOMContentLoaded', function () {
     window.addDepartment = function (projectId, prefill = null) {
         const container = document.getElementById(`departments_container_${projectId}`);
         const deptIndex = container.children.length;
+        const project = projectOptions[projectId] || { nombre: `Proyecto ${projectId}`, razon_social: null };
+        const projectName = project.nombre + (project.razon_social ? ` - ${project.razon_social}` : '');
 
         const deptDiv = document.createElement('div');
         deptDiv.className = 'dept-item bg-[#112134] p-4 rounded-lg border border-white/10 relative';
@@ -255,6 +257,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 <span class="text-xs font-bold text-[#d8c495] uppercase tracking-wider">Departamento ${deptIndex + 1}</span>
                 <button type="button" onclick="this.closest('.dept-item').remove()" class="text-red-400 text-xs hover:underline">Eliminar</button>
             </div>
+
+            <p class="text-[11px] text-white/50 mb-3">Proyecto asignado: <span class="text-[#d8c495]">${projectName}</span></p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

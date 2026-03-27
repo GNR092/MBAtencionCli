@@ -243,6 +243,9 @@
                                 <span class="arrow text-[10px]">&#9660;</span>
                             </button>
                             <div class="accordion-content hidden space-y-1 mt-1 bg-black/20 rounded-lg">
+                                <a href="{{ route('tablas-control.index') }}"
+                                    class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Tablas
+                                    de control</a>
                                 <a href="/cuentas-por-pagar"
                                     class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Cuentas
                                     por pagar</a>

@@ -150,7 +150,7 @@ class CuentasPorCobrar extends Controller
             return;
         }
 
-        $esRetroactivo = $xml->retroactivo ?? ($mesXml < date('Y-m'));
+        $esRetroactivo = $xml->retroactivo ?? ($mesXml !== date('Y-m'));
 
         // Find the contract for this specific user + project combination.
         $userProyecto = \App\Models\UserProyecto::where('id_user', $xml->id_user)

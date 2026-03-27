@@ -11,6 +11,12 @@ class Cuentas extends Model
 
     protected $table = 'cuentasporpagar';
 
+    protected $primaryKey = 'id_cuentas_por_pagar';
+
+    public $incrementing = true;
+
+    protected $keyType = 'int';
+
     protected $fillable = [
         'id_cuentas_por_pagar',
         'uuid',

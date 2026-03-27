@@ -484,31 +484,52 @@ class UserFactController extends Controller
                 if ($contract) {
                     $currentPeriod = date('Y-m');
 
-                    foreach ($conceptosPorPeriodo as $periodo => $conceptos) {
-                        $esRetroactivo = $periodo !== $currentPeriod;
+                    $periodosConceptos = collect($factura['conceptos'])
+                        ->pluck('periodo')
+                        ->filter()
+                        ->unique()
+                        ->values()
+                        ->all();
 
-                        $importeIncremento = DB::table('incrementos_importe')
+                    if (! empty($periodosConceptos)) {
+                        DB::table('cuentasporpagar')
                             ->where('id_contract', $contract->id)
-                            ->whereDate('fecha_inicio', '<=', $periodo.'-01')
-                            ->where(function ($q) use ($periodo) {
-                                $q->whereNull('fecha_fin')
-                                    ->orWhereDate('fecha_fin', '>=', $periodo.'-01');
-                            })
-                            ->value('importe_base');
+                            ->whereIn('mes_pago', $periodosConceptos)
+                            ->whereNull('uuid')
+                            ->delete();
+                    }
 
-                        $importeBase = $importeIncremento ?? $contract->importe_bruto_renta;
-
-                        $totalImpuestos = 0;
-                        foreach ($conceptos as $c) {
-                            foreach ($c['traslados'] as $traslado) {
-                                $totalImpuestos += $traslado['importe'];
-                            }
-                            foreach ($c['retenciones'] as $retencion) {
-                                $totalImpuestos -= $retencion['importe'];
-                            }
+                    foreach ($factura['conceptos'] as $conceptIndex => $concepto) {
+                        $periodo = $concepto['periodo'] ?? null;
+                        if (empty($periodo)) {
+                            continue;
                         }
 
-                        $totalNeto = max(0, $importeBase - abs($totalImpuestos));
+                        $esRetroactivo = $periodo !== $currentPeriod;
+
+                        $importeConcepto = (float) ($concepto['importe'] ?? 0);
+                        if ($importeConcepto <= 0) {
+                            $importeIncremento = DB::table('incrementos_importe')
+                                ->where('id_contract', $contract->id)
+                                ->whereDate('fecha_inicio', '<=', $periodo.'-01')
+                                ->where(function ($q) use ($periodo) {
+                                    $q->whereNull('fecha_fin')
+                                        ->orWhereDate('fecha_fin', '>=', $periodo.'-01');
+                                })
+                                ->value('importe_base');
+
+                            $importeConcepto = (float) ($importeIncremento ?? $contract->importe_bruto_renta);
+                        }
+
+                        $totalImpuestos = 0;
+                        foreach ($concepto['traslados'] ?? [] as $traslado) {
+                            $totalImpuestos += (float) ($traslado['importe'] ?? 0);
+                        }
+                        foreach ($concepto['retenciones'] ?? [] as $retencion) {
+                            $totalImpuestos -= (float) ($retencion['importe'] ?? 0);
+                        }
+
+                        $totalNeto = max(0, round($importeConcepto - abs($totalImpuestos), 2));
 
                         DB::table('cuentasporpagar')->insert([
                             'id_contract' => $contract->id,
@@ -519,7 +540,7 @@ class UserFactController extends Controller
                             'estado' => 'pendiente',
                             'saldo_neto' => $totalNeto,
                             'monto_pagado' => 0,
-                            'mesesdepago' => json_encode(['mes' => $periodo]),
+                            'mesesdepago' => json_encode(['mes' => $periodo, 'concepto_idx' => $conceptIndex]),
                             'mesespagados' => json_encode([]),
                             'created_at' => now(),
                             'updated_at' => now(),
