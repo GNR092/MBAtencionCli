@@ -36,7 +36,6 @@ const MESES_NOMBRE = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'S
 let anoActual = {{ $anoInicial }};
 let mesesConFacturas = [];
 let mesSeleccionado = '{{ $mesActual }}';
-const redirectUrl = '{{ $redirectUrl ?? "/cuentas-por-pagar" }}';
 
 function toggleMesSelector() {
     const dropdown = document.getElementById('mesSelectorDropdown');
@@ -100,7 +99,9 @@ function seleccionarMes(mesKey) {
     mesSeleccionado = mesKey;
     document.getElementById('mesActual').textContent = mesKey;
     document.getElementById('mesSelectorDropdown').classList.add('hidden');
-    window.location.href = redirectUrl + '?month=' + mesKey;
+    const url = new URL(window.location.href);
+    url.searchParams.set('month', mesKey);
+    window.location.href = url.toString();
 }
 
 // Inicializar

@@ -450,6 +450,62 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         }
 
         $selectedMonth = $request->month ?? now()->format('Y-m');
+        $mesTabLabel = strtoupper($selectedMonth);
+        try {
+            $mesDate = Carbon::createFromFormat('Y-m', $selectedMonth);
+            $meses = [
+                1 => 'ENERO',
+                2 => 'FEBRERO',
+                3 => 'MARZO',
+                4 => 'ABRIL',
+                5 => 'MAYO',
+                6 => 'JUNIO',
+                7 => 'JULIO',
+                8 => 'AGOSTO',
+                9 => 'SEPTIEMBRE',
+                10 => 'OCTUBRE',
+                11 => 'NOVIEMBRE',
+                12 => 'DICIEMBRE',
+            ];
+            $mesTabLabel = $meses[(int) $mesDate->format('n')].' '.$mesDate->format('Y');
+        } catch (\Exception $e) {
+        }
+
+        $legacyTabs = [
+            'bdd-febrero' => 'principal',
+            'bdd-no-pagado' => 'no-pagado',
+            'bdd-deber-ser' => 'deber-ser',
+            'bdd-pagado' => 'pagado',
+            'bdd-extra' => 'extra',
+        ];
+
+        $requestedTab = $request->query('tab', 'principal');
+        if (array_key_exists($requestedTab, $legacyTabs)) {
+            $requestedTab = $legacyTabs[$requestedTab];
+        }
+
+        $tabs = [
+            'principal' => $mesTabLabel,
+            'no-pagado' => 'NO PAGADO',
+            'deber-ser' => 'DEBER SER',
+            'pagado' => 'PAGADO',
+            'extra' => 'EXTRA',
+        ];
+        $activeTab = $requestedTab;
+        if (! array_key_exists($activeTab, $tabs)) {
+            $activeTab = 'principal';
+        }
+        $pendingTabLabel = null;
+
+        if (! in_array($activeTab, ['principal', 'no-pagado'], true)) {
+            $registros = collect();
+            $totalNeto = 0;
+            $totalPagado = 0;
+            $totalPendiente = 0;
+            $pendingTabLabel = $tabs[$activeTab];
+
+            return view('tablas-control', compact('registros', 'selectedMonth', 'totalNeto', 'totalPagado', 'totalPendiente', 'tabs', 'activeTab', 'pendingTabLabel'));
+        }
 
         $registros = Cuentas::query()
             ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
@@ -481,6 +537,9 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             ->where(function ($query) {
                 $query->whereNotNull('cuentasporpagar.xml_file_id')
                     ->orWhereNotNull('cuentasporpagar.uuid');
+            })
+            ->when($activeTab === 'no-pagado', function ($query) {
+                $query->where('cuentasporpagar.estado', '!=', 'pagado');
             })
             ->orderBy('users.name')
             ->orderBy('cuentasporpagar.id_cuentas_por_pagar')
@@ -547,7 +606,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         $totalPagado = $totalesBase->sum('monto_pagado');
         $totalPendiente = $totalesBase->sum('saldo_pendiente');
 
-        return view('tablas-control', compact('registros', 'selectedMonth', 'totalNeto', 'totalPagado', 'totalPendiente'));
+        return view('tablas-control', compact('registros', 'selectedMonth', 'totalNeto', 'totalPagado', 'totalPendiente', 'tabs', 'activeTab', 'pendingTabLabel'));
     }
 
     public function actualizarEstado(Request $request, $id)
