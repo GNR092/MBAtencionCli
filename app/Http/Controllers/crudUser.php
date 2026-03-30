@@ -251,12 +251,14 @@ class crudUser extends Controller
                     if (isset($userProyectos[$projectId])) {
                         $userProyectoId = $userProyectos[$projectId]->id_user_p;
                         foreach ($departments as $deptData) {
+                            $predial = trim((string) ($deptData['cuenta_numero'] ?? ''));
+
                             UserDepto::create([
                                 'id_user_p' => $userProyectoId,
                                 'nombre' => $deptData['nombre_depto'],
                                 'tipo' => $deptData['tipo'],
                                 'importe' => $deptData['importe'],
-                                'predial' => isset($deptData['cuenta_predial']) ? ($deptData['cuenta_numero'] ?? '') : '',
+                                'predial' => $predial,
                             ]);
                         }
                     }

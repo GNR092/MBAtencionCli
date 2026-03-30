@@ -497,7 +497,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         }
         $pendingTabLabel = null;
 
-        if (! in_array($activeTab, ['principal', 'no-pagado'], true)) {
+        if (! in_array($activeTab, ['principal', 'no-pagado', 'deber-ser'], true)) {
             $registros = collect();
             $totalNeto = 0;
             $totalPagado = 0;
@@ -533,13 +533,30 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 DB::raw('COALESCE(razones_sociales.rfc, "") as rfc_oculto'),
                 'xml_files.departamento as xml_departamentos'
             )
-            ->where('cuentasporpagar.mes_pago', $selectedMonth)
+            ->where(function ($query) use ($activeTab, $selectedMonth) {
+                if ($activeTab === 'deber-ser') {
+                    $query->where(function ($sub) use ($selectedMonth) {
+                        $sub->where('cuentasporpagar.mes_pago', $selectedMonth)
+                            ->orWhere(function ($retro) use ($selectedMonth) {
+                                $retro->where('cuentasporpagar.es_retroactivo', true)
+                                    ->whereRaw('DATE_FORMAT(xml_files.created_at, "%Y-%m") = ?', [$selectedMonth]);
+                            });
+                    });
+
+                    return;
+                }
+
+                $query->where('cuentasporpagar.mes_pago', $selectedMonth);
+            })
             ->where(function ($query) {
                 $query->whereNotNull('cuentasporpagar.xml_file_id')
                     ->orWhereNotNull('cuentasporpagar.uuid');
             })
             ->when($activeTab === 'no-pagado', function ($query) {
                 $query->where('cuentasporpagar.estado', '!=', 'pagado');
+            })
+            ->when($activeTab === 'deber-ser', function ($query) {
+                $query->where('cuentasporpagar.estado', 'pagado');
             })
             ->orderBy('users.name')
             ->orderBy('cuentasporpagar.id_cuentas_por_pagar')
@@ -578,7 +595,11 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 });
 
                 if (! $deptoData) {
-                    $deptoData = $deptosUsuario->first();
+                    $deptoData = $deptosUsuario->first(function ($d) {
+                        $predial = trim((string) ($d->predial ?? ''));
+
+                        return $predial !== '' && strtoupper($predial) !== 'N/A';
+                    }) ?? $deptosUsuario->first();
                 }
             }
 
@@ -593,7 +614,8 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
 
             $registro->departamento = $departamento ?: ($deptoData->nombre ?? 'N/A');
             $registro->tipo_departamento = $tipoDepartamento;
-            $registro->cuenta_predial = ! empty($deptoData->predial) ? $deptoData->predial : 'N/A';
+            $predial = trim((string) ($deptoData->predial ?? ''));
+            $registro->cuenta_predial = strtoupper($predial) === 'N/A' ? '' : $predial;
             $registro->importe_renta = $registro->incremento_vigente
                 ?? ($deptoData->importe ?? null)
                 ?? ($registro->contrato_importe ?? 0);
