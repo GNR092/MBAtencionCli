@@ -133,6 +133,12 @@ class CuentasPorPagar extends Controller
                 $saldoPendiente = 0;
             }
 
+            $mesesCubiertos = 1;
+            if ($saldoNeto > 0) {
+                $mesesCubiertos = max(1, (int) ceil(floatval($cuenta->monto_pagado ?? 0) / $saldoNeto));
+            }
+            $esExtra = $mesesCubiertos > 1;
+
             DB::table('cuentasporpagar')
                 ->where('id_cuentas_por_pagar', $cuenta->id_cuentas_por_pagar)
                 ->update([
@@ -141,6 +147,8 @@ class CuentasPorPagar extends Controller
                     'saldo_neto' => $saldoNeto,
                     'saldo_pendiente' => $saldoPendiente,
                     'estado' => $estado,
+                    'meses_cubiertos' => $mesesCubiertos,
+                    'es_extra' => $esExtra,
                     'updated_at' => now(),
                 ]);
         }
@@ -202,6 +210,12 @@ class CuentasPorPagar extends Controller
                 $saldoPendiente = 0;
             }
 
+            $mesesCubiertos = 1;
+            if ($saldoNeto > 0) {
+                $mesesCubiertos = max(1, (int) ceil($montoPagado / $saldoNeto));
+            }
+            $esExtra = $mesesCubiertos > 1;
+
             DB::table('cuentasporpagar')
                 ->where('id_cuentas_por_pagar', $cuenta->id_cuentas_por_pagar)
                 ->update([
@@ -210,6 +224,8 @@ class CuentasPorPagar extends Controller
                     'saldo_neto' => $saldoNeto,
                     'saldo_pendiente' => $saldoPendiente,
                     'estado' => $estado,
+                    'meses_cubiertos' => $mesesCubiertos,
+                    'es_extra' => $esExtra,
                     'updated_at' => now(),
                 ]);
         }
@@ -274,6 +290,8 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 'estado' => 'pendiente',
                 'saldo_neto' => $contract->importe_bruto_renta,
                 'monto_pagado' => 0,
+                'meses_cubiertos' => 1,
+                'es_extra' => false,
                 'mesespagados' => json_encode([]),
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -349,6 +367,8 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                     'xml_file_id' => null,
                     'mesespagados' => json_encode([]),
                     'monto_pagado' => 0,
+                    'meses_cubiertos' => 1,
+                    'es_extra' => false,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -497,7 +517,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         }
         $pendingTabLabel = null;
 
-        if (! in_array($activeTab, ['principal', 'no-pagado', 'deber-ser'], true)) {
+        if (! in_array($activeTab, ['principal', 'no-pagado', 'deber-ser', 'pagado', 'extra'], true)) {
             $registros = collect();
             $totalNeto = 0;
             $totalPagado = 0;
@@ -521,6 +541,8 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 'cuentasporpagar.mesesdepago',
                 'cuentasporpagar.saldo_neto',
                 'cuentasporpagar.monto_pagado',
+                'cuentasporpagar.meses_cubiertos',
+                'cuentasporpagar.es_extra',
                 'cuentasporpagar.saldo_pendiente',
                 'cuentasporpagar.isr',
                 'users.name as inversionista',
@@ -546,6 +568,15 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                     return;
                 }
 
+                if ($activeTab === 'extra') {
+                    $query->where(function ($sub) use ($selectedMonth) {
+                        $sub->where('cuentasporpagar.mes_pago', $selectedMonth)
+                            ->orWhereRaw('DATE_FORMAT(xml_files.created_at, "%Y-%m") = ?', [$selectedMonth]);
+                    });
+
+                    return;
+                }
+
                 $query->where('cuentasporpagar.mes_pago', $selectedMonth);
             })
             ->where(function ($query) {
@@ -557,6 +588,16 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             })
             ->when($activeTab === 'deber-ser', function ($query) {
                 $query->where('cuentasporpagar.estado', 'pagado');
+            })
+            ->when($activeTab === 'pagado', function ($query) {
+                $query->where('cuentasporpagar.estado', 'pagado');
+            })
+            ->when($activeTab === 'extra', function ($query) {
+                $query->where('cuentasporpagar.estado', 'pagado')
+                    ->where(function ($extra) {
+                        $extra->where('cuentasporpagar.es_extra', true)
+                            ->orWhere('cuentasporpagar.meses_cubiertos', '>', 1);
+                    });
             })
             ->orderBy('users.name')
             ->orderBy('cuentasporpagar.id_cuentas_por_pagar')
@@ -646,9 +687,13 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         if ($nuevoEstado === 'pagado') {
             $updates['monto_pagado'] = $cuenta->saldo_neto;
             $updates['saldo_pendiente'] = 0;
+            $updates['meses_cubiertos'] = $cuenta->meses_cubiertos ?? 1;
+            $updates['es_extra'] = (($cuenta->meses_cubiertos ?? 1) > 1);
         } elseif ($nuevoEstado === 'pendiente') {
             $updates['monto_pagado'] = 0;
             $updates['saldo_pendiente'] = $cuenta->saldo_neto;
+            $updates['meses_cubiertos'] = 1;
+            $updates['es_extra'] = false;
         }
 
         DB::table('cuentasporpagar')->where('id_cuentas_por_pagar', $id)->update($updates);

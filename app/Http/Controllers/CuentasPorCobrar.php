@@ -122,6 +122,8 @@ class CuentasPorCobrar extends Controller
                         'xml_file_id' => null,
                         'mesespagados' => json_encode([]),
                         'monto_pagado' => 0,
+                        'meses_cubiertos' => 1,
+                        'es_extra' => false,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
@@ -194,6 +196,8 @@ class CuentasPorCobrar extends Controller
                     'estado' => 'pendiente',
                     'saldo_neto' => $importeBase,
                     'monto_pagado' => 0,
+                    'meses_cubiertos' => 1,
+                    'es_extra' => false,
                     'mesespagados' => json_encode([]),
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -246,6 +250,12 @@ class CuentasPorCobrar extends Controller
                 $mesesPagados[] = $mesXml;
             }
 
+            $mesesCubiertos = 1;
+            if ($totalPagar > 0) {
+                $mesesCubiertos = max(1, (int) ceil($montoPagadoTotal / $totalPagar));
+            }
+            $esExtra = $mesesCubiertos > 1;
+
             DB::table('cuentasporpagar')
                 ->where('id_cuentas_por_pagar', $cuenta->id_cuentas_por_pagar)
                 ->update([
@@ -255,6 +265,8 @@ class CuentasPorCobrar extends Controller
                     'saldo_pendiente' => $saldoPendiente,
                     'estado' => $estado,
                     'es_retroactivo' => $esRetroactivo,
+                    'meses_cubiertos' => $mesesCubiertos,
+                    'es_extra' => $esExtra,
                     'updated_at' => now(),
                 ]);
 
@@ -318,12 +330,20 @@ class CuentasPorCobrar extends Controller
                 $saldoPendiente = max(0, $totalPagar - $montoPagado);
             }
 
+            $mesesCubiertos = 1;
+            if ($totalPagar > 0) {
+                $mesesCubiertos = max(1, (int) ceil($montoPagado / $totalPagar));
+            }
+            $esExtra = $mesesCubiertos > 1;
+
             DB::table('cuentasporpagar')
                 ->where('id_cuentas_por_pagar', $c->id_cuentas_por_pagar)
                 ->update([
                     'estado' => $estado,
                     'saldo_pendiente' => $saldoPendiente,
                     'saldo_neto' => $totalPagar,
+                    'meses_cubiertos' => $mesesCubiertos,
+                    'es_extra' => $esExtra,
                     'updated_at' => now(),
                 ]);
         }
@@ -352,11 +372,19 @@ class CuentasPorCobrar extends Controller
             $estado = 'pagado';
         }
 
+        $mesesCubiertos = 1;
+        if ($saldoNeto > 0) {
+            $mesesCubiertos = max(1, (int) ceil($montoPagado / $saldoNeto));
+        }
+        $esExtra = $mesesCubiertos > 1;
+
         DB::table('cuentasporpagar')
             ->where('id_cuentas_por_pagar', $idCuenta)
             ->update([
                 'saldo_pendiente' => $saldoPendiente,
                 'estado' => $estado,
+                'meses_cubiertos' => $mesesCubiertos,
+                'es_extra' => $esExtra,
                 'updated_at' => now(),
             ]);
     }

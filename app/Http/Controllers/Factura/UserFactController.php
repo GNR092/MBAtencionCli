@@ -540,6 +540,8 @@ class UserFactController extends Controller
                             'estado' => 'pendiente',
                             'saldo_neto' => $totalNeto,
                             'monto_pagado' => 0,
+                            'meses_cubiertos' => 1,
+                            'es_extra' => false,
                             'mesesdepago' => json_encode(['mes' => $periodo, 'concepto_idx' => $conceptIndex]),
                             'mesespagados' => json_encode([]),
                             'created_at' => now(),

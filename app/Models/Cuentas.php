@@ -25,6 +25,8 @@ class Cuentas extends Model
         'estado',
         'saldo_neto',
         'monto_pagado',
+        'meses_cubiertos',
+        'es_extra',
         'saldo_pendiente',
         'id_contract',
         'created_at',
@@ -35,6 +37,10 @@ class Cuentas extends Model
         'xml_file_id',
         'isr',
         'tasaCuota',
+    ];
+
+    protected $casts = [
+        'es_extra' => 'boolean',
     ];
 
     public function contract()
