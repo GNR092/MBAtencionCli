@@ -556,14 +556,8 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 'xml_files.departamento as xml_departamentos'
             )
             ->where(function ($query) use ($activeTab, $selectedMonth) {
-                if ($activeTab === 'deber-ser') {
-                    $query->where(function ($sub) use ($selectedMonth) {
-                        $sub->where('cuentasporpagar.mes_pago', $selectedMonth)
-                            ->orWhere(function ($retro) use ($selectedMonth) {
-                                $retro->where('cuentasporpagar.es_retroactivo', true)
-                                    ->whereRaw('DATE_FORMAT(xml_files.created_at, "%Y-%m") = ?', [$selectedMonth]);
-                            });
-                    });
+                if (in_array($activeTab, ['deber-ser', 'pagado', 'no-pagado'], true)) {
+                    $query->where('cuentasporpagar.mes_pago', '<=', $selectedMonth);
 
                     return;
                 }
@@ -579,21 +573,28 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
 
                 $query->where('cuentasporpagar.mes_pago', $selectedMonth);
             })
-            ->where(function ($query) {
-                $query->whereNotNull('cuentasporpagar.xml_file_id')
-                    ->orWhereNotNull('cuentasporpagar.uuid');
-            })
             ->when($activeTab === 'no-pagado', function ($query) {
-                $query->where('cuentasporpagar.estado', '!=', 'pagado');
-            })
-            ->when($activeTab === 'deber-ser', function ($query) {
-                $query->where('cuentasporpagar.estado', 'pagado');
+                $query->where(function ($scope) {
+                    $scope->where('cuentasporpagar.estado', '!=', 'pagado')
+                        ->orWhere(function ($noFactura) {
+                            $noFactura->whereNull('cuentasporpagar.xml_file_id')
+                                ->whereNull('cuentasporpagar.uuid');
+                        });
+                });
             })
             ->when($activeTab === 'pagado', function ($query) {
                 $query->where('cuentasporpagar.estado', 'pagado');
+                $query->where(function ($withFactura) {
+                    $withFactura->whereNotNull('cuentasporpagar.xml_file_id')
+                        ->orWhereNotNull('cuentasporpagar.uuid');
+                });
             })
             ->when($activeTab === 'extra', function ($query) {
                 $query->where('cuentasporpagar.estado', 'pagado')
+                    ->where(function ($withFactura) {
+                        $withFactura->whereNotNull('cuentasporpagar.xml_file_id')
+                            ->orWhereNotNull('cuentasporpagar.uuid');
+                    })
                     ->where(function ($extra) {
                         $extra->where('cuentasporpagar.es_extra', true)
                             ->orWhere('cuentasporpagar.meses_cubiertos', '>', 1);

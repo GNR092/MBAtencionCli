@@ -61,7 +61,7 @@
                 </p>
             </div>
 
-            <form id="registroUsuarios" class="p-8 space-y-6" action="{{ route('usuarios.registro.store') }}" method="POST">
+            <form id="registroUsuarios" class="p-8 space-y-6" action="{{ route('usuarios.registro.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -271,6 +271,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 <label class="block text-xs font-bold text-white/70 mb-2">Número de Cuenta:</label>
                 <input type="text" name="project_details[${projectId}][${deptIndex}][cuenta_numero]"
                     class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-[#d8c495] outline-none">
+            </div>
+
+            <div class="mt-5 border-t border-white/10 pt-4 space-y-4">
+                <p class="text-xs font-bold text-[#d8c495] uppercase tracking-wider">Contrato del departamento</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-white/70 mb-2">Fecha inicio contrato:</label>
+                        <input type="date" name="project_details[${projectId}][${deptIndex}][fecha_inicio_contrato]"
+                            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-[#d8c495] outline-none" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-white/70 mb-2">Fecha terminación contrato:</label>
+                        <input type="date" name="project_details[${projectId}][${deptIndex}][fecha_terminacion_contrato]"
+                            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-[#d8c495] outline-none" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-white/70 mb-2">Contrato PDF:</label>
+                    <input type="file" name="project_details[${projectId}][${deptIndex}][contract_file]" accept=".pdf"
+                        class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-[#d8c495] outline-none file:mr-3 file:rounded file:border-0 file:bg-[#d8c495] file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-[#112134]"
+                        required>
+                </div>
             </div>
         `;
         container.appendChild(deptDiv);

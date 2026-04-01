@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contract;
 use App\Models\Proyecto;
 use App\Models\RegimenFiscal;
 use App\Models\User;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class GenerateController extends Controller
 {
@@ -37,6 +39,15 @@ class GenerateController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone' => 'required',
             'proyect' => 'required|array', // Debe haber al menos un proyecto
+            'project_details' => 'required|array',
+            'project_details.*' => 'required|array|min:1',
+            'project_details.*.*.nombre_depto' => 'required|string|max:255',
+            'project_details.*.*.importe' => 'required|numeric|min:0.01',
+            'project_details.*.*.tipo' => 'required|in:Campus,Condominios',
+            'project_details.*.*.cuenta_numero' => 'nullable|string|max:255',
+            'project_details.*.*.fecha_inicio_contrato' => 'required|date',
+            'project_details.*.*.fecha_terminacion_contrato' => 'required|date',
+            'project_details.*.*.contract_file' => 'required|file|mimes:pdf|max:2048',
         ]);
 
         $user = Auth::user();
@@ -95,12 +106,38 @@ class GenerateController extends Controller
                                 continue;
                             }
 
-                            UserDepto::create([
+                            $depto = UserDepto::create([
                                 'id_user_p' => $pivotId, // Usamos la ID recuperada de forma segura
                                 'nombre' => $deptoData['nombre_depto'],
                                 'tipo' => $deptoData['tipo'] ?? null,
                                 'predial' => $deptoData['cuenta_numero'] ?? 'N/A',
                                 'importe' => $deptoData['importe'] ?? 0,
+                            ]);
+
+                            $contractFile = $request->file("project_details.$projectId.$index.contract_file");
+                            if (! $contractFile) {
+                                throw new \RuntimeException('Falta contrato PDF para un departamento.');
+                            }
+
+                            if ($deptoData['fecha_terminacion_contrato'] < $deptoData['fecha_inicio_contrato']) {
+                                throw new \RuntimeException('La fecha de terminación del contrato no puede ser menor a la fecha de inicio.');
+                            }
+
+                            $contractPath = $this->storeContractFile($contractFile, (int) $newUser->id);
+
+                            Contract::create([
+                                'user_id' => $newUser->id,
+                                'id_user_p' => $pivotId,
+                                'id_user_depto' => $depto->id_user_depto,
+                                'folio' => $this->generarFolio(),
+                                'fecha' => now()->toDateString(),
+                                'estado' => 'activo',
+                                'nombre' => $contractFile->getClientOriginalName(),
+                                'tipo' => $contractFile->getMimeType(),
+                                'contenido' => $contractPath,
+                                'importe_bruto_renta' => $deptoData['importe'],
+                                'fecha_inicio' => $deptoData['fecha_inicio_contrato'],
+                                'fecha_terminacion' => $deptoData['fecha_terminacion_contrato'],
                             ]);
                         }
                     }
@@ -124,5 +161,30 @@ class GenerateController extends Controller
     private function generarContrasenia($length = 8)
     {
         return substr(str_shuffle('abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@$%&*'), 0, $length);
+    }
+
+    private function storeContractFile(\Illuminate\Http\UploadedFile $file, int $userId): string
+    {
+        $safeName = now()->format('YmdHis').'_'.preg_replace('/\s+/', '_', $file->getClientOriginalName());
+
+        return Storage::putFileAs("contracts/{$userId}", $file, $safeName);
+    }
+
+    private function generarFolio(): string
+    {
+        $fecha = date('Ymd');
+        $ultimoFolio = DB::table('contract')
+            ->where('folio', 'like', "CTR-{$fecha}-%")
+            ->orderBy('folio', 'desc')
+            ->first();
+
+        if ($ultimoFolio) {
+            $numeroActual = (int) substr($ultimoFolio->folio, -4);
+            $nuevoNumero = str_pad($numeroActual + 1, 4, '0', STR_PAD_LEFT);
+        } else {
+            $nuevoNumero = '0001';
+        }
+
+        return "CTR-{$fecha}-{$nuevoNumero}";
     }
 }

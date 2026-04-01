@@ -24,6 +24,7 @@ class Contract extends Model
         'importe_bruto_renta',
         'fecha_terminacion',
         'id_user_p',
+        'id_user_depto',
     ];
 
     public function user()
@@ -34,5 +35,10 @@ class Contract extends Model
     public function userProyecto()
     {
         return $this->belongsTo(UserProyecto::class, 'id_user_p', 'id_user_p');
+    }
+
+    public function userDepto()
+    {
+        return $this->belongsTo(UserDepto::class, 'id_user_depto', 'id_user_depto');
     }
 }
