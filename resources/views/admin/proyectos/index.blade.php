@@ -30,7 +30,6 @@
         <table class="tabla-dorada">
                 <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Nombre del Proyecto</th>
                     <th>Razón Social</th>
                     <th>Acciones</th>
@@ -39,7 +38,6 @@
             <tbody>
                 @forelse($proyectos as $proyecto)
                 <tr class="border-b border-[#d8c495]/10 hover:bg-white/5 transition-colors">
-                    <td class="px-6 py-4 font-bold text-[#d8c495]/50">#{{ $proyecto->id_proyecto }}</td>
                     <td class="px-4 py-4 font-medium text-white uppercase">{{ $proyecto->nombre_proyecto }}</td>
                     <td class="px-4 py-4 text-white/70">
                         @if($proyecto->razonSocial)
@@ -67,7 +65,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="4" class="py-10 text-white/40 italic">
+                    <td colspan="3" class="py-10 text-white/40 italic">
                         No hay proyectos registrados
                     </td>
                 </tr>

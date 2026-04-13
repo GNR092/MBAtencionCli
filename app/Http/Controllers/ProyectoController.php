@@ -10,7 +10,9 @@ class ProyectoController extends Controller
 {
     public function index()
     {
-        $proyectos = Proyecto::with('razonSocial')->get();
+        $proyectos = Proyecto::with('razonSocial')
+            ->orderBy('nombre_proyecto', 'asc')
+            ->get();
 
         return view('admin.proyectos.index', compact('proyectos'));
     }
