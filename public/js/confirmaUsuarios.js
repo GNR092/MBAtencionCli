@@ -25,7 +25,7 @@ function loginUsuario(event) {
             mensajeDiv.innerHTML = '<p class="text-green-500">' + data.message + '</p>';
 
             if (data.role === 'administrador') {
-                window.location.href = '/cuentas-por-pagar';
+                window.location.href = '/tablas-control';
             } else if (data.role === 'usuario') {
                 window.location.href = '/user/dashboard';
             }

@@ -267,3 +267,18 @@ body {
     display: flex;
     justify-content: center;
 }
+
+h1 {
+    color: #fff;
+    font-size: 3rem;
+    font-weight: 200;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+@media (min-width: 768px) {
+    h1 {
+        font-size: 4.5rem;
+    }
+}

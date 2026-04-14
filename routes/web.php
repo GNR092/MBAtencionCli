@@ -32,7 +32,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     if (Auth::check()) {
         if (Auth::user()->role === 'administrador') {
-            return redirect('/cuentas-por-pagar');
+            return redirect('/tablas-control');
         }
 
         return redirect('/user/dashboard');
