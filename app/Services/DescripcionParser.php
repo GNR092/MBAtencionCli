@@ -35,6 +35,18 @@ class DescripcionParser
         return $texto;
     }
 
+    private function normalizarComparacion(string $texto): string
+    {
+        $texto = $this->normalizar($texto);
+        $texto = mb_strtolower($texto);
+        $ascii = iconv('UTF-8', 'ASCII//TRANSLIT', $texto);
+        $texto = $ascii !== false ? $ascii : $texto;
+        $texto = preg_replace('/[^a-z0-9]+/i', ' ', $texto);
+        $texto = preg_replace('/\s+/', ' ', trim((string) $texto));
+
+        return $texto;
+    }
+
     /**
      * Extrae numero(s) de departamento de la descripcion.
      * Retorna un array porque puede haber multiples deptos (ej: "A3,A4,A6,A8").
@@ -137,31 +149,60 @@ class DescripcionParser
      */
     public function extraerProyecto(string $descripcion, array $proyectos): ?array
     {
-        $descripcion = $this->normalizar($descripcion);
-        $descripcionLower = mb_strtolower($descripcion);
+        $descripcionNormalizada = $this->normalizarComparacion($descripcion);
+        if ($descripcionNormalizada === '') {
+            return null;
+        }
 
         $mejorCoincidencia = null;
         $mejorPuntaje = 0;
+        $candidatos = [];
 
         foreach ($proyectos as $proyecto) {
             // Soporta tanto array ['nombre' => '...'] como objeto Eloquent ->nombre
-            $nombreProyecto = is_array($proyecto) ? ($proyecto['nombre_proyecto'] ?? '') : ($proyecto->nombre ?? '');
+            $nombreProyecto = is_array($proyecto) ? ($proyecto['nombre_proyecto'] ?? '') : ($proyecto->nombre_proyecto ?? '');
 
             if (empty($nombreProyecto)) {
                 continue;
             }
 
-            $nombreLower = mb_strtolower($nombreProyecto);
-
-            // 1. Coincidencia exacta (case insensitive)
-            if (mb_strpos($descripcionLower, $nombreLower) !== false) {
-                return is_array($proyecto) ? $proyecto : $proyecto->toArray();
+            $nombreNormalizado = $this->normalizarComparacion($nombreProyecto);
+            if ($nombreNormalizado === '') {
+                continue;
             }
 
-            // 2. Busqueda por palabras significativas del proyecto
+            $candidatos[] = [
+                'raw' => $proyecto,
+                'nombre_normalizado' => $nombreNormalizado,
+                'len' => strlen($nombreNormalizado),
+            ];
+        }
+
+        if (empty($candidatos)) {
+            return null;
+        }
+
+        // Priorizar nombres más largos evita que "Aldea Borboleta I" gane sobre "Aldea Borboleta II".
+        usort($candidatos, fn ($a, $b) => $b['len'] <=> $a['len']);
+
+        // 1) Coincidencia exacta por frase completa (con límites de palabra)
+        foreach ($candidatos as $candidato) {
+            $nombre = $candidato['nombre_normalizado'];
+            $regex = '/(?:^|\s)'.preg_quote($nombre, '/').'(?:\s|$)/i';
+
+            if (preg_match($regex, $descripcionNormalizada)) {
+                return is_array($candidato['raw']) ? $candidato['raw'] : $candidato['raw']->toArray();
+            }
+        }
+
+        $palabrasDescripcion = explode(' ', $descripcionNormalizada);
+
+        // 2) Fallback por puntaje para textos truncados/variantes
+        foreach ($candidatos as $candidato) {
+            $nombreLower = $candidato['nombre_normalizado'];
             $palabrasProyecto = array_filter(
                 explode(' ', $nombreLower),
-                fn ($p) => mb_strlen($p) > 2 // Ignorar: de, el, la, y, del, etc.
+                fn ($p) => mb_strlen($p) > 2 || in_array($p, ['i', 'ii', 'iii', 'iv', 'v', '1', '2', '3', '4', '5'], true)
             );
 
             if (empty($palabrasProyecto)) {
@@ -170,11 +211,8 @@ class DescripcionParser
 
             $palabrasEncontradas = 0;
             foreach ($palabrasProyecto as $palabra) {
-                $palabraEscapada = preg_quote($palabra, '/');
-
-                // Busqueda parcial: "RESIDEN" debe matchear "residencial"
-                // Usamos strpos en vez de word boundary para soportar truncados
-                if (mb_strpos($descripcionLower, $palabra) !== false) {
+                // Coincidencia exacta por token
+                if (in_array($palabra, $palabrasDescripcion, true)) {
                     $palabrasEncontradas++;
 
                     continue;
@@ -182,15 +220,14 @@ class DescripcionParser
 
                 // Busqueda parcial inversa: si la palabra del proyecto contiene
                 // alguna palabra truncada de la descripcion (min 4 chars)
-                $palabrasDescripcion = explode(' ', $descripcionLower);
                 foreach ($palabrasDescripcion as $palDesc) {
                     if (mb_strlen($palDesc) >= 4 && mb_strpos($palabra, $palDesc) !== false) {
-                        $palabrasEncontradas += 0.8; // Peso parcial
+                        $palabrasEncontradas += 0.6;
                         break;
                     }
                     // Tambien al reves: "residen" esta dentro de "residencial"?
                     if (mb_strlen($palDesc) >= 4 && mb_strpos($palDesc, $palabra) !== false) {
-                        $palabrasEncontradas += 0.8;
+                        $palabrasEncontradas += 0.6;
                         break;
                     }
                 }
@@ -198,9 +235,9 @@ class DescripcionParser
 
             $puntaje = $palabrasEncontradas / count($palabrasProyecto);
 
-            if ($puntaje > $mejorPuntaje && $puntaje >= 0.5) {
+            if ($puntaje > $mejorPuntaje && $puntaje >= 0.6) {
                 $mejorPuntaje = $puntaje;
-                $mejorCoincidencia = is_array($proyecto) ? $proyecto : $proyecto->toArray();
+                $mejorCoincidencia = is_array($candidato['raw']) ? $candidato['raw'] : $candidato['raw']->toArray();
             }
         }
 
