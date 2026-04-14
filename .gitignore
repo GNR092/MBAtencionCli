@@ -53,3 +53,5 @@ Correcciones_manual.txt
 /storage/app/public/*
 AGENTS.md
 .opencode/tools/mgrep.ts
+scripts/generar_facturas_ficticias.php
+AtencionInver.ffs_gui

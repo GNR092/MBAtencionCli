@@ -90,6 +90,7 @@
             position: relative;
             left: 0;
             width: 260px;
+            z-index: 20;
             background-color: rgba(17, 33, 52, 0.90) !important;
         }
 
@@ -211,8 +212,8 @@
                             class="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white hidden">0</span>
                     </button>
                     <div id="notification-dropdown"
-                        class="absolute right-0 z-50 mt-3 hidden max-w-xs rounded-xl bg-white shadow-2xl text-gray-800 border border-gray-200">
-                        <div id="notification-list" class="max-h-60 overflow-y-auto"></div>
+                        class="absolute right-0 z-[80] mt-3 hidden w-80 max-w-[calc(100vw-1rem)] rounded-xl bg-white shadow-2xl text-gray-800 border border-gray-200 overflow-hidden">
+                        <div id="notification-list" class="max-h-72 overflow-y-auto"></div>
                     </div>
                 </div>
             </div>
@@ -441,10 +442,20 @@
                 }
             }
 
-            link.addEventListener('click', function() {
+            link.addEventListener('click', function(event) {
+                const allowNative = event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || this.target === '_blank';
+                if (!allowNative) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+
                 if (window.innerWidth < 1024) {
                     sidebar.classList.remove('sidebar-active');
                     sidebarOverlay.classList.remove('active');
+                }
+
+                if (!allowNative && this.href) {
+                    window.location.assign(this.href);
                 }
             });
         });
@@ -522,6 +533,10 @@
 
             notificationBellContainer.addEventListener('click', function(event) {
                 event.stopPropagation();
+                const mesDropdown = document.getElementById('mesSelectorDropdown');
+                if (mesDropdown) {
+                    mesDropdown.classList.add('hidden');
+                }
                 notificationDropdown.classList.toggle('hidden');
                 if (!notificationDropdown.classList.contains('hidden')) {
                     loadNotifications();

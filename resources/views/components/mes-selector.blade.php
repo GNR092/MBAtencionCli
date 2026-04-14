@@ -39,6 +39,10 @@ let mesSeleccionado = '{{ $mesActual }}';
 
 function toggleMesSelector() {
     const dropdown = document.getElementById('mesSelectorDropdown');
+    const notificationDropdown = document.getElementById('notification-dropdown');
+    if (notificationDropdown) {
+        notificationDropdown.classList.add('hidden');
+    }
     dropdown.classList.toggle('hidden');
     if (!dropdown.classList.contains('hidden')) {
         cargarMesesFacturas();
