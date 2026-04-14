@@ -63,6 +63,8 @@ setTimeout(() => {
                         <th>Contrato</th>
                         <th>Usuario</th>
                         <th>Proyecto</th>
+                        <th>Departamento</th>
+                        <th>Predial</th>
                         <th>Importe</th>
                         <th>Estado</th>
                         <th>Editar</th>
@@ -75,6 +77,8 @@ setTimeout(() => {
                         <td class="font-bold">{{ $contrato->id }}</td>
                         <td class="font-medium">{{ $contrato->user_name }}</td>
                         <td>{{ $contrato->proyecto }}</td>
+                        <td>{{ $contrato->departamento ?? 'Sin departamento' }}</td>
+                        <td>{{ $contrato->predial ?? 'Sin predial' }}</td>
 
                         <td class="font-mono text-xs">
                             ${{ number_format($contrato->importe_bruto_renta, 2) }}
@@ -104,7 +108,7 @@ setTimeout(() => {
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="py-10 text-white/30 font-medium italic">
+                        <td colspan="9" class="py-10 text-white/30 font-medium italic">
                             No tienes contratos asignados.
                         </td>
                     </tr>

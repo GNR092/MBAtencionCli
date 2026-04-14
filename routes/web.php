@@ -135,6 +135,7 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::get('/subir-archivo/clean', [ContractController::class, 'clean'])->name('admin.contratos.limpiar');
     Route::post('/subir-archivo/search', [ContractController::class, 'search'])->name('admin.contratos.buscar');
     Route::get('/api/users/{user}/projects', [ContractController::class, 'getProjectsForUser'])->name('api.usuarios.proyectos');
+    Route::get('/api/users/{user}/projects/{project}/departments', [ContractController::class, 'getDepartmentsForUserProject'])->name('api.usuarios.proyectos.departamentos');
 
     // Avisos
     Route::get('/enviar-avisos', [AvisoController::class, 'showForm'])->name('avisos.index');

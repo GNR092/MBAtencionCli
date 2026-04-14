@@ -73,10 +73,16 @@
                         <div>
                             <label class="block text-xs font-bold text-carbon-900 uppercase mb-2">Asignación de
                                 Proyecto</label>
+                            @if(!empty($facturacionNotice))
+                            <p class="mb-2 text-[11px] font-semibold text-amber-700">{{ $facturacionNotice }}</p>
+                            @endif
                             <div class="relative">
-                                <select name="proyect" id="proyect" required
+                                <select name="proyect" id="proyect" {{ $proyectos->isEmpty() ? 'disabled' : 'required' }}
                                     class="block w-full border border-gray-300 rounded-lg pl-3 pr-10 py-3 text-carbon-900 bg-white focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-colors appearance-none cursor-pointer shadow-sm">
                                     <option value="" disabled selected>Seleccionar Proyecto...</option>
+                                    @if($proyectos->isEmpty())
+                                        <option value="" disabled>No hay proyectos disponibles</option>
+                                    @endif
                                     @foreach($proyectos as $proyecto)
                                         <option value="{{ $proyecto->id_proyecto }}">{{ $proyecto->nombre_proyecto }}</option>
                                     @endforeach
@@ -125,7 +131,8 @@
 
                     <div class="flex justify-end pt-4 border-t border-gray-100">
                         <button type="submit"
-                            class="bg-dorado-400 text-white px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-dorado/90 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2">
+                            {{ $proyectos->isEmpty() ? 'disabled' : '' }}
+                            class="bg-dorado-400 text-white px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-dorado/90 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:hover:translate-y-0">
                             <span>Validar Documentación</span>
                             <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">

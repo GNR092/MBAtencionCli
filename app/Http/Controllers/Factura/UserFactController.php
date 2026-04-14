@@ -223,6 +223,18 @@ class UserFactController extends Controller
         $parsedProjectId = $parsedProjectInfo['id_proyecto'] ?? null;
         $parsedProjectName = $parsedProjectInfo['nombre_proyecto'] ?? 'No detectado';
         $selectedProjectId = $currentFacturaData['select_project'];
+
+        if ($parsedProjectId && (int) $parsedProjectId !== (int) $selectedProjectId) {
+            $canAutoAssign = $this->canAssignProjectToUser($user->id, (int) $parsedProjectId);
+            if ($canAutoAssign) {
+                $selectedProjectId = (int) $parsedProjectId;
+                $currentFacturaData['select_project'] = $selectedProjectId;
+                $allFacturasData[$index] = $currentFacturaData;
+                session()->put('factura_data', $allFacturasData);
+                $proyecto = Proyecto::find($selectedProjectId);
+            }
+        }
+
         $selectedProjectName = $proyecto->nombre_proyecto ?? 'N/A';
 
         $allDepartamentos = collect($allParsedConcepts)->pluck('departamentos')->flatten()->unique()->values()->all();
@@ -382,6 +394,23 @@ class UserFactController extends Controller
 
         $user = Auth::user();
         $factura = $this->MapingFacturas($xmlData);
+
+        $parser = new DescripcionParser;
+        $allProyects = Proyecto::all()->toArray();
+        $allParsedConcepts = $parser->parsearConceptos($factura['conceptos'], $allProyects);
+        $parsedData = $allParsedConcepts[0] ?? [];
+        $parsedProjectInfo = $parsedData['proyecto'] ?? null;
+        $parsedProjectId = $parsedProjectInfo['id_proyecto'] ?? null;
+
+        if ($parsedProjectId && (int) $parsedProjectId !== (int) $selectedProjectId) {
+            if ($this->canAssignProjectToUser($user->id, (int) $parsedProjectId)) {
+                $selectedProjectId = (int) $parsedProjectId;
+                $currentFacturaData['select_project'] = $selectedProjectId;
+                $allFacturasData[$index] = $currentFacturaData;
+                session()->put('factura_data', $allFacturasData);
+            }
+        }
+
         $selectedProject = Proyecto::with('razonSocial')->find($selectedProjectId);
 
         $userProyecto = UserProyecto::where('id_user', $user->id)
@@ -456,10 +485,6 @@ class UserFactController extends Controller
         }
 
         // Extraer metadatos de todos los conceptos para validaciones
-        $parser = new DescripcionParser;
-        $allProyects = Proyecto::all()->toArray();
-        $allParsedConcepts = $parser->parsearConceptos($factura['conceptos'], $allProyects);
-        $parsedData = $allParsedConcepts[0] ?? [];
         $folioPredial = $parsedData['folio_predial'] ?? ($xmlData['cuenta_predial'] ?? null);
 
         $parsedProjectInfo = $parsedData['proyecto'] ?? null;
@@ -877,5 +902,20 @@ class UserFactController extends Controller
         $digits = preg_replace('/\D+/', '', $predial);
 
         return $digits !== '' ? $digits : null;
+    }
+
+    private function canAssignProjectToUser(int $userId, int $projectId): bool
+    {
+        $userProyecto = UserProyecto::where('id_user', $userId)
+            ->where('id_proyecto', $projectId)
+            ->first();
+
+        if (! $userProyecto) {
+            return false;
+        }
+
+        return Contract::where('id_user_p', $userProyecto->id_user_p)
+            ->whereNotNull('id_user_depto')
+            ->exists();
     }
 }

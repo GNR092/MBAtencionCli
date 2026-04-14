@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Contract;
 use App\Models\User;
+use App\Models\UserDepto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,8 @@ class ContractController extends Controller
         $query = DB::table('contract')
             ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
             ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
-            ->select('contract.*', 'proyectos.nombre_proyecto as proyecto')
+            ->leftJoin('user_depto', 'contract.id_user_depto', '=', 'user_depto.id_user_depto')
+            ->select('contract.*', 'proyectos.nombre_proyecto as proyecto', 'user_depto.nombre as departamento', 'user_depto.predial as predial')
             ->where(function ($q) use ($user) {
                 $q->where('contract.user_id', $user->id)
                     ->orWhere('user_proyectos.id_user', $user->id);
@@ -157,13 +159,23 @@ class ContractController extends Controller
         $proyectos = \App\Models\Proyecto::orderBy('nombre_proyecto')->get();
         $currentProyectoId = optional(\App\Models\UserProyecto::find($contractToEdit->id_user_p))->id_proyecto;
         $contratoBloqueado = $this->isContratoBloqueado((int) $contractToEdit->id);
+        $proyectoActual = $proyectos->firstWhere('id_proyecto', $currentProyectoId);
 
-        return view('editContrato', compact('admin', 'contractToEdit', 'users', 'proyectos', 'currentProyectoId', 'contratoBloqueado'));
+        $departamentosProyectoActual = collect();
+        if ($contractToEdit->id_user_p) {
+            $departamentosProyectoActual = DB::table('user_depto')
+                ->where('id_user_p', $contractToEdit->id_user_p)
+                ->orderBy('nombre')
+                ->get(['id_user_depto', 'nombre', 'predial', 'tipo']);
+        }
+
+        return view('editContrato', compact('admin', 'contractToEdit', 'users', 'proyectos', 'currentProyectoId', 'contratoBloqueado', 'proyectoActual', 'departamentosProyectoActual'));
     }
 
     public function actualizar(Request $request, $id)
     {
         $contrato = Contract::findOrFail($id);
+        $idUserPAnterior = (int) $contrato->id_user_p;
 
         if ($this->isContratoBloqueado((int) $contrato->id)) {
             return back()->with('error', 'Este contrato tiene movimientos de pago y no puede modificarse. Debes renovarlo con un nuevo PDF.');
@@ -172,6 +184,9 @@ class ContractController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'proyect' => 'required|exists:proyectos,id_proyecto',
+            'id_user_depto' => 'nullable|exists:user_depto,id_user_depto',
+            'nuevo_depto_nombre' => 'nullable|string|max:255',
+            'nuevo_depto_predial' => 'nullable|string|max:255',
             'importe_bruto_renta' => 'required',
             'archivo' => 'sometimes|file|mimes:pdf|max:2048', // 'sometimes' makes it optional
         ]);
@@ -180,17 +195,27 @@ class ContractController extends Controller
         $proyectoId = $request->input('proyect');
 
         // Find the user_proyectos pivot record
-        $userProyecto = \App\Models\UserProyecto::where('id_user', $userId)
-            ->where('id_proyecto', $proyectoId)
-            ->first();
+        $userProyecto = \App\Models\UserProyecto::firstOrCreate([
+            'id_user' => $userId,
+            'id_proyecto' => $proyectoId,
+        ]);
 
-        if (! $userProyecto) {
-            return back()->with('error', 'Error: El usuario seleccionado no está asignado a este proyecto.');
+        $requestedDeptoId = $request->input('id_user_depto');
+        $nuevoDeptoNombre = trim((string) $request->input('nuevo_depto_nombre', ''));
+
+        if ($requestedDeptoId || $nuevoDeptoNombre !== '') {
+            $idUserDepto = $this->resolveOrCreateDeptoFromRequest($request, (int) $userProyecto->id_user_p, $contrato->id_user_depto, str_replace(['$', ','], '', $request->input('importe_bruto_renta')));
+        } else {
+            // Si solo cambian proyecto, mantenemos el departamento actual del contrato.
+            $deptoAnterior = $contrato->id_user_depto ?: $this->resolveUserDeptoId($idUserPAnterior, null);
+            $idUserDepto = $deptoAnterior ?: $this->resolveUserDeptoId((int) $userProyecto->id_user_p, null);
         }
 
-        $idUserDepto = $this->resolveUserDeptoId((int) $userProyecto->id_user_p, $contrato->id_user_depto);
         if (! $idUserDepto) {
-            return back()->with('error', 'El proyecto seleccionado no tiene departamento configurado para el usuario.');
+            // Permitir cambiar solo el proyecto sin forzar alta/cambio de departamento.
+            // Si el contrato no tiene departamento ligado y el proyecto tampoco tiene deptos,
+            // se mantiene en null para no bloquear la corrección del proyecto.
+            $idUserDepto = null;
         }
 
         // Handle file update
@@ -238,6 +263,9 @@ class ContractController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'proyect' => 'required|exists:proyectos,id_proyecto',
+            'id_user_depto' => 'nullable|exists:user_depto,id_user_depto',
+            'nuevo_depto_nombre' => 'nullable|string|max:255',
+            'nuevo_depto_predial' => 'nullable|string|max:255',
             'importe_bruto_renta' => 'required',
             'fecha_inicio' => 'required|date',
             'fecha_terminacion' => 'required|date|after_or_equal:fecha_inicio',
@@ -247,17 +275,24 @@ class ContractController extends Controller
         $userId = (int) $request->input('user_id');
         $proyectoId = (int) $request->input('proyect');
 
-        $userProyecto = \App\Models\UserProyecto::where('id_user', $userId)
-            ->where('id_proyecto', $proyectoId)
-            ->first();
+        $userProyecto = \App\Models\UserProyecto::firstOrCreate([
+            'id_user' => $userId,
+            'id_proyecto' => $proyectoId,
+        ]);
 
-        if (! $userProyecto) {
-            return back()->with('error', 'El usuario no está asignado al proyecto seleccionado para renovar.');
+        $requestedDeptoId = $request->input('id_user_depto');
+        $nuevoDeptoNombre = trim((string) $request->input('nuevo_depto_nombre', ''));
+
+        if ($requestedDeptoId || $nuevoDeptoNombre !== '') {
+            $idUserDepto = $this->resolveOrCreateDeptoFromRequest($request, (int) $userProyecto->id_user_p, $contratoOriginal->id_user_depto, str_replace(['$', ','], '', $request->input('importe_bruto_renta')));
+        } else {
+            // En renovación, si no se solicita cambio explícito de depto, conservar el actual.
+            $deptoAnterior = $contratoOriginal->id_user_depto ?: $this->resolveUserDeptoId((int) $contratoOriginal->id_user_p, null);
+            $idUserDepto = $deptoAnterior ?: $this->resolveUserDeptoId((int) $userProyecto->id_user_p, null);
         }
 
-        $idUserDepto = $this->resolveUserDeptoId((int) $userProyecto->id_user_p, $contratoOriginal->id_user_depto);
         if (! $idUserDepto) {
-            return back()->with('error', 'No se encontró un departamento para el nuevo proyecto. Configúralo primero en la ficha del usuario.');
+            return back()->with('error', 'Selecciona un departamento válido o captura uno nuevo para renovar este contrato.');
         }
 
         $archivo = $request->file('archivo');
@@ -306,15 +341,10 @@ class ContractController extends Controller
         // Guardar en ruta organizada por usuario: contracts/{user_id}/{timestamp}_{nombre}
         $path = $this->storeContractFile($archivo, $userId);
 
-        $userProyecto = \App\Models\UserProyecto::where('id_user', $userId)
-            ->where('id_proyecto', $proyectoId)
-            ->first();
-
-        if (! $userProyecto) {
-            Storage::delete($path);
-
-            return back()->with('error', 'Error: El usuario seleccionado no está asignado a este proyecto.');
-        }
+        $userProyecto = \App\Models\UserProyecto::firstOrCreate([
+            'id_user' => $userId,
+            'id_proyecto' => $proyectoId,
+        ]);
 
         $idUserDepto = $this->resolveUserDeptoId((int) $userProyecto->id_user_p, null);
         if (! $idUserDepto) {
@@ -404,7 +434,8 @@ class ContractController extends Controller
             ->join('users', 'contract.user_id', '=', 'users.id')
             ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
             ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
-            ->select('contract.*', 'users.name as user_name', DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'))
+            ->leftJoin('user_depto', 'contract.id_user_depto', '=', 'user_depto.id_user_depto')
+            ->select('contract.*', 'users.name as user_name', DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'), DB::raw('COALESCE(user_depto.nombre, "Sin departamento") as departamento'), DB::raw('COALESCE(NULLIF(user_depto.predial, ""), "Sin predial") as predial'))
             ->orderBy('contract.created_at', 'asc');
 
         if (request()->filled('month')) {
@@ -476,6 +507,31 @@ class ContractController extends Controller
         }
 
         return response()->json($user->proyectos);
+    }
+
+    public function getDepartmentsForUserProject(User $user, int $project)
+    {
+        $admin = Auth::user();
+
+        if (! $admin || $admin->role !== 'administrador') {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $userProyecto = DB::table('user_proyectos')
+            ->where('id_user', $user->id)
+            ->where('id_proyecto', $project)
+            ->first(['id_user_p']);
+
+        if (! $userProyecto) {
+            return response()->json([]);
+        }
+
+        $deptos = DB::table('user_depto')
+            ->where('id_user_p', $userProyecto->id_user_p)
+            ->orderBy('nombre')
+            ->get(['id_user_depto', 'nombre', 'predial', 'tipo', 'importe']);
+
+        return response()->json($deptos);
     }
 
     /**
@@ -573,5 +629,41 @@ class ContractController extends Controller
             ->value('id_user_depto');
 
         return $firstDepto ? (int) $firstDepto : null;
+    }
+
+    private function resolveOrCreateDeptoFromRequest(Request $request, int $idUserP, ?int $preferredDeptoId, $importeBase): ?int
+    {
+        $requestedDeptoId = $request->input('id_user_depto');
+        if ($requestedDeptoId) {
+            $belongsToProject = DB::table('user_depto')
+                ->where('id_user_p', $idUserP)
+                ->where('id_user_depto', (int) $requestedDeptoId)
+                ->exists();
+
+            if ($belongsToProject) {
+                return (int) $requestedDeptoId;
+            }
+        }
+
+        $nuevoDeptoNombre = trim((string) $request->input('nuevo_depto_nombre', ''));
+        if ($nuevoDeptoNombre !== '') {
+            $nuevoPredial = trim((string) $request->input('nuevo_depto_predial', ''));
+            $tipoBase = DB::table('user_depto')
+                ->where('id_user_p', $idUserP)
+                ->whereNotNull('tipo')
+                ->value('tipo');
+
+            $nuevo = UserDepto::create([
+                'id_user_p' => $idUserP,
+                'nombre' => $nuevoDeptoNombre,
+                'tipo' => $tipoBase ?: 'Condominios',
+                'importe' => is_numeric($importeBase) ? (float) $importeBase : 0,
+                'predial' => $nuevoPredial,
+            ]);
+
+            return (int) $nuevo->id_user_depto;
+        }
+
+        return $this->resolveUserDeptoId($idUserP, $preferredDeptoId);
     }
 }

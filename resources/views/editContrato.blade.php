@@ -41,6 +41,23 @@
                 </p>
             </div>
 
+            <div class="px-8 pt-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 rounded-lg border border-[#d8c495]/20 bg-white/5 p-4">
+                    <div>
+                        <p class="text-[10px] uppercase tracking-[0.2em] text-[#d8c495]/60">Proyecto ligado</p>
+                        <p class="text-sm text-white mt-1">{{ $proyectoActual->nombre_proyecto ?? 'Sin proyecto ligado' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase tracking-[0.2em] text-[#d8c495]/60">Departamento ligado</p>
+                        <p class="text-sm text-white mt-1">{{ $contractToEdit->userDepto->nombre ?? 'Sin departamento ligado' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase tracking-[0.2em] text-[#d8c495]/60">Predial ligado</p>
+                        <p class="text-sm text-white mt-1">{{ $contractToEdit->userDepto->predial ?? 'Sin predial ligado' }}</p>
+                    </div>
+                </div>
+            </div>
+
             <form action="{{ route('admin.contratos.actualizar', $contractToEdit->id) }}" method="POST" enctype="multipart/form-data" class="p-8">
                 @csrf
                 @method('PUT')
@@ -73,6 +90,36 @@
                         </option>
                         @endforeach
                     </select>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                        Departamento ligado
+                    </label>
+                    <select name="id_user_depto" id="id_user_depto" {{ $contratoBloqueado ? 'disabled' : '' }}
+                        class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]"
+                        >
+                        @forelse($departamentosProyectoActual as $depto)
+                        <option value="{{ $depto->id_user_depto }}" {{ (int) $contractToEdit->id_user_depto === (int) $depto->id_user_depto ? 'selected' : '' }}>
+                            {{ $depto->nombre }} @if(!empty($depto->predial)) - Predial: {{ $depto->predial }} @endif
+                        </option>
+                        @empty
+                        <option value="">Sin departamentos disponibles para este proyecto</option>
+                        @endforelse
+                    </select>
+                    <p id="id_user_depto_help" class="text-white/50 text-xs mt-2"></p>
+                    @if(!$contractToEdit->id_user_depto)
+                    <p class="text-amber-300/90 text-xs mt-2">Este contrato no tiene departamento ligado. Selecciona uno para corregir la vinculación.</p>
+                    @endif
+
+                    @if(!$contratoBloqueado)
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" name="nuevo_depto_nombre" placeholder="Si no aparece, escribe nuevo departamento"
+                            class="w-full bg-[#0d1f30] border border-[#d8c495]/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
+                        <input type="text" name="nuevo_depto_predial" placeholder="Predial opcional del nuevo departamento"
+                            class="w-full bg-[#0d1f30] border border-[#d8c495]/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
+                    </div>
+                    @endif
                 </div>
 
                 <!-- Fechas (solo lectura) -->
@@ -200,13 +247,32 @@
 
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">Proyecto nuevo</label>
-                        <select name="proyect" class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]" required>
+                        <select name="proyect" id="proyect_renovar" class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]" required>
                             @foreach($proyectos as $proyecto)
                             <option value="{{ $proyecto->id_proyecto }}" {{ $currentProyectoId == $proyecto->id_proyecto ? 'selected' : '' }}>
                                 {{ $proyecto->nombre_proyecto }}
                             </option>
                             @endforeach
                         </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">Departamento nuevo</label>
+                        <select name="id_user_depto" id="id_user_depto_renovar" class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
+                            @forelse($departamentosProyectoActual as $depto)
+                            <option value="{{ $depto->id_user_depto }}" {{ (int) $contractToEdit->id_user_depto === (int) $depto->id_user_depto ? 'selected' : '' }}>
+                                {{ $depto->nombre }} @if(!empty($depto->predial)) - Predial: {{ $depto->predial }} @endif
+                            </option>
+                            @empty
+                            <option value="">Sin departamentos disponibles</option>
+                            @endforelse
+                        </select>
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" name="nuevo_depto_nombre" placeholder="Si no aparece, escribe nuevo departamento"
+                                class="w-full bg-[#0d1f30] border border-[#d8c495]/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
+                            <input type="text" name="nuevo_depto_predial" placeholder="Predial opcional del nuevo departamento"
+                                class="w-full bg-[#0d1f30] border border-[#d8c495]/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -240,6 +306,9 @@
     </div>
 </div>
 
+<input type="hidden" id="contract_user_id_for_deptos" value="{{ (int) $contractToEdit->user_id }}">
+<input type="hidden" id="contract_depto_id_for_deptos" value="{{ (int) ($contractToEdit->id_user_depto ?? 0) }}">
+
 <script>
 document.getElementById('activo')?.addEventListener('change', function() {
     if (this.checked) document.getElementById('inactivo').checked = false;
@@ -247,5 +316,79 @@ document.getElementById('activo')?.addEventListener('change', function() {
 document.getElementById('inactivo')?.addEventListener('change', function() {
     if (this.checked) document.getElementById('activo').checked = false;
 });
+
+function renderDeptos(selectId, deptos, selectedId = null) {
+    const select = document.getElementById(selectId);
+    const help = document.getElementById('id_user_depto_help');
+    if (!select) return;
+
+    select.innerHTML = '';
+
+    const keepOption = document.createElement('option');
+    keepOption.value = '';
+    keepOption.textContent = 'Mantener departamento actual';
+    select.appendChild(keepOption);
+
+    if (!Array.isArray(deptos) || deptos.length === 0) {
+        select.disabled = true;
+        if (help && selectId === 'id_user_depto') {
+            help.textContent = 'El proyecto seleccionado no tiene departamentos configurados. Se conservará el departamento actual; si no existe, el contrato quedará sin departamento hasta que lo captures.';
+        }
+        return;
+    }
+
+    select.disabled = false;
+    if (help && selectId === 'id_user_depto') {
+        help.textContent = '';
+    }
+
+    deptos.forEach((d) => {
+        const opt = document.createElement('option');
+        opt.value = d.id_user_depto;
+        opt.textContent = d.nombre + (d.predial ? ' - Predial: ' + d.predial : '');
+        if (selectedId && Number(selectedId) === Number(d.id_user_depto)) {
+            opt.selected = true;
+        }
+        select.appendChild(opt);
+    });
+
+    if (!selectedId) {
+        keepOption.selected = true;
+    }
+}
+
+async function cargarDeptos(userId, proyectoId, selectId, selectedId = null) {
+    if (!userId || !proyectoId) return;
+    try {
+        const resp = await fetch(`/api/users/${userId}/projects/${proyectoId}/departments`);
+        if (!resp.ok) {
+            renderDeptos(selectId, []);
+            return;
+        }
+        const deptos = await resp.json();
+        renderDeptos(selectId, deptos, selectedId);
+    } catch (_) {
+        renderDeptos(selectId, []);
+    }
+}
+
+const userIdEdit = Number(document.getElementById('contract_user_id_for_deptos')?.value || 0);
+const currentDeptoId = Number(document.getElementById('contract_depto_id_for_deptos')?.value || 0);
+
+document.getElementById('proyect')?.addEventListener('change', function() {
+    cargarDeptos(userIdEdit, this.value, 'id_user_depto', null);
+});
+
+document.getElementById('proyect_renovar')?.addEventListener('change', function() {
+    cargarDeptos(userIdEdit, this.value, 'id_user_depto_renovar', null);
+});
+
+if (document.getElementById('proyect')) {
+    cargarDeptos(userIdEdit, document.getElementById('proyect').value, 'id_user_depto', currentDeptoId);
+}
+
+if (document.getElementById('proyect_renovar')) {
+    cargarDeptos(userIdEdit, document.getElementById('proyect_renovar').value, 'id_user_depto_renovar', currentDeptoId);
+}
 </script>
 @endsection

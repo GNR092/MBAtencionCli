@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\FileLog;
-use App\Models\UserProyecto;
 use App\Models\XmlBatch;
 use App\Models\XmlFile;
 use App\Services\PdfUuidExtractionService;
@@ -15,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Yasumi\Yasumi; // Import Auth facade
 
@@ -72,22 +72,43 @@ class CfdiValidatorController extends BaseController
         $success = '';
 
         $user = Auth::user();
-        $proyectos = UserProyecto::with('proyecto')
-            ->where('id_user', $user->id)
-            ->whereHas('deptos')
-            ->get()
-            ->pluck('proyecto')
-            ->filter()
-            ->unique('id_proyecto')
-            ->values();
+        $proyectos = DB::table('contract')
+            ->join('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
+            ->join('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
+            ->where('contract.user_id', $user->id)
+            ->where('contract.estado', 'activo')
+            ->whereNotNull('contract.id_user_depto')
+            ->select('proyectos.id_proyecto', 'proyectos.nombre_proyecto')
+            ->distinct()
+            ->orderBy('proyectos.nombre_proyecto')
+            ->get();
+
+        $facturacionNotice = null;
+
+        if ($proyectos->isEmpty()) {
+            $proyectos = DB::table('user_proyectos')
+                ->join('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
+                ->join('user_depto', 'user_proyectos.id_user_p', '=', 'user_depto.id_user_p')
+                ->where('user_proyectos.id_user', $user->id)
+                ->select('proyectos.id_proyecto', 'proyectos.nombre_proyecto')
+                ->distinct()
+                ->orderBy('proyectos.nombre_proyecto')
+                ->get();
+
+            if ($proyectos->isNotEmpty()) {
+                $facturacionNotice = 'No se encontraron contratos activos con departamento. Se muestran proyectos asignados como respaldo; valida el contrato antes de confirmar.';
+            } else {
+                $facturacionNotice = 'No tienes proyectos con departamentos configurados para facturar. Contacta a administración.';
+            }
+        }
 
         if ($request->expectsJson()) {
-            $html = view('User.factura', compact('batch', 'isDeadlinePassed', 'success', 'user'))->render();
+            $html = view('User.factura', compact('batch', 'isDeadlinePassed', 'success', 'user', 'proyectos', 'facturacionNotice'))->render();
 
             return response()->json(['html' => $html]);
         }
 
-        return view('User.factura', compact('batch', 'isDeadlinePassed', 'success', 'user', 'proyectos'));
+        return view('User.factura', compact('batch', 'isDeadlinePassed', 'success', 'user', 'proyectos', 'facturacionNotice'));
     }
 
     // Sube y valida archivos XML, Los inválidos no se guardan,Los válidos se guardan en disco y BD.
