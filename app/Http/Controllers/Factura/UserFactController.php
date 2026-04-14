@@ -349,6 +349,19 @@ class UserFactController extends Controller
         $user = Auth::user();
         $factura = $this->MapingFacturas($xmlData);
 
+        $uuid = $factura['uuid'] !== 'N/A' ? trim((string) $factura['uuid']) : null;
+        if (! $uuid) {
+            return redirect()->back()->withErrors(['message' => 'No se encontró UUID válido en el XML.']);
+        }
+
+        if ($this->normalizarTexto($factura['emisor_nombre'] ?? '') !== $this->normalizarTexto($user->name ?? '')) {
+            return redirect()->back()->withErrors(['message' => 'El emisor del XML no coincide con el usuario autenticado.']);
+        }
+
+        if (XmlFile::whereRaw('LOWER(uuid) = ?', [mb_strtolower($uuid)])->exists()) {
+            return redirect()->back()->withErrors(['message' => 'El UUID de esta factura ya existe en el sistema.']);
+        }
+
         $periodosDetectados = $xmlData['periodosDetectados'] ?? [];
 
         if (empty($periodosDetectados)) {
@@ -398,7 +411,6 @@ class UserFactController extends Controller
         $newFilePath = $this->buildXmlStoragePath($user->id, $carbonFecha, $filename);
 
         $pdfData = $currentFacturaData['pdf_data'] ?? null;
-        $uuid = $factura['uuid'] !== 'N/A' ? $factura['uuid'] : null;
         $pdfFilename = $uuid.'.pdf';
         $pdfNewPath = $this->buildPdfStoragePath($user->id, $carbonFecha, $pdfFilename);
         $retroactivo = $currentFacturaData['xmlData']['retroactivo'] ?? false;
@@ -429,6 +441,10 @@ class UserFactController extends Controller
                 $conceptosPorPeriodo,
                 &$xmlFile
             ) {
+                if (XmlFile::whereRaw('LOWER(uuid) = ?', [mb_strtolower($uuid)])->exists()) {
+                    throw new \Exception('El UUID de esta factura ya existe en el sistema.');
+                }
+
                 $contents = Storage::disk('tmp')->get($tmpFilePath);
                 Storage::disk('local')->put($newFilePath, $contents);
 
@@ -540,6 +556,7 @@ class UserFactController extends Controller
                             'estado' => 'pendiente',
                             'saldo_neto' => $totalNeto,
                             'monto_pagado' => 0,
+                            'saldo_pendiente' => $totalNeto,
                             'meses_cubiertos' => 1,
                             'es_extra' => false,
                             'mesesdepago' => json_encode(['mes' => $periodo, 'concepto_idx' => $conceptIndex]),
@@ -698,5 +715,10 @@ class UserFactController extends Controller
                 ]);
             }
         }
+    }
+
+    private function normalizarTexto(string $texto): string
+    {
+        return mb_strtolower(trim($texto));
     }
 }

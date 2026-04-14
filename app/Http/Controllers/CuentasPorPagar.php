@@ -31,6 +31,8 @@ class CuentasPorPagar extends Controller
                 DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'),
             );
 
+        $this->aplicarExclusionCancelados($query);
+
         $this->aplicarFiltros($query, $request);
 
         if ($request->filled('desde')) {
@@ -59,7 +61,6 @@ class CuentasPorPagar extends Controller
         $cuentas = DB::table('cuentasporpagar')
             ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
             ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
-            ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id')
             ->leftJoin('users', 'contract.user_id', '=', 'users.id')
             ->leftJoin('regimen_fiscals', 'users.id_regimen', '=', 'regimen_fiscals.id_regimen')
             ->select(
@@ -68,10 +69,14 @@ class CuentasPorPagar extends Controller
                 'cuentasporpagar.monto_pagado',
                 'cuentasporpagar.estado',
                 'contract.importe_bruto_renta as importeBaseContrato',
-                'impuesto.importeBase as importeBaseXML',
+                DB::raw('(SELECT MAX(i.importeBase) FROM impuesto i WHERE i.xml_file_id = cuentasporpagar.xml_file_id) as importeBaseXML'),
                 'regimen_fiscals.nombre_regimen as regimenFiscal',
                 'cuentasporpagar.mesesdepago'
-            )->get();
+            );
+
+        $this->aplicarExclusionCancelados($cuentas, 'cuentasporpagar');
+
+        $cuentas = $cuentas->get();
 
         foreach ($cuentas as $cuenta) {
             $mesData = null;
@@ -117,25 +122,16 @@ class CuentasPorPagar extends Controller
             $isr = round($importeBase * $tasaCuota, 2);
 
             $saldoNeto = round($importeBase - $isr, 2);
-            $saldoPendiente = round($saldoNeto - ($cuenta->monto_pagado ?? 0), 2);
+            $montoPagado = floatval($cuenta->monto_pagado ?? 0);
+            $saldoPendiente = round(max(0, $saldoNeto - $montoPagado), 2);
 
-            if ($cuenta->estado === 'pagado') {
-
-                continue;
-            }
-
-            if ($cuenta->monto_pagado == 0) {
-                $estado = 'pendiente';
-            } elseif ($cuenta->monto_pagado > 0 && $cuenta->monto_pagado < $saldoNeto) {
-                $estado = 'parcial';
-            } elseif ($cuenta->monto_pagado >= $saldoNeto) {
-                $estado = 'pagado';
+            if (($cuenta->estado ?? null) === 'pagado') {
                 $saldoPendiente = 0;
             }
 
             $mesesCubiertos = 1;
             if ($saldoNeto > 0) {
-                $mesesCubiertos = max(1, (int) ceil(floatval($cuenta->monto_pagado ?? 0) / $saldoNeto));
+                $mesesCubiertos = max(1, (int) ceil($montoPagado / $saldoNeto));
             }
             $esExtra = $mesesCubiertos > 1;
 
@@ -146,7 +142,6 @@ class CuentasPorPagar extends Controller
                     'isr' => $isr,
                     'saldo_neto' => $saldoNeto,
                     'saldo_pendiente' => $saldoPendiente,
-                    'estado' => $estado,
                     'meses_cubiertos' => $mesesCubiertos,
                     'es_extra' => $esExtra,
                     'updated_at' => now(),
@@ -161,19 +156,22 @@ class CuentasPorPagar extends Controller
         $cuentas = DB::table('cuentasporpagar')
             ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
             ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
-            ->leftJoin('impuesto', 'xml_files.id', '=', 'impuesto.xml_file_id')
             ->leftJoin('users', 'contract.user_id', '=', 'users.id')
             ->leftJoin('regimen_fiscals', 'users.id_regimen', '=', 'regimen_fiscals.id_regimen')
-            ->where('cuentasporpagar.estado', '!=', 'pagado')
             ->select(
                 'cuentasporpagar.id_cuentas_por_pagar',
                 'cuentasporpagar.id_contract',
                 'cuentasporpagar.monto_pagado',
+                'cuentasporpagar.estado',
                 'cuentasporpagar.mesesdepago',
                 'contract.importe_bruto_renta as importeBaseContrato',
-                'impuesto.importeBase as importeBaseXML',
+                DB::raw('(SELECT MAX(i.importeBase) FROM impuesto i WHERE i.xml_file_id = cuentasporpagar.xml_file_id) as importeBaseXML'),
                 'regimen_fiscals.nombre_regimen as regimenFiscal',
-            )->get();
+            );
+
+        $this->aplicarExclusionCancelados($cuentas, 'cuentasporpagar');
+
+        $cuentas = $cuentas->get();
 
         foreach ($cuentas as $cuenta) {
             $decoded = json_decode($cuenta->mesesdepago, true);
@@ -203,10 +201,7 @@ class CuentasPorPagar extends Controller
             $montoPagado = floatval($cuenta->monto_pagado ?? 0);
             $saldoPendiente = round(max(0, $saldoNeto - $montoPagado), 2);
 
-            $estado = $montoPagado <= 0 ? 'pendiente'
-                : ($montoPagado >= $saldoNeto ? 'pagado' : 'parcial');
-
-            if ($estado === 'pagado') {
+            if (($cuenta->estado ?? null) === 'pagado') {
                 $saldoPendiente = 0;
             }
 
@@ -223,7 +218,6 @@ class CuentasPorPagar extends Controller
                     'isr' => $isr,
                     'saldo_neto' => $saldoNeto,
                     'saldo_pendiente' => $saldoPendiente,
-                    'estado' => $estado,
                     'meses_cubiertos' => $mesesCubiertos,
                     'es_extra' => $esExtra,
                     'updated_at' => now(),
@@ -275,6 +269,15 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             }
 
             if (! empty($xml->uuid) && DB::table('retroactivos_eliminados')->where('uuid', $xml->uuid)->exists()) {
+                continue;
+            }
+
+            $fueEliminadoPorContratoMes = DB::table('retroactivos_eliminados')
+                ->where('id_contract', $contract->id)
+                ->where('mes_pago', $mesXml)
+                ->exists();
+
+            if ($fueEliminadoPorContratoMes) {
                 continue;
             }
 
@@ -410,6 +413,8 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 'users.metodo_pago',
                 DB::raw('DATE_FORMAT(xml_files.created_at, "%Y-%m") as mes_subida'),
             );
+
+        $this->aplicarExclusionCancelados($query);
         $selectedMonth = $request->month ?? now()->format('Y-m');
         $query->where('cuentasporpagar.mes_pago', $selectedMonth);
         $query->where('cuentasporpagar.es_retroactivo', false);
@@ -468,6 +473,10 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         if (! $user) {
             return redirect('/inicio-de-sesion');
         }
+
+        $this->seedDesdeXmlFiles();
+        $this->generarCuentasDesdeContratos();
+        $this->recalcularSaldos();
 
         $selectedMonth = $request->month ?? now()->format('Y-m');
         $mesTabLabel = strtoupper($selectedMonth);
@@ -554,7 +563,11 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 DB::raw('COALESCE(razones_sociales.nombre_razon_social, "Sin razón social") as razon_social'),
                 DB::raw('COALESCE(razones_sociales.rfc, "") as rfc_oculto'),
                 'xml_files.departamento as xml_departamentos'
-            )
+            );
+
+        $this->aplicarExclusionCancelados($registros);
+
+        $registros = $registros
             ->where(function ($query) use ($activeTab, $selectedMonth) {
                 if (in_array($activeTab, ['deber-ser', 'pagado', 'no-pagado'], true)) {
                     $query->where('cuentasporpagar.mes_pago', '<=', $selectedMonth);
@@ -574,27 +587,16 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 $query->where('cuentasporpagar.mes_pago', $selectedMonth);
             })
             ->when($activeTab === 'no-pagado', function ($query) {
-                $query->where(function ($scope) {
-                    $scope->where('cuentasporpagar.estado', '!=', 'pagado')
-                        ->orWhere(function ($noFactura) {
-                            $noFactura->whereNull('cuentasporpagar.xml_file_id')
-                                ->whereNull('cuentasporpagar.uuid');
-                        });
-                });
+                $query->where('cuentasporpagar.estado', '!=', 'pagado');
+            })
+            ->when($activeTab === 'deber-ser', function ($query) {
+                $query->where('cuentasporpagar.es_extra', false);
             })
             ->when($activeTab === 'pagado', function ($query) {
                 $query->where('cuentasporpagar.estado', 'pagado');
-                $query->where(function ($withFactura) {
-                    $withFactura->whereNotNull('cuentasporpagar.xml_file_id')
-                        ->orWhereNotNull('cuentasporpagar.uuid');
-                });
             })
             ->when($activeTab === 'extra', function ($query) {
                 $query->where('cuentasporpagar.estado', 'pagado')
-                    ->where(function ($withFactura) {
-                        $withFactura->whereNotNull('cuentasporpagar.xml_file_id')
-                            ->orWhereNotNull('cuentasporpagar.uuid');
-                    })
                     ->where(function ($extra) {
                         $extra->where('cuentasporpagar.es_extra', true)
                             ->orWhere('cuentasporpagar.meses_cubiertos', '>', 1);
@@ -828,13 +830,35 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
 
     public function mesesConFacturas($year)
     {
-        $meses = DB::table('cuentasporpagar')
+        $mesesQuery = DB::table('cuentasporpagar')
             ->whereNotNull('mes_pago')
             ->where('mes_pago', 'like', $year.'-%')
-            ->distinct()
+            ->distinct();
+
+        $this->aplicarExclusionCancelados($mesesQuery, 'cuentasporpagar');
+
+        $meses = $mesesQuery
             ->pluck('mes_pago')
             ->toArray();
 
         return response()->json($meses);
+    }
+
+    private function aplicarExclusionCancelados($query, string $alias = 'cuentasporpagar'): void
+    {
+        $query->whereNotExists(function ($sub) use ($alias) {
+            $sub->select(DB::raw(1))
+                ->from('retroactivos_eliminados as re')
+                ->where(function ($match) use ($alias) {
+                    $match->where(function ($byContractMonth) use ($alias) {
+                        $byContractMonth->whereColumn('re.id_contract', "{$alias}.id_contract")
+                            ->whereColumn('re.mes_pago', "{$alias}.mes_pago");
+                    })->orWhere(function ($byUuid) use ($alias) {
+                        $byUuid->whereNotNull('re.uuid')
+                            ->where('re.uuid', '!=', '')
+                            ->whereRaw("LOWER(re.uuid) = LOWER({$alias}.uuid)");
+                    });
+                });
+        });
     }
 }

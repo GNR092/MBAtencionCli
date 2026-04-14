@@ -105,7 +105,15 @@ class CfdiValidatorController extends BaseController
             $proyecto = $request->input('proyect');
 
             $errors = [];
-            $uuidMapping = $batch->uuid_mapping ?? [];
+            $uuidMapping = [];
+
+            $existingSessionData = session()->get('factura_data', []);
+            foreach ($existingSessionData as $item) {
+                $existingUuid = strtolower(trim((string) ($item['xmlData']['uuid'] ?? '')));
+                if ($existingUuid !== '') {
+                    $uuidMapping[$existingUuid] = true;
+                }
+            }
 
             $user = Auth::user();
 
@@ -126,10 +134,22 @@ class CfdiValidatorController extends BaseController
                     continue;
                 }
 
-                if (($uuid = $validationResult['uuid'] ?? null) && isset($uuidMapping[$uuid])) {
+                $uuid = strtolower(trim((string) ($validationResult['uuid'] ?? '')));
+
+                if ($uuid !== '' && isset($uuidMapping[$uuid])) {
                     $errors[] = "Archivo {$filename}: UUID duplicado {$validationResult['uuid']}";
 
                     continue;
+                }
+
+                if ($uuid !== '' && XmlFile::whereRaw('LOWER(uuid) = ?', [$uuid])->exists()) {
+                    $errors[] = "Archivo {$filename}: el UUID {$validationResult['uuid']} ya fue cargado previamente.";
+
+                    continue;
+                }
+
+                if ($uuid !== '') {
+                    $uuidMapping[$uuid] = true;
                 }
 
                 $filePath = $file->store('xml_files', 'tmp');
@@ -139,7 +159,15 @@ class CfdiValidatorController extends BaseController
                     'file_path' => $filePath,
                 ];
             }
+            if (empty($xmlUserData)) {
+                return redirect()->back()->withErrors($errors !== [] ? $errors : ['No se detectaron XML válidos para procesar.']);
+            }
+
             session()->put('factura_data', $xmlUserData);
+
+            if ($errors !== []) {
+                session()->flash('warnings', $errors);
+            }
 
             return redirect()->route('user.factura.view', ['index' => 0]);
         } catch (\Exception $e) {
@@ -230,7 +258,7 @@ class CfdiValidatorController extends BaseController
 
             return redirect()->back()->with('success', 'PDF asociado correctamente al XML');
         } catch (\Exception $e) {
-            \Log::error('Error uploading PDF file: '.$e->getMessage());
+            Log::error('Error uploading PDF file: '.$e->getMessage());
 
             return redirect()->back()->withErrors([
                 'pdf' => 'Ocurrió un error inesperado al procesar el archivo PDF.',
