@@ -72,9 +72,14 @@ class CfdiValidatorController extends BaseController
         $success = '';
 
         $user = Auth::user();
-        $userP = UserProyecto::where('id_user', $user->id)->get();
-        $idsProyectos = $userP->pluck('id_proyecto');
-        $proyectos = $user->proyectos;
+        $proyectos = UserProyecto::with('proyecto')
+            ->where('id_user', $user->id)
+            ->whereHas('deptos')
+            ->get()
+            ->pluck('proyecto')
+            ->filter()
+            ->unique('id_proyecto')
+            ->values();
 
         if ($request->expectsJson()) {
             $html = view('User.factura', compact('batch', 'isDeadlinePassed', 'success', 'user'))->render();
