@@ -237,7 +237,7 @@
                 <div id="sidebar-content" class="flex flex-col h-full p-4 overflow-y-auto custom-scrollbar">
                     <nav class="space-y-2">
                         <div class="dropdown">
-                            <button
+                            <button type="button"
                                 class="dropdown-toggle flex w-full items-center justify-between p-3 rounded-lg hover:bg-white/10 transition-all text-sm font-medium text-white">
                                 <span>Finanzas y Contabilidad</span>
                                 <span class="arrow text-[10px]">&#9660;</span>
@@ -262,7 +262,7 @@
 
                         {{-- Sección: Gestión Empresarial y Legal --}}
                         <div class="dropdown">
-                            <button
+                            <button type="button"
                                 class="dropdown-toggle flex w-full items-center justify-between p-3 rounded-lg hover:bg-white/10 transition-all text-sm font-medium text-white">
                                 <span>Gestión Empresarial y Legal</span>
                                 <span class="arrow text-[10px]">&#9660;</span>
@@ -289,7 +289,7 @@
                         </div>
 
                         <div class="dropdown">
-                            <button
+                            <button type="button"
                                 class="dropdown-toggle flex w-full items-center justify-between p-3 rounded-lg hover:bg-white/10 transition-all text-sm font-medium text-white">
                                 <span>Operaciones y Atención al Cliente</span>
                                 <span class="arrow text-[10px]">&#9660;</span>
@@ -398,18 +398,29 @@
         }
 
         // Resaltar opción activa del menú
-        const currentPath = window.location.pathname;
+        const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
         const sidebarLinks = document.querySelectorAll('.sidebar-link');
+
+        const toPath = (href) => {
+            try {
+                const parsed = new URL(href, window.location.origin);
+                return parsed.pathname.replace(/\/$/, '') || '/';
+            } catch (_) {
+                return '/';
+            }
+        };
+
+        const isPathMatch = (current, target) => {
+            if (!target || target === '#') return false;
+            if (current === target) return true;
+            return target !== '/' && current.startsWith(target + '/');
+        };
         
         sidebarLinks.forEach(link => {
             const href = link.getAttribute('href');
             if (href) {
-                // Normalizar paths para comparación
-                const normalizedHref = href.replace(/^\//, '').replace(/\/$/, '');
-                const normalizedCurrent = currentPath.replace(/^\//, '').replace(/\/$/, '');
-                
-                const isMatch = normalizedCurrent.startsWith(normalizedHref) || 
-                                normalizedHref.startsWith(normalizedCurrent);
+                const linkPath = toPath(href);
+                const isMatch = isPathMatch(currentPath, linkPath);
                 
                 if (isMatch) {
                     link.classList.add('active');
@@ -429,21 +440,14 @@
                     }
                 }
             }
-        });
 
-
-        const startInput = document.getElementById('start');
-        if (startInput) {
-            startInput.addEventListener('change', function() {
-                const month = this.value;
-                if (month) {
-                    const url = new URL(window.location.href);
-                    url.searchParams.set('month', month);
-                    window.location.href = url.toString();
+            link.addEventListener('click', function() {
+                if (window.innerWidth < 1024) {
+                    sidebar.classList.remove('sidebar-active');
+                    sidebarOverlay.classList.remove('active');
                 }
             });
-        }
-
+        });
 
         const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
         dropdownToggles.forEach(toggle => {
