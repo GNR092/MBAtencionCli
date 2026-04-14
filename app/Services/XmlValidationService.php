@@ -8,11 +8,10 @@ class XmlValidationService
 {
     private function normalize($text)
     {
-        $text = strtolower(trim($text));
+        $text = strtolower(trim((string) $text));
+        $ascii = iconv('UTF-8', 'ASCII//TRANSLIT', $text);
 
-        $text = iconv('UTF-8', 'ASCII//TRANSLIT', $text);
-
-        return $text;
+        return $ascii !== false ? $ascii : $text;
     }
 
     /**
@@ -90,40 +89,55 @@ class XmlValidationService
         $foundPeriod = false;
         $periodosDetectados = [];
 
-        $meses = ['enero' => '01', 'febrero' => '02', 'marzo' => '03', 'abril' => '04', 'mayo' => '05', 'junio' => '06', 'julio' => '07', 'agosto' => '08', 'septiembre' => '09', 'setiembre' => '09', 'octubre' => '10', 'noviembre' => '11', 'diciembre' => '12'];
-        $regexMes = '/\b(ENERO|FEBRERO|MARZO|ABRIL|MAYO|JUNIO|JULIO|AGOSTO|SEPTIEMBRE|SETIEMBRE|OCTUBRE|NOVIEMBRE|DICIEMBRE)\b/i';
-        $regexDepto = '/(?:DEP(?:ARTAMENTO|TO|T)?\.?|PH|GH|LOCAL|OFICINA|UNIDAD)\s*(?:NO\.?|NUM\.?|#)?\s*([A-Z0-9\-\s]{1,10})\b/i';
+        $meses = [
+            'ENERO' => '01',
+            'FEBRERO' => '02',
+            'MARZO' => '03',
+            'ABRIL' => '04',
+            'MAYO' => '05',
+            'JUNIO' => '06',
+            'JULIO' => '07',
+            'AGOSTO' => '08',
+            'SEPTIEMBRE' => '09',
+            'SETIEMBRE' => '09',
+            'OCTUBRE' => '10',
+            'NOVIEMBRE' => '11',
+            'DICIEMBRE' => '12',
+        ];
+        $mesesPorNumero = array_flip($meses);
+        $fechaComprobante = $result['comprobante']['Fecha'] ?? null;
+        $fallbackYear = null;
+        if ($fechaComprobante) {
+            $fallbackYear = substr((string) $fechaComprobante, 0, 4);
+            if (! preg_match('/^20\d{2}$/', (string) $fallbackYear)) {
+                $fallbackYear = null;
+            }
+        }
 
         foreach ($conceptosNodes as $i => $node) {
             $data = $this->getAttributesAsArray($node);
             $descripcion = $data['Descripcion'] ?? '';
 
             $descClean = preg_replace('/\s+/', ' ', $descripcion);
+            $descClean = trim((string) $descClean);
 
             $conceptoMes = null;
             $conceptoAnio = null;
             $conceptoPeriodo = null;
             $conceptoDepartamento = null;
+            $conceptoPeriodos = $this->extractPeriodsFromText($descClean, $meses, $fallbackYear);
 
-            if (preg_match($regexMes, $descClean, $matches)) {
-                $conceptoMes = strtolower($matches[1]);
+            if (! empty($conceptoPeriodos)) {
+                $conceptoPeriodo = $conceptoPeriodos[0];
+                [$conceptoAnio, $mesNum] = explode('-', $conceptoPeriodo);
+                $conceptoMes = strtolower($mesesPorNumero[$mesNum] ?? '');
             }
 
-            if (preg_match('/\b(20[2-3][0-9])\b/', $descClean, $matches)) {
-                $conceptoAnio = $matches[1];
+            foreach ($conceptoPeriodos as $periodoDetectado) {
+                $periodosDetectados[$periodoDetectado] = true;
             }
 
-            if (preg_match($regexDepto, $descClean, $matches)) {
-                $conceptoDepartamento = trim(strtoupper($matches[1]));
-            }
-
-            if ($conceptoMes && $conceptoAnio) {
-                $mesNum = $meses[$conceptoMes] ?? null;
-                if ($mesNum) {
-                    $conceptoPeriodo = $conceptoAnio.'-'.$mesNum;
-                    $periodosDetectados[$conceptoPeriodo] = true;
-                }
-            }
+            $conceptoDepartamento = $this->extractDepartamentoFromText($descClean);
 
             if (! $result['mes'] && $conceptoMes) {
                 $result['mes'] = $conceptoMes;
@@ -141,6 +155,7 @@ class XmlValidationService
             $data['concepto_mes'] = $conceptoMes;
             $data['concepto_anio'] = $conceptoAnio;
             $data['concepto_periodo'] = $conceptoPeriodo;
+            $data['concepto_periodos'] = $conceptoPeriodos;
             $data['concepto_departamento'] = $conceptoDepartamento;
 
             $trasladosNodes = $node->xpath('cfdi:Impuestos/cfdi:Traslados/cfdi:Traslado');
@@ -165,11 +180,11 @@ class XmlValidationService
                     $result['cuenta_predial'] = $attr['Numero'] ?? null;
                 }
             } else {
-
-                if (preg_match('/(?:PREDIAL|CATASTRAL)(?:[\s\.\:\#]*)([0-9]+)/i', $descClean, $matches)) {
-                    $data['CuentaPredial'] = ['Numero' => $matches[1], 'Origen' => 'Texto'];
+                $predialEnTexto = $this->extractPredialFromText($descClean);
+                if ($predialEnTexto) {
+                    $data['CuentaPredial'] = ['Numero' => $predialEnTexto, 'Origen' => 'Texto'];
                     if (! $result['cuenta_predial']) {
-                        $result['cuenta_predial'] = $matches[1];
+                        $result['cuenta_predial'] = $predialEnTexto;
                     }
                 }
             }
@@ -252,10 +267,10 @@ class XmlValidationService
 
         foreach ($result['conceptos'] as $idx => $concepto) {
             if (! $concepto['concepto_periodo']) {
-                $critical_errors[] = [
+                $warnings[] = [
                     'Campo' => 'Concepto '.($idx + 1),
                     'Error' => 'No se detectó el mes/año en la descripción',
-                    'Sug' => 'Agregar formato correcto: "Enero 2025" o "Septiembre de 2025"',
+                    'Sug' => 'Revisar formato de descripción o asignar periodo manual antes de confirmar',
                 ];
             }
         }
@@ -317,5 +332,89 @@ class XmlValidationService
         }
 
         return null;
+    }
+
+    private function extractPeriodsFromText(string $text, array $meses, ?string $fallbackYear = null): array
+    {
+        $normalized = mb_strtoupper($this->normalize($text));
+        $normalized = preg_replace('/\s+/', ' ', $normalized ?? '') ?? '';
+        $pattern = '/\b(ENERO|FEBRERO|MARZO|ABRIL|MAYO|JUNIO|JULIO|AGOSTO|SEPTIEMBRE|SETIEMBRE|OCTUBRE|NOVIEMBRE|DICIEMBRE)\b(?:\s*(?:DE|DEL|AL)?\s*(\d{2,4}))?/i';
+
+        preg_match_all($pattern, $normalized, $matches, PREG_SET_ORDER);
+
+        $periodos = [];
+        foreach ($matches as $match) {
+            $mesNombre = mb_strtoupper(trim((string) ($match[1] ?? '')));
+            $mesNum = $meses[$mesNombre] ?? null;
+            if (! $mesNum) {
+                continue;
+            }
+
+            $anio = $this->normalizeYear((string) ($match[2] ?? ''), $fallbackYear);
+            if (! $anio) {
+                continue;
+            }
+
+            $periodos[$anio.'-'.$mesNum] = true;
+        }
+
+        return array_keys($periodos);
+    }
+
+    private function normalizeYear(string $yearText, ?string $fallbackYear = null): ?string
+    {
+        $yearText = trim($yearText);
+
+        if (preg_match('/^20\d{2}$/', $yearText)) {
+            return $yearText;
+        }
+
+        if (preg_match('/^\d{2}$/', $yearText)) {
+            $intYear = intval($yearText);
+
+            return (string) (2000 + $intYear);
+        }
+
+        if ($fallbackYear && preg_match('/^20\d{2}$/', $fallbackYear)) {
+            return $fallbackYear;
+        }
+
+        return null;
+    }
+
+    private function extractDepartamentoFromText(string $text): ?string
+    {
+        $normalized = mb_strtoupper($this->normalize($text));
+        $normalized = preg_replace('/\s+/', ' ', $normalized ?? '') ?? '';
+
+        $patterns = [
+            '/\b(?:DEPARTAMENTO|DEPTO|DEPTO\.|DEP\.|UNIDAD|LOCAL|OFICINA|PUERTA|PH|GH)\s*(?:NO\.?|NUM\.?|#)?\s*([A-Z0-9\-]{1,12})\b/i',
+            '/\b([A-Z]{1,4}\d{1,5}[A-Z]?)\b/i',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $normalized, $matches)) {
+                $value = trim((string) ($matches[1] ?? ''));
+                if ($value !== '' && ! in_array($value, ['HABITACIONAL', 'CONDOMINIO', 'SUBCONDOMINIO'], true)) {
+                    return $value;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function extractPredialFromText(string $text): ?string
+    {
+        $normalized = mb_strtoupper($this->normalize($text));
+        $pattern = '/(?:PREDIAL|CATASTRAL|TABLAJE(?:\s+CATASTRAL)?)(?:[\s\.\:\#NRO\-]*)([0-9][0-9,\-\s]{2,})/i';
+
+        if (! preg_match($pattern, $normalized, $matches)) {
+            return null;
+        }
+
+        $digits = preg_replace('/\D+/', '', (string) ($matches[1] ?? ''));
+
+        return $digits !== '' ? $digits : null;
     }
 }

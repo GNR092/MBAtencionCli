@@ -7,6 +7,7 @@ use App\Models\Impuesto;
 use App\Models\Proyecto;
 use App\Models\XmlFile;
 use App\Services\DescripcionParser;
+use App\Services\PdfUuidExtractionService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +17,13 @@ use Illuminate\Support\Facades\Storage;
 
 class UserFactController extends Controller
 {
+    private PdfUuidExtractionService $pdfUuidExtractionService;
+
+    public function __construct(PdfUuidExtractionService $pdfUuidExtractionService)
+    {
+        $this->pdfUuidExtractionService = $pdfUuidExtractionService;
+    }
+
     public function uploadPdf(Request $request, $index)
     {
         $allFacturasData = session()->get('factura_data', []);
@@ -56,11 +64,35 @@ class UserFactController extends Controller
                 return response()->json(['success' => false, 'message' => 'Error al guardar el PDF en el servidor.']);
             }
 
+            $absolutePdfPath = Storage::disk('local')->path($tempPdfPath);
+            $pdfUuid = $this->pdfUuidExtractionService->extractUuidFromPdf($absolutePdfPath);
+            $normalizedXmlUuid = $this->normalizarUuid($uuid);
+            $normalizedPdfUuid = $this->normalizarUuid($pdfUuid);
+
+            if (! $normalizedPdfUuid) {
+                Storage::disk('local')->delete($tempPdfPath);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se pudo extraer un UUID válido del PDF. Verifica que sea el acuse CFDI.',
+                ]);
+            }
+
+            if ($normalizedPdfUuid !== $normalizedXmlUuid) {
+                Storage::disk('local')->delete($tempPdfPath);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El UUID del PDF no coincide con el UUID del XML cargado.',
+                ]);
+            }
+
             $allFacturasData[$index]['pdf_data'] = [
                 'temp_path' => $tempPdfPath,
                 'original_name' => $originalName,
                 'extension' => $extension,
                 'uuid' => $uuid,
+                'uuid_pdf' => $normalizedPdfUuid,
             ];
 
             session()->put('factura_data', $allFacturasData);
@@ -358,8 +390,28 @@ class UserFactController extends Controller
             return redirect()->back()->withErrors(['message' => 'El emisor del XML no coincide con el usuario autenticado.']);
         }
 
+        $selectedProject = Proyecto::with('razonSocial')->find($selectedProjectId);
+        $rfcRazonSocial = $this->normalizarRfc($selectedProject?->razonSocial?->rfc);
+        $rfcReceptorXml = $this->normalizarRfc($factura['receptor_rfc'] ?? null);
+
+        if ($rfcRazonSocial && $rfcReceptorXml && $rfcRazonSocial !== $rfcReceptorXml) {
+            return redirect()->back()->withErrors([
+                'message' => 'El RFC del receptor en el XML no coincide con la razón social del proyecto seleccionado.',
+            ]);
+        }
+
         if (XmlFile::whereRaw('LOWER(uuid) = ?', [mb_strtolower($uuid)])->exists()) {
             return redirect()->back()->withErrors(['message' => 'El UUID de esta factura ya existe en el sistema.']);
+        }
+
+        $pdfData = $currentFacturaData['pdf_data'] ?? null;
+        $uuidPdf = $this->normalizarUuid($pdfData['uuid_pdf'] ?? null);
+        if (! $uuidPdf && isset($pdfData['temp_path']) && Storage::disk('local')->exists($pdfData['temp_path'])) {
+            $uuidPdf = $this->normalizarUuid($this->pdfUuidExtractionService->extractUuidFromPdf(Storage::disk('local')->path($pdfData['temp_path'])));
+        }
+
+        if (! $uuidPdf || $uuidPdf !== $this->normalizarUuid($uuid)) {
+            return redirect()->back()->withErrors(['message' => 'El PDF no coincide con el UUID del XML. Sube nuevamente el PDF correcto.']);
         }
 
         $periodosDetectados = $xmlData['periodosDetectados'] ?? [];
@@ -410,7 +462,6 @@ class UserFactController extends Controller
         $filename = basename($tmpFilePath);
         $newFilePath = $this->buildXmlStoragePath($user->id, $carbonFecha, $filename);
 
-        $pdfData = $currentFacturaData['pdf_data'] ?? null;
         $pdfFilename = $uuid.'.pdf';
         $pdfNewPath = $this->buildPdfStoragePath($user->id, $carbonFecha, $pdfFilename);
         $retroactivo = $currentFacturaData['xmlData']['retroactivo'] ?? false;
@@ -719,6 +770,31 @@ class UserFactController extends Controller
 
     private function normalizarTexto(string $texto): string
     {
-        return mb_strtolower(trim($texto));
+        $texto = trim($texto);
+        $ascii = iconv('UTF-8', 'ASCII//TRANSLIT', $texto);
+
+        return mb_strtolower($ascii !== false ? $ascii : $texto);
+    }
+
+    private function normalizarRfc(?string $rfc): ?string
+    {
+        if ($rfc === null) {
+            return null;
+        }
+
+        $value = strtoupper(trim($rfc));
+
+        return $value !== '' ? $value : null;
+    }
+
+    private function normalizarUuid(?string $uuid): ?string
+    {
+        if ($uuid === null) {
+            return null;
+        }
+
+        $value = strtolower(trim($uuid));
+
+        return $value !== '' ? $value : null;
     }
 }
