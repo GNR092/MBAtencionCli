@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class ContractController extends Controller
@@ -155,20 +156,25 @@ class ContractController extends Controller
         $users = User::all();
         $proyectos = \App\Models\Proyecto::orderBy('nombre_proyecto')->get();
         $currentProyectoId = optional(\App\Models\UserProyecto::find($contractToEdit->id_user_p))->id_proyecto;
+        $contratoBloqueado = $this->isContratoBloqueado((int) $contractToEdit->id);
 
-        return view('editContrato', compact('admin', 'contractToEdit', 'users', 'proyectos', 'currentProyectoId'));
+        return view('editContrato', compact('admin', 'contractToEdit', 'users', 'proyectos', 'currentProyectoId', 'contratoBloqueado'));
     }
 
     public function actualizar(Request $request, $id)
     {
+        $contrato = Contract::findOrFail($id);
+
+        if ($this->isContratoBloqueado((int) $contrato->id)) {
+            return back()->with('error', 'Este contrato tiene movimientos de pago y no puede modificarse. Debes renovarlo con un nuevo PDF.');
+        }
+
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'proyect' => 'required|exists:proyectos,id_proyecto',
             'importe_bruto_renta' => 'required',
             'archivo' => 'sometimes|file|mimes:pdf|max:2048', // 'sometimes' makes it optional
         ]);
-
-        $contrato = Contract::findOrFail($id);
 
         $userId = $request->input('user_id');
         $proyectoId = $request->input('proyect');
@@ -180,6 +186,11 @@ class ContractController extends Controller
 
         if (! $userProyecto) {
             return back()->with('error', 'Error: El usuario seleccionado no está asignado a este proyecto.');
+        }
+
+        $idUserDepto = $this->resolveUserDeptoId((int) $userProyecto->id_user_p, $contrato->id_user_depto);
+        if (! $idUserDepto) {
+            return back()->with('error', 'El proyecto seleccionado no tiene departamento configurado para el usuario.');
         }
 
         // Handle file update
@@ -201,6 +212,7 @@ class ContractController extends Controller
         // Update contract fields
         $contrato->user_id = $userId;
         $contrato->id_user_p = $userProyecto->id_user_p;
+        $contrato->id_user_depto = $idUserDepto;
         $contrato->importe_bruto_renta = str_replace(['$', ','], '', $request->input('importe_bruto_renta'));
         $contrato->estado = $request->input('activo') ? 'activo' : ($request->input('inactivo') ? 'inactivo' : 'desconocido');
         $contrato->contenido = $path;
@@ -208,6 +220,72 @@ class ContractController extends Controller
         $contrato->save();
 
         return redirect()->route('admin.contratos.index')->with('success', 'Contrato actualizado correctamente.');
+    }
+
+    public function renovar(Request $request, $id)
+    {
+        $admin = Auth::user();
+        if (! $admin || $admin->role !== 'administrador') {
+            return redirect('/inicio-de-sesion');
+        }
+
+        $contratoOriginal = Contract::findOrFail($id);
+
+        if (! $this->isContratoBloqueado((int) $contratoOriginal->id)) {
+            return back()->with('error', 'Este contrato no tiene movimientos. Puedes editarlo sin renovarlo.');
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'proyect' => 'required|exists:proyectos,id_proyecto',
+            'importe_bruto_renta' => 'required',
+            'fecha_inicio' => 'required|date',
+            'fecha_terminacion' => 'required|date|after_or_equal:fecha_inicio',
+            'archivo' => 'required|file|mimes:pdf|max:2048',
+        ]);
+
+        $userId = (int) $request->input('user_id');
+        $proyectoId = (int) $request->input('proyect');
+
+        $userProyecto = \App\Models\UserProyecto::where('id_user', $userId)
+            ->where('id_proyecto', $proyectoId)
+            ->first();
+
+        if (! $userProyecto) {
+            return back()->with('error', 'El usuario no está asignado al proyecto seleccionado para renovar.');
+        }
+
+        $idUserDepto = $this->resolveUserDeptoId((int) $userProyecto->id_user_p, $contratoOriginal->id_user_depto);
+        if (! $idUserDepto) {
+            return back()->with('error', 'No se encontró un departamento para el nuevo proyecto. Configúralo primero en la ficha del usuario.');
+        }
+
+        $archivo = $request->file('archivo');
+        $path = $this->storeContractFile($archivo, $userId);
+
+        DB::transaction(function () use ($request, $contratoOriginal, $userId, $userProyecto, $archivo, $path, $idUserDepto) {
+            Contract::create([
+                'user_id' => $userId,
+                'nombre' => $archivo->getClientOriginalName(),
+                'tipo' => $archivo->getMimeType(),
+                'contenido' => $path,
+                'id_user_p' => $userProyecto->id_user_p,
+                'folio' => $this->generarFolio(),
+                'fecha' => now(),
+                'estado' => 'activo',
+                'importe_bruto_renta' => str_replace(['$', ','], '', $request->input('importe_bruto_renta')),
+                'fecha_inicio' => $request->input('fecha_inicio'),
+                'fecha_terminacion' => $request->input('fecha_terminacion'),
+                'id_user_depto' => $idUserDepto,
+            ]);
+
+            if ($contratoOriginal->estado !== 'inactivo') {
+                $contratoOriginal->estado = 'inactivo';
+                $contratoOriginal->save();
+            }
+        });
+
+        return redirect()->route('admin.contratos.index')->with('success', 'Contrato renovado correctamente. Se creó un nuevo contrato con PDF actualizado y el anterior quedó inactivo.');
     }
 
     public function subir(Request $request)
@@ -238,6 +316,13 @@ class ContractController extends Controller
             return back()->with('error', 'Error: El usuario seleccionado no está asignado a este proyecto.');
         }
 
+        $idUserDepto = $this->resolveUserDeptoId((int) $userProyecto->id_user_p, null);
+        if (! $idUserDepto) {
+            Storage::delete($path);
+
+            return back()->with('error', 'Error: El proyecto seleccionado no tiene departamentos configurados para este usuario.');
+        }
+
         Contract::create([
             'user_id' => $userId,
             'nombre' => $archivo->getClientOriginalName(),
@@ -250,6 +335,7 @@ class ContractController extends Controller
             'importe_bruto_renta' => str_replace(['$', ','], '', $request->input('importe_bruto_renta')),
             'fecha_inicio' => $request->input('fecha_inicio'),
             'fecha_terminacion' => $request->input('fecha_terminacion'),
+            'id_user_depto' => $idUserDepto,
         ]);
 
         return back()->with('success', '✅ Archivo enviado correctamente.');
@@ -294,6 +380,10 @@ class ContractController extends Controller
 
         if (! $contrato) {
             return back()->with('error', 'Contrato no encontrado.');
+        }
+
+        if ($this->isContratoBloqueado((int) $contrato->id)) {
+            return back()->with('error', 'No puedes eliminar un contrato con movimientos de pago.');
         }
 
         $contrato->delete();
@@ -432,5 +522,56 @@ class ContractController extends Controller
         }
 
         return 'desconocido';
+    }
+
+    private function isContratoBloqueado(int $contractId): bool
+    {
+        $hasMovimientosCxp = DB::table('cuentasporpagar')
+            ->where('id_contract', $contractId)
+            ->where(function ($q) {
+                $q->where('estado', 'pagado')
+                    ->orWhere('monto_pagado', '>', 0);
+            })
+            ->exists();
+
+        if ($hasMovimientosCxp) {
+            return true;
+        }
+
+        if (! Schema::hasTable('pagos_efectivo')) {
+            return false;
+        }
+
+        return DB::table('pagos_efectivo')
+            ->where(function ($q) use ($contractId) {
+                $q->where('id_contract', $contractId)
+                    ->orWhereIn('id_cuentas_por_pagar', function ($sub) use ($contractId) {
+                        $sub->from('cuentasporpagar')
+                            ->select('id_cuentas_por_pagar')
+                            ->where('id_contract', $contractId);
+                    });
+            })
+            ->exists();
+    }
+
+    private function resolveUserDeptoId(int $idUserP, ?int $preferredDeptoId): ?int
+    {
+        if ($preferredDeptoId) {
+            $sameDepto = DB::table('user_depto')
+                ->where('id_user_p', $idUserP)
+                ->where('id_user_depto', $preferredDeptoId)
+                ->value('id_user_depto');
+
+            if ($sameDepto) {
+                return (int) $sameDepto;
+            }
+        }
+
+        $firstDepto = DB::table('user_depto')
+            ->where('id_user_p', $idUserP)
+            ->orderBy('id_user_depto')
+            ->value('id_user_depto');
+
+        return $firstDepto ? (int) $firstDepto : null;
     }
 }

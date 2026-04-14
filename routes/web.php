@@ -131,6 +131,7 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::post('/subir-archivo/confirm-password-editar', [ContractController::class, 'confirmPasswordEdit'])->name('admin.contratos.confirmar-editar');
     Route::get('/subir-archivo/{id}/editar', [ContractController::class, 'editar'])->name('admin.contratos.editar');
     Route::put('/subir-archivo/{id}/actualizar', [ContractController::class, 'actualizar'])->name('admin.contratos.actualizar');
+    Route::post('/subir-archivo/{id}/renovar', [ContractController::class, 'renovar'])->name('admin.contratos.renovar');
     Route::get('/subir-archivo/clean', [ContractController::class, 'clean'])->name('admin.contratos.limpiar');
     Route::post('/subir-archivo/search', [ContractController::class, 'search'])->name('admin.contratos.buscar');
     Route::get('/api/users/{user}/projects', [ContractController::class, 'getProjectsForUser'])->name('api.usuarios.proyectos');

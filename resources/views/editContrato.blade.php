@@ -20,6 +20,18 @@
         </header>
 
         <div class="bg-[#112134]/60 backdrop-blur-md rounded-2xl border border-[#d8c495]/20 shadow-2xl overflow-hidden">
+            @if(session('error'))
+            <div class="mx-8 mt-6 rounded-lg border border-red-400/30 bg-red-900/20 px-4 py-3 text-sm text-red-200">
+                {{ session('error') }}
+            </div>
+            @endif
+
+            @if($contratoBloqueado)
+            <div class="mx-8 mt-6 rounded-lg border border-amber-400/30 bg-amber-900/20 px-4 py-3 text-sm text-amber-100">
+                Este contrato tiene movimientos de pago. No se puede editar ni mover de proyecto. Solo puedes renovarlo con un nuevo PDF.
+            </div>
+            @endif
+
             <div class="px-8 py-6 border-b border-[#d8c495]/20">
                 <h2 class="text-[#d8c495] text-lg font-bold uppercase tracking-widest">
                     Información del Contrato
@@ -38,7 +50,7 @@
                     <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
                         Inversionista
                     </label>
-                    <select name="user_id" id="user_id"
+                    <select name="user_id" id="user_id" {{ $contratoBloqueado ? 'disabled' : '' }}
                         class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
                         @foreach($users as $u)
                         <option value="{{ $u->id }}" {{ $contractToEdit->user_id == $u->id ? 'selected' : '' }}>
@@ -53,7 +65,7 @@
                     <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
                         Proyecto
                     </label>
-                    <select name="proyect" id="proyect"
+                    <select name="proyect" id="proyect" {{ $contratoBloqueado ? 'disabled' : '' }}
                         class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]" required>
                         @foreach($proyectos as $proyecto)
                         <option value="{{ $proyecto->id_proyecto }}" {{ $currentProyectoId == $proyecto->id_proyecto ? 'selected' : '' }}>
@@ -109,6 +121,7 @@
                         <input type="text" name="importe_bruto_renta" id="importe_bruto_renta" 
                             placeholder="0.00"
                             value="{{ number_format($contractToEdit->importe_bruto_renta, 2) }}"
+                            {{ $contratoBloqueado ? 'disabled' : '' }}
                             class="w-full bg-white/5 border border-[#d8c495]/30 rounded-lg pl-10 pr-4 py-3 text-xl text-white focus:outline-none focus:border-[#d8c495] focus:ring-1 focus:ring-[#d8c495]/30 transition-all"
                             required>
                     </div>
@@ -123,12 +136,14 @@
                         <label class="flex items-center gap-3 cursor-pointer">
                             <input type="checkbox" id="activo" name="activo" value="1"
                                 {{ $contractToEdit->estado === 'activo' ? 'checked' : '' }}
+                                {{ $contratoBloqueado ? 'disabled' : '' }}
                                 class="w-5 h-5 rounded border-[#d8c495]/30 bg-white/10 text-[#d8c495] focus:ring-[#d8c495] focus:ring-offset-0">
                             <span class="text-white/80">Activo</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer">
                             <input type="checkbox" id="inactivo" name="inactivo" value="1"
                                 {{ $contractToEdit->estado === 'inactivo' ? 'checked' : '' }}
+                                {{ $contratoBloqueado ? 'disabled' : '' }}
                                 class="w-5 h-5 rounded border-[#d8c495]/30 bg-white/10 text-[#d8c495] focus:ring-[#d8c495] focus:ring-offset-0">
                             <span class="text-white/80">Inactivo</span>
                         </label>
@@ -148,6 +163,7 @@
                     <div class="border-2 border-dashed border-[#d8c495]/30 rounded-lg p-6 text-center hover:border-[#d8c495]/50 transition-colors">
                         <input type="file" name="archivo" accept=".pdf" 
                             class="hidden" id="archivoInput"
+                            {{ $contratoBloqueado ? 'disabled' : '' }}
                             onchange="document.getElementById('archivoLabel').textContent = this.files[0]?.name || 'Seleccionar archivo'">
                         <label for="archivoInput" class="cursor-pointer">
                             <svg class="w-10 h-10 mx-auto text-[#d8c495]/50 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,6 +178,7 @@
                 <!-- Botones -->
                 <div class="flex gap-4 pt-4">
                     <button type="submit"
+                        {{ $contratoBloqueado ? 'disabled' : '' }}
                         class="bg-[#d8c495] hover:bg-[#b8a374] text-[#112134] text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg transition-all flex-1">
                         Guardar Cambios
                     </button>
@@ -171,6 +188,54 @@
                     </a>
                 </div>
             </form>
+
+            @if($contratoBloqueado)
+            <div class="border-t border-[#d8c495]/20 p-8">
+                <h2 class="text-[#d8c495] text-lg font-bold uppercase tracking-widest mb-2">Renovar Contrato</h2>
+                <p class="text-white/60 text-sm mb-6">La renovación crea un contrato nuevo, mantiene el histórico del contrato actual y requiere un PDF nuevo.</p>
+
+                <form action="{{ route('admin.contratos.renovar', $contractToEdit->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                    @csrf
+                    <input type="hidden" name="user_id" value="{{ $contractToEdit->user_id }}">
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">Proyecto nuevo</label>
+                        <select name="proyect" class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]" required>
+                            @foreach($proyectos as $proyecto)
+                            <option value="{{ $proyecto->id_proyecto }}" {{ $currentProyectoId == $proyecto->id_proyecto ? 'selected' : '' }}>
+                                {{ $proyecto->nombre_proyecto }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">Nueva fecha de inicio</label>
+                            <input type="date" name="fecha_inicio" class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">Nueva fecha de terminación</label>
+                            <input type="date" name="fecha_terminacion" class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">Nuevo importe bruto de renta</label>
+                        <input type="text" name="importe_bruto_renta" value="{{ number_format($contractToEdit->importe_bruto_renta, 2) }}" class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">PDF nuevo del contrato <span class="text-red-400">*</span></label>
+                        <input type="file" name="archivo" accept=".pdf" class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white" required>
+                    </div>
+
+                    <button type="submit" class="w-full bg-[#d8c495] hover:bg-[#b8a374] text-[#112134] text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg transition-all">
+                        Renovar Contrato
+                    </button>
+                </form>
+            </div>
+            @endif
         </div>
     </div>
 </div>
