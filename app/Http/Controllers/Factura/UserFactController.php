@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Factura;
 
 use App\Http\Controllers\Controller;
+use App\Models\Contract;
 use App\Models\Impuesto;
 use App\Models\Proyecto;
+use App\Models\UserProyecto;
 use App\Models\XmlFile;
 use App\Services\DescripcionParser;
 use App\Services\PdfUuidExtractionService;
@@ -380,6 +382,24 @@ class UserFactController extends Controller
 
         $user = Auth::user();
         $factura = $this->MapingFacturas($xmlData);
+        $selectedProject = Proyecto::with('razonSocial')->find($selectedProjectId);
+
+        $userProyecto = UserProyecto::where('id_user', $user->id)
+            ->where('id_proyecto', $selectedProjectId)
+            ->first();
+
+        $contract = $userProyecto
+            ? Contract::with('userDepto')->where('id_user_p', $userProyecto->id_user_p)->orderByDesc('id')->first()
+            : null;
+
+        if (! $contract) {
+            return redirect()->back()->withErrors(['message' => 'No se encontró un contrato activo para este proyecto.']);
+        }
+
+        $contractDepto = $contract->userDepto;
+        if (! $contractDepto || ! $this->normalizarDepartamento($contractDepto->nombre ?? '')) {
+            return redirect()->back()->withErrors(['message' => 'El contrato no tiene departamento configurado para validar la factura.']);
+        }
 
         $uuid = $factura['uuid'] !== 'N/A' ? trim((string) $factura['uuid']) : null;
         if (! $uuid) {
@@ -390,7 +410,6 @@ class UserFactController extends Controller
             return redirect()->back()->withErrors(['message' => 'El emisor del XML no coincide con el usuario autenticado.']);
         }
 
-        $selectedProject = Proyecto::with('razonSocial')->find($selectedProjectId);
         $rfcRazonSocial = $this->normalizarRfc($selectedProject?->razonSocial?->rfc);
         $rfcReceptorXml = $this->normalizarRfc($factura['receptor_rfc'] ?? null);
 
@@ -441,14 +460,54 @@ class UserFactController extends Controller
         $allProyects = Proyecto::all()->toArray();
         $allParsedConcepts = $parser->parsearConceptos($factura['conceptos'], $allProyects);
         $parsedData = $allParsedConcepts[0] ?? [];
+        $folioPredial = $parsedData['folio_predial'] ?? ($xmlData['cuenta_predial'] ?? null);
 
         $parsedProjectInfo = $parsedData['proyecto'] ?? null;
         $parsedProjectId = $parsedProjectInfo['id_proyecto'] ?? null;
         $allDepartamentos = collect($allParsedConcepts)->pluck('departamentos')->flatten()->unique()->values()->all();
         $departamento = ! empty($allDepartamentos) ? implode(',', $allDepartamentos) : null;
+        $errors = [];
+
+        $departamentosNormalizados = collect($allDepartamentos)
+            ->map(fn ($depto) => $this->normalizarDepartamento((string) $depto))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($departamentosNormalizados)) {
+            $errors[] = 'No se detectó un departamento válido en la descripción de la factura.';
+        } else {
+            $deptoContrato = $this->normalizarDepartamento((string) ($contractDepto->nombre ?? ''));
+            $invalidDeptos = collect($departamentosNormalizados)
+                ->filter(fn ($depto) => $depto !== $deptoContrato)
+                ->values()
+                ->all();
+
+            if (! empty($invalidDeptos)) {
+                $errors[] = 'El departamento de la factura no coincide con el contrato asignado ('.$contractDepto->nombre.').';
+            }
+        }
+
+        $predialXml = $this->normalizarPredial($folioPredial);
+        $predialContrato = $this->normalizarPredial($contractDepto->predial ?? null);
+        $predialStatus = 'no_validado';
+        $predialObservacion = null;
+
+        if (! $predialXml) {
+            $predialStatus = 'sin_predial';
+            $predialObservacion = 'Factura sin predial reportado.';
+        } elseif (! $predialContrato) {
+            $predialStatus = 'no_validado';
+            $predialObservacion = 'Contrato sin predial de referencia para validar.';
+        } elseif ($predialXml === $predialContrato) {
+            $predialStatus = 'valido';
+        } else {
+            $predialStatus = 'no_coincide';
+            $predialObservacion = 'Predial XML no coincide con el del contrato.';
+        }
 
         // Validar proyecto
-        $errors = [];
         if (empty($parsedProjectId) || (int) $parsedProjectId !== (int) $selectedProjectId) {
             $errors[] = 'No se detectó el proyecto en la descripción o no coincide con el seleccionado.';
         }
@@ -490,6 +549,11 @@ class UserFactController extends Controller
                 $pdfNewPath,
                 $uuid,
                 $conceptosPorPeriodo,
+                $contract,
+                $contractDepto,
+                $predialXml,
+                $predialStatus,
+                $predialObservacion,
                 &$xmlFile
             ) {
                 if (XmlFile::whereRaw('LOWER(uuid) = ?', [mb_strtolower($uuid)])->exists()) {
@@ -524,6 +588,8 @@ class UserFactController extends Controller
                     'filename' => $filename,
                     'id_user' => $user->id,
                     'id_proyecto' => $selectedProjectId ?: null,
+                    'id_contract' => $contract->id,
+                    'id_user_depto' => $contractDepto->id_user_depto,
                     'uuid' => $uuid,
                     'is_valid' => true,
                     'fecha_inicio' => $carbonFecha?->toDateString(),
@@ -534,88 +600,84 @@ class UserFactController extends Controller
                     'pdf_path' => $pdfNewPath,
                     'pdf_uploaded' => true,
                     'departamento' => $departamento,
+                    'predial_xml' => $predialXml,
+                    'predial_status' => $predialStatus,
+                    'predial_observacion' => $predialObservacion,
                     'mes' => $conceptosPorPeriodo[array_key_first($conceptosPorPeriodo)][0]['periodo'] ?? null,
                     'retroactivo' => $retroactivo,
+                    'validation_flags' => $predialStatus === 'no_coincide' ? ['predial_warning' => true] : null,
                 ]);
 
                 $this->saveImpuestos($xmlFile->id, $factura, $user->id);
 
-                $userProyecto = \App\Models\UserProyecto::where('id_user', $user->id)
-                    ->where('id_proyecto', $selectedProjectId)
-                    ->first();
+                $currentPeriod = date('Y-m');
 
-                $contract = $userProyecto
-                    ? \App\Models\Contract::where('id_user_p', $userProyecto->id_user_p)->first()
-                    : null;
+                $periodosConceptos = collect($factura['conceptos'])
+                    ->pluck('periodo')
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all();
 
-                if ($contract) {
-                    $currentPeriod = date('Y-m');
+                if (! empty($periodosConceptos)) {
+                    DB::table('cuentasporpagar')
+                        ->where('id_contract', $contract->id)
+                        ->whereIn('mes_pago', $periodosConceptos)
+                        ->whereNull('uuid')
+                        ->delete();
+                }
 
-                    $periodosConceptos = collect($factura['conceptos'])
-                        ->pluck('periodo')
-                        ->filter()
-                        ->unique()
-                        ->values()
-                        ->all();
+                foreach ($factura['conceptos'] as $conceptIndex => $concepto) {
+                    $periodo = $concepto['periodo'] ?? null;
+                    if (empty($periodo)) {
+                        continue;
+                    }
 
-                    if (! empty($periodosConceptos)) {
-                        DB::table('cuentasporpagar')
+                    $esRetroactivo = $periodo !== $currentPeriod;
+
+                    $importeConcepto = (float) ($concepto['importe'] ?? 0);
+                    if ($importeConcepto <= 0) {
+                        $importeIncremento = DB::table('incrementos_importe')
                             ->where('id_contract', $contract->id)
-                            ->whereIn('mes_pago', $periodosConceptos)
-                            ->whereNull('uuid')
-                            ->delete();
+                            ->whereDate('fecha_inicio', '<=', $periodo.'-01')
+                            ->where(function ($q) use ($periodo) {
+                                $q->whereNull('fecha_fin')
+                                    ->orWhereDate('fecha_fin', '>=', $periodo.'-01');
+                            })
+                            ->value('importe_base');
+
+                        $importeConcepto = (float) ($importeIncremento ?? $contract->importe_bruto_renta);
                     }
 
-                    foreach ($factura['conceptos'] as $conceptIndex => $concepto) {
-                        $periodo = $concepto['periodo'] ?? null;
-                        if (empty($periodo)) {
-                            continue;
-                        }
-
-                        $esRetroactivo = $periodo !== $currentPeriod;
-
-                        $importeConcepto = (float) ($concepto['importe'] ?? 0);
-                        if ($importeConcepto <= 0) {
-                            $importeIncremento = DB::table('incrementos_importe')
-                                ->where('id_contract', $contract->id)
-                                ->whereDate('fecha_inicio', '<=', $periodo.'-01')
-                                ->where(function ($q) use ($periodo) {
-                                    $q->whereNull('fecha_fin')
-                                        ->orWhereDate('fecha_fin', '>=', $periodo.'-01');
-                                })
-                                ->value('importe_base');
-
-                            $importeConcepto = (float) ($importeIncremento ?? $contract->importe_bruto_renta);
-                        }
-
-                        $totalImpuestos = 0;
-                        foreach ($concepto['traslados'] ?? [] as $traslado) {
-                            $totalImpuestos += (float) ($traslado['importe'] ?? 0);
-                        }
-                        foreach ($concepto['retenciones'] ?? [] as $retencion) {
-                            $totalImpuestos -= (float) ($retencion['importe'] ?? 0);
-                        }
-
-                        $totalNeto = max(0, round($importeConcepto - abs($totalImpuestos), 2));
-
-                        DB::table('cuentasporpagar')->insert([
-                            'id_contract' => $contract->id,
-                            'uuid' => $uuid,
-                            'mes_pago' => $periodo,
-                            'es_retroactivo' => $esRetroactivo,
-                            'xml_file_id' => $xmlFile->id,
-                            'estado' => 'pendiente',
-                            'saldo_neto' => $totalNeto,
-                            'monto_pagado' => 0,
-                            'saldo_pendiente' => $totalNeto,
-                            'meses_cubiertos' => 1,
-                            'es_extra' => false,
-                            'mesesdepago' => json_encode(['mes' => $periodo, 'concepto_idx' => $conceptIndex]),
-                            'mesespagados' => json_encode([]),
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
+                    $totalImpuestos = 0;
+                    foreach ($concepto['traslados'] ?? [] as $traslado) {
+                        $totalImpuestos += (float) ($traslado['importe'] ?? 0);
                     }
+                    foreach ($concepto['retenciones'] ?? [] as $retencion) {
+                        $totalImpuestos -= (float) ($retencion['importe'] ?? 0);
+                    }
+
+                    $totalNeto = max(0, round($importeConcepto - abs($totalImpuestos), 2));
+
+                    DB::table('cuentasporpagar')->insert([
+                        'id_contract' => $contract->id,
+                        'id_user_depto' => $contractDepto->id_user_depto,
+                        'origen' => 'xml',
+                        'uuid' => $uuid,
+                        'mes_pago' => $periodo,
+                        'es_retroactivo' => $esRetroactivo,
+                        'xml_file_id' => $xmlFile->id,
+                        'estado' => 'pendiente',
+                        'saldo_neto' => $totalNeto,
+                        'monto_pagado' => 0,
+                        'saldo_pendiente' => $totalNeto,
+                        'meses_cubiertos' => 1,
+                        'es_extra' => false,
+                        'mesesdepago' => json_encode(['mes' => $periodo, 'concepto_idx' => $conceptIndex]),
+                        'mesespagados' => json_encode([]),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
                 }
 
                 Storage::disk('tmp')->delete($tmpFilePath);
@@ -796,5 +858,24 @@ class UserFactController extends Controller
         $value = strtolower(trim($uuid));
 
         return $value !== '' ? $value : null;
+    }
+
+    private function normalizarDepartamento(string $depto): ?string
+    {
+        $value = strtoupper(trim($depto));
+        $value = preg_replace('/[^A-Z0-9]+/', '', $value);
+
+        return $value !== '' ? $value : null;
+    }
+
+    private function normalizarPredial(?string $predial): ?string
+    {
+        if ($predial === null) {
+            return null;
+        }
+
+        $digits = preg_replace('/\D+/', '', $predial);
+
+        return $digits !== '' ? $digits : null;
     }
 }

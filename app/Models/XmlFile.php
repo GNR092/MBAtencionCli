@@ -14,10 +14,13 @@ class XmlFile extends Model
         'filename',
         'id_user',
         'id_proyecto',
+        'id_contract',
+        'id_user_depto',
         'uuid',
         'is_valid',
         'fecha_inicio',
         'validation_errors',
+        'validation_flags',
         'emisor_name',
         'receptor_name',
         'file_path',
@@ -25,6 +28,9 @@ class XmlFile extends Model
         'pdf_path',
         'pdf_uploaded',
         'departamento',
+        'predial_xml',
+        'predial_status',
+        'predial_observacion',
         'mes',
         'retroactivo',
     ];
@@ -33,6 +39,7 @@ class XmlFile extends Model
         'is_valid' => 'boolean',
         'pdf_uploaded' => 'boolean',
         'validation_errors' => 'array',
+        'validation_flags' => 'array',
     ];
 
     public function proyecto()
@@ -43,6 +50,16 @@ class XmlFile extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'id_user');
+    }
+
+    public function contract()
+    {
+        return $this->belongsTo(Contract::class, 'id_contract');
+    }
+
+    public function userDepto()
+    {
+        return $this->belongsTo(UserDepto::class, 'id_user_depto', 'id_user_depto');
     }
 
     public function impuestos()

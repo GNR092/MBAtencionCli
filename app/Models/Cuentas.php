@@ -29,6 +29,8 @@ class Cuentas extends Model
         'es_extra',
         'saldo_pendiente',
         'id_contract',
+        'id_user_depto',
+        'origen',
         'created_at',
         'updated_at',
         'mesesdepago',
@@ -46,6 +48,11 @@ class Cuentas extends Model
     public function contract()
     {
         return $this->belongsTo(Contract::class);
+    }
+
+    public function userDepto()
+    {
+        return $this->belongsTo(UserDepto::class, 'id_user_depto', 'id_user_depto');
     }
 
     public function getImporteBaseFinalAttribute()

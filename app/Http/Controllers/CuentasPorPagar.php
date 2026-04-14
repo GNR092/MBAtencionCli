@@ -286,6 +286,8 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             DB::table('cuentasporpagar')->insert([
                 'uuid' => $xml->uuid,
                 'id_contract' => $contract->id,
+                'id_user_depto' => $contract->id_user_depto,
+                'origen' => 'xml',
                 'xml_file_id' => $xml->id,
                 'mes_pago' => $mesXml,
                 'es_retroactivo' => $esRetroactivo,
@@ -362,6 +364,8 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
 
                 DB::table('cuentasporpagar')->insert([
                     'id_contract' => $contract->id,
+                    'id_user_depto' => $contract->id_user_depto,
+                    'origen' => 'esperado',
                     'mes_pago' => $mes,
                     'es_retroactivo' => $esRetroactivo,
                     'mesesdepago' => json_encode(['mes' => $mes]),
