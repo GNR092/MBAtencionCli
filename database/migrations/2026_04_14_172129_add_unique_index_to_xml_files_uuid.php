@@ -17,32 +17,22 @@ return new class extends Migration
         }
 
         $duplicateExists = DB::table('xml_files')
-            ->selectRaw('LOWER(uuid) as normalized_uuid, COUNT(*) as total')
+            ->select('uuid')
             ->whereNotNull('uuid')
             ->where('uuid', '!=', '')
-            ->groupBy('normalized_uuid')
-            ->having('total', '>', 1)
+            ->groupBy('uuid')
+            ->havingRaw('COUNT(*) > 1')
             ->exists();
 
         if ($duplicateExists) {
             return;
         }
 
-        $dbName = DB::getDatabaseName();
-        $indexes = DB::table('information_schema.statistics')
-            ->where('table_schema', $dbName)
-            ->where('table_name', 'xml_files')
-            ->selectRaw('INDEX_NAME as index_name')
-            ->pluck('index_name')
-            ->unique()
-            ->values()
-            ->all();
-
-        if (! in_array('xml_files_uuid_unique', $indexes, true)) {
-            Schema::table('xml_files', function (Blueprint $table) {
+        Schema::table('xml_files', function (Blueprint $table) {
+            if (!Schema::hasIndex('xml_files', ['uuid'], 'unique')) {
                 $table->unique('uuid', 'xml_files_uuid_unique');
-            });
-        }
+            }
+        });
     }
 
     /**
@@ -50,24 +40,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (! Schema::hasTable('xml_files')) {
-            return;
-        }
-
-        $dbName = DB::getDatabaseName();
-        $indexes = DB::table('information_schema.statistics')
-            ->where('table_schema', $dbName)
-            ->where('table_name', 'xml_files')
-            ->selectRaw('INDEX_NAME as index_name')
-            ->pluck('index_name')
-            ->unique()
-            ->values()
-            ->all();
-
-        if (in_array('xml_files_uuid_unique', $indexes, true)) {
-            Schema::table('xml_files', function (Blueprint $table) {
+        Schema::table('xml_files', function (Blueprint $table) {
+            if (Schema::hasIndex('xml_files', ['uuid'], 'unique')) {
                 $table->dropUnique('xml_files_uuid_unique');
-            });
-        }
+            }
+        });
     }
 };
