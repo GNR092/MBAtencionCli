@@ -414,7 +414,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 DB::raw('(SELECT GROUP_CONCAT(DISTINCT ud.nombre ORDER BY ud.nombre SEPARATOR ", ") FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p) as departamentos_usuario'),
                 DB::raw('(SELECT GROUP_CONCAT(DISTINCT ud.predial ORDER BY ud.predial SEPARATOR ", ") FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p AND ud.predial IS NOT NULL AND ud.predial != "" AND ud.predial != "N/A") as prediales_usuario'),
                 DB::raw('(SELECT GROUP_CONCAT(DISTINCT ud.tipo ORDER BY ud.tipo SEPARATOR ", ") FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p AND ud.tipo IS NOT NULL AND ud.tipo != "") as tipos_usuario'),
-                'users.metodo_pago',
+                DB::raw('COALESCE(NULLIF(user_proyectos.metodo_pago, ""), users.metodo_pago) as metodo_pago'),
                 DB::raw('DATE_FORMAT(xml_files.created_at, "%Y-%m") as mes_subida'),
             );
 
@@ -559,7 +559,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 'cuentasporpagar.saldo_pendiente',
                 'cuentasporpagar.isr',
                 'users.name as inversionista',
-                'users.metodo_pago',
+                DB::raw('COALESCE(NULLIF(user_proyectos.metodo_pago, ""), users.metodo_pago) as metodo_pago'),
                 'contract.id_user_p',
                 'contract.importe_bruto_renta as contrato_importe',
                 DB::raw('(SELECT ii.importe_base FROM incrementos_importe ii WHERE ii.id_contract = contract.id AND DATE_FORMAT(ii.fecha_inicio, "%Y-%m") <= cuentasporpagar.mes_pago AND (ii.fecha_fin IS NULL OR DATE_FORMAT(ii.fecha_fin, "%Y-%m") >= cuentasporpagar.mes_pago) ORDER BY ii.fecha_inicio DESC LIMIT 1) as incremento_vigente'),

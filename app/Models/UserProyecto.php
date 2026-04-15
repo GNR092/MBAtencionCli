@@ -15,6 +15,7 @@ class UserProyecto extends Pivot
     protected $fillable = [
         'id_user',
         'id_proyecto',
+        'metodo_pago',
     ];
 
     public function deptos()

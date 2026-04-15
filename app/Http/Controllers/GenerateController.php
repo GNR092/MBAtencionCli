@@ -39,6 +39,8 @@ class GenerateController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone' => 'required',
             'proyect' => 'required|array', // Debe haber al menos un proyecto
+            'project_payment_methods' => 'required|array',
+            'project_payment_methods.*' => 'nullable|in:efectivo,transferencia',
             'project_details' => 'required|array',
             'project_details.*' => 'required|array|min:1',
             'project_details.*.*.nombre_depto' => 'required|string|max:255',
@@ -57,9 +59,24 @@ class GenerateController extends Controller
 
         $phone = '52'.$request->input('phone');
         $passwordPlain = $this->generarContrasenia();
+        $proyectosIds = $request->input('proyect', []);
+        $projectPaymentMethods = $request->input('project_payment_methods', []);
+
+        foreach ($proyectosIds as $projectId) {
+            if (empty($projectPaymentMethods[$projectId])) {
+                return back()
+                    ->withErrors([
+                        "project_payment_methods.$projectId" => 'Selecciona el metodo de pago para cada proyecto.',
+                    ])
+                    ->withInput();
+            }
+        }
+
+        $metodoPagoGeneral = collect($projectPaymentMethods)
+            ->first(fn ($metodo) => in_array($metodo, ['efectivo', 'transferencia'], true));
 
         try {
-            DB::transaction(function () use ($request, $phone, $passwordPlain) {
+            DB::transaction(function () use ($request, $phone, $passwordPlain, $proyectosIds, $projectPaymentMethods, $metodoPagoGeneral) {
 
                 // --- CREAR USUARIO ---
                 $newUser = User::create([
@@ -72,11 +89,10 @@ class GenerateController extends Controller
                     'rfc' => $request->rfc ?? null,
                     'curp' => $request->curp ?? null,
                     'email_verified_at' => now(),
-                    'metodo_pago' => $request->metodo_pago ?? null,
+                    'metodo_pago' => $metodoPagoGeneral,
                     'fecha_nacimiento' => $request->fecha_nacimiento ?: null,
                 ]);
 
-                $proyectosIds = $request->input('proyect', []);
                 $detallesDeptos = $request->input('project_details', []);
 
                 // --- RECORRER PROYECTOS ---
@@ -85,6 +101,7 @@ class GenerateController extends Controller
                     $pivot = new UserProyecto;
                     $pivot->id_user = $newUser->id;
                     $pivot->id_proyecto = $projectId;
+                    $pivot->metodo_pago = $projectPaymentMethods[$projectId] ?? null;
                     $pivot->created_at = now();
                     $pivot->updated_at = now();
                     $pivot->save();

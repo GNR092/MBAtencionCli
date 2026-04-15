@@ -70,6 +70,7 @@
                                 'phone' => $user->phone ? (strlen($user->phone) > 10 ? substr($user->phone, 2) : $user->phone) : '',
                                 'id_regimen' => $user->id_regimen,
                                 'fecha_nacimiento' => $user->fecha_nacimiento ? \Carbon\Carbon::parse($user->fecha_nacimiento)->format('Y-m-d') : null,
+                                'metodo_pago' => $user->metodo_pago,
                                 'projects' => []
                                 ];
 
@@ -87,7 +88,10 @@
                                 'cuenta_predial' => ($d->predial && $d->predial !== 'N/A')
                                 ];
                                 }
-                                $userData['projects'][$up->id_proyecto] = $depts;
+                                $userData['projects'][$up->id_proyecto] = [
+                                'departments' => $depts,
+                                'metodo_pago' => $up->metodo_pago,
+                                ];
                                 }
                                 @endphp
 
@@ -306,6 +310,8 @@ window.cerrarModalUsuario = function() {
 // ==========================================
 
 let deptCounter = 0;
+let currentEditProjectPaymentMethods = {};
+let lockedProjectIds = new Set();
 
 // Obtenemos la lista de proyectos para usar sus nombres en los encabezados
 const projectOptions = @json($proyectos->mapWithKeys(fn($p) => [
@@ -316,6 +322,7 @@ window.openEditModal = function(userData) {
     const modal = document.getElementById("confirmModal");
     const container = document.getElementById("editDynamicProjectFields");
     const select = document.getElementById("edit_proyect_select");
+    const normalizedProjects = normalizeProjects(userData.projects, userData.metodo_pago ?? '');
 
     // 1. Mostrar el Modal y rellenar campos básicos
     modal.classList.remove("hidden");
@@ -332,40 +339,30 @@ window.openEditModal = function(userData) {
     select.onchange = null; // Clear previous listener
 
     // 3. Pre-seleccionar proyectos del usuario
-    const existingProjectIds = Object.keys(userData.projects);
+    const existingProjectIds = Object.keys(normalizedProjects);
     Array.from(select.options).forEach(option => {
         option.selected = existingProjectIds.includes(option.value);
     });
 
+    currentEditProjectPaymentMethods = {};
+    existingProjectIds.forEach(id => {
+        currentEditProjectPaymentMethods[id] = normalizedProjects[id].metodo_pago || '';
+    });
+
     // 4. Inicializar los contenedores de proyectos y departamentos con los datos existentes
-    refreshEditProjectContainers(select, container, userData.projects);
+    refreshEditProjectContainers(select, container, normalizedProjects);
 
     // 5. Lógica de selección/deselección personalizada con bloqueo
-    const lockedProjectIds = existingProjectIds.filter(id =>
-        userData.projects[id] && userData.projects[id].length > 0
+    lockedProjectIds = new Set(
+        existingProjectIds.filter(id =>
+            normalizedProjects[id] && normalizedProjects[id].departments.length > 0
+        )
     );
 
+    bindProjectToggleSelection(select);
+
     select.onchange = function() {
-        const currentSelectedIds = Array.from(select.selectedOptions).map(o => o.value);
-        let selectionChanged = false;
-
-        // Revert deselection of locked projects
-        lockedProjectIds.forEach(lockedId => {
-            if (!currentSelectedIds.includes(lockedId)) {
-                // If a locked project was deselected, re-select it
-                Array.from(select.options).find(option => option.value === lockedId).selected = true;
-                selectionChanged = true;
-            }
-        });
-
-        if (selectionChanged) {
-            alert('No puedes deseleccionar proyectos que tienen departamentos asignados.');
-            // Re-run refreshEditProjectContainers with the corrected selection
-            refreshEditProjectContainers(select, container);
-        } else {
-            // Only update dynamically if no locked projects were deselected or if new projects were added
-            refreshEditProjectContainers(select, container);
-        }
+        refreshEditProjectContainers(select, container);
     };
 
     // 6. Asegurarse de que el scroll del modal esté arriba del todo
@@ -383,6 +380,62 @@ window.closeModal = function() {
 
 // --- Funciones Auxiliares para la Edición ---
 
+function normalizeProjects(projects, fallbackMetodoPago = '') {
+    const normalized = {};
+
+    Object.entries(projects || {}).forEach(([projectId, value]) => {
+        if (Array.isArray(value)) {
+            normalized[projectId] = {
+                departments: value,
+                metodo_pago: fallbackMetodoPago || '',
+            };
+
+            return;
+        }
+
+        normalized[projectId] = {
+            departments: Array.isArray(value?.departments) ? value.departments : [],
+            metodo_pago: value?.metodo_pago || fallbackMetodoPago || '',
+        };
+    });
+
+    return normalized;
+}
+
+function bindProjectToggleSelection(select) {
+    if (select.dataset.toggleSelectionBound === '1') {
+        return;
+    }
+
+    select.addEventListener('mousedown', function(event) {
+        if ((event.target.tagName || '').toLowerCase() !== 'option') {
+            return;
+        }
+
+        event.preventDefault();
+
+        const option = event.target;
+        const projectId = option.value;
+        const willSelect = !option.selected;
+
+        if (! willSelect && lockedProjectIds.has(projectId)) {
+            const deptCount = document.querySelectorAll(`#edit_departments_list_${projectId} [data-dept-item]`).length;
+            if (deptCount > 0) {
+                alert('No puedes deseleccionar proyectos que tienen departamentos asignados.');
+
+                return;
+            }
+
+            lockedProjectIds.delete(projectId);
+        }
+
+        option.selected = willSelect;
+        select.dispatchEvent(new Event('change'));
+    });
+
+    select.dataset.toggleSelectionBound = '1';
+}
+
 // Crea el bloque gris con el título del proyecto y el botón "+ Depto"
 function createProjectContainer(projectId, mainContainer) {
     // Evitar duplicados
@@ -393,6 +446,7 @@ function createProjectContainer(projectId, mainContainer) {
     const div = document.createElement('div');
     div.id = `edit_project_container_${projectId}`;
     div.className = 'bg-white/5 p-4 rounded-xl border border-white/10 mb-4 fade-in-content';
+    const metodoPago = currentEditProjectPaymentMethods[projectId] || '';
 
     div.innerHTML = `
             <div class="flex justify-between items-center border-b border-white/10 pb-2 mb-3">
@@ -401,6 +455,16 @@ function createProjectContainer(projectId, mainContainer) {
                         class="text-[10px] px-2 py-1 border border-[#d8c495] text-[#d8c495] rounded hover:bg-[#d8c495] hover:text-black transition">
                     + Depto
                 </button>
+            </div>
+            <div class="mb-3">
+                <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Metodo de Pago del Proyecto</label>
+                <select name="project_payment_methods[${projectId}]"
+                        class="w-full bg-white/10 border border-white/10 rounded px-2 py-1 text-white text-xs focus:border-[#d8c495] outline-none"
+                        required>
+                    <option value="" class="text-black" ${metodoPago === '' ? 'selected' : ''}>-- Seleccione metodo --</option>
+                    <option value="efectivo" class="text-black" ${metodoPago === 'efectivo' ? 'selected' : ''}>Efectivo</option>
+                    <option value="transferencia" class="text-black" ${metodoPago === 'transferencia' ? 'selected' : ''}>Transferencia bancaria</option>
+                </select>
             </div>
             <div id="edit_departments_list_${projectId}" class="space-y-3">
                 </div>
@@ -425,6 +489,8 @@ window.addEditDepartment = function(projectId, data = null) {
 
     const deptDiv = document.createElement('div');
     deptDiv.className = 'bg-black/20 p-3 rounded border border-white/5 relative fade-in-content';
+    deptDiv.setAttribute('data-dept-item', '1');
+    deptDiv.setAttribute('data-project-id', projectId);
 
     deptDiv.innerHTML = `
             <div class="flex items-center justify-between mb-2">
@@ -470,12 +536,29 @@ window.addEditDepartment = function(projectId, data = null) {
                            class="w-full bg-white/10 border border-white/10 rounded px-2 py-1 text-white text-xs focus:border-[#d8c495] outline-none">
                 </div>
 
-                <button type="button" onclick="this.closest('.bg-black\\/20').remove()" class="text-red-500 text-xs ml-auto hover:text-red-400 transition">
+                <button type="button" onclick="removeEditDepartment(this)" class="text-red-500 text-xs ml-auto hover:text-red-400 transition">
                     ✕ Eliminar
                 </button>
             </div>
         `;
     list.appendChild(deptDiv);
+}
+
+window.removeEditDepartment = function(button) {
+    const deptItem = button.closest('[data-dept-item]');
+    if (!deptItem) {
+        return;
+    }
+
+    const list = deptItem.parentElement;
+    deptItem.remove();
+
+    if (list && list.children.length === 0) {
+        const projectId = (list.id || '').replace('edit_departments_list_', '');
+        if (projectId) {
+            lockedProjectIds.delete(projectId);
+        }
+    }
 }
 
 // Muestra u oculta el campo de número de cuenta predial
@@ -503,8 +586,8 @@ function refreshEditProjectContainers(select, container, initialProjectsData = n
         if (!document.getElementById(`edit_project_container_${id}`)) {
             createProjectContainer(id, container);
             // On initial load, populate with existing departments
-            if (initialProjectsData && initialProjectsData[id] && initialProjectsData[id].length > 0) {
-                initialProjectsData[id].forEach(dept => addEditDepartment(id, dept));
+            if (initialProjectsData && initialProjectsData[id] && initialProjectsData[id].departments.length > 0) {
+                initialProjectsData[id].departments.forEach(dept => addEditDepartment(id, dept));
             } else {
                 addEditDepartment(id); // Add one empty department for new selections or if no existing departments
             }

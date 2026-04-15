@@ -16,18 +16,22 @@ if errorlevel 1 (
 )
 
 echo [1/4] php artisan optimize
+php artisan migrate
+if errorlevel 1 goto :error
+
+echo [2/4] php artisan optimize
 php artisan optimize
 if errorlevel 1 goto :error
 
-echo [2/4] php artisan view:cache
+echo [3/4] php artisan view:cache
 php artisan view:cache
 if errorlevel 1 goto :error
 
-echo [3/4] php artisan cache:clear
+echo [4/4] php artisan cache:clear
 php artisan cache:clear
 if errorlevel 1 goto :error
 
-echo [4/4] php artisan storage:link
+echo [5/4] php artisan storage:link
 php artisan storage:link
 if errorlevel 1 (
     echo [WARN] storage:link fallo ^(puede que el link ya exista^). Continuando...

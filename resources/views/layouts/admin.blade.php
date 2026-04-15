@@ -55,11 +55,15 @@
     }
 
     /* Sidebar con efecto Glassmorphism */
+    :root {
+        --admin-header-height: 64px;
+    }
+
     #sidebar {
         position: fixed;
-        top: 0;
+        top: var(--admin-header-height);
         left: -100%;
-        height: 100vh;
+        height: calc(100vh - var(--admin-header-height));
         width: 280px;
         z-index: 50;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -75,7 +79,10 @@
     #sidebar-overlay {
         display: none;
         position: fixed;
-        inset: 0;
+        top: var(--admin-header-height);
+        right: 0;
+        bottom: 0;
+        left: 0;
         background: rgba(0, 0, 0, 0.6);
         backdrop-filter: blur(2px);
         z-index: 40;
@@ -88,7 +95,9 @@
     @media (min-width: 1024px) {
         #sidebar {
             position: relative;
+            top: 0;
             left: 0;
+            height: 100%;
             width: 260px;
             z-index: 20;
             background-color: rgba(17, 33, 52, 0.90) !important;
@@ -370,6 +379,19 @@
         const sidebarOverlay = document.getElementById('sidebar-overlay');
         const sidebarToggle = document.getElementById('sidebar-toggle');
         const mainContent = document.getElementById('main-content');
+        const header = document.querySelector('header');
+
+        const syncHeaderHeight = () => {
+            if (!header) {
+                return;
+            }
+
+            const height = Math.max(header.offsetHeight, 56);
+            document.documentElement.style.setProperty('--admin-header-height', `${height}px`);
+        };
+
+        syncHeaderHeight();
+        window.addEventListener('resize', syncHeaderHeight);
 
         // Restaurar estado del sidebar desde localStorage
         const savedState = localStorage.getItem('sidebar_state');

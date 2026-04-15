@@ -131,7 +131,11 @@ class crudUser extends Controller
                 ])->toArray()];
             })->toArray();
 
-        return view('editUser', compact('admin', 'userToEdit', 'regimenesFiscales', 'proyectos', 'selectedProjectIds', 'existingProjectsData'));
+        $existingProjectPaymentMethods = $userToEdit->userProyectos
+            ->mapWithKeys(fn ($up) => [$up->id_proyecto => $up->metodo_pago])
+            ->toArray();
+
+        return view('editUser', compact('admin', 'userToEdit', 'regimenesFiscales', 'proyectos', 'selectedProjectIds', 'existingProjectsData', 'existingProjectPaymentMethods'));
     }
 
     public function eliminar(Request $request)
@@ -185,6 +189,8 @@ class crudUser extends Controller
             'regimenFiscal' => 'required|integer',
             'password' => 'nullable|string|min:8|confirmed',
             'fecha_nacimiento' => 'nullable|date',
+            'project_payment_methods' => 'nullable|array',
+            'project_payment_methods.*' => 'nullable|in:efectivo,transferencia',
             'project_details' => 'nullable|array',
             'project_details.*' => 'nullable|array',
             'project_details.*.*.nombre_depto' => 'required_with:project_details|string|max:255',
@@ -193,7 +199,19 @@ class crudUser extends Controller
             'project_details.*.*.cuenta_numero' => 'nullable|string|max:255',
         ]);
 
-        DB::transaction(function () use ($request, $id) {
+        $projectPaymentMethods = $request->input('project_payment_methods', []);
+        $projectIds = $request->input('proyect', []);
+        foreach ($projectIds as $projectId) {
+            if (empty($projectPaymentMethods[$projectId])) {
+                return back()
+                    ->withErrors([
+                        "project_payment_methods.$projectId" => 'Selecciona el metodo de pago para cada proyecto.',
+                    ])
+                    ->withInput();
+            }
+        }
+
+        DB::transaction(function () use ($request, $id, $projectPaymentMethods) {
             $user = User::findOrFail($id);
 
             // 1. Actualizar datos básicos del usuario
@@ -202,7 +220,8 @@ class crudUser extends Controller
             $user->phone = '52'.$request->input('phone');
             $user->id_regimen = $request->input('regimenFiscal');
             $user->fecha_nacimiento = $request->input('fecha_nacimiento') ?: null;
-            $user->metodo_pago = $request->input('metodo_pago') ?: null;
+            $user->metodo_pago = collect($projectPaymentMethods)
+                ->first(fn ($metodo) => in_array($metodo, ['efectivo', 'transferencia'], true)) ?: null;
 
             if ($request->filled('password')) {
                 $user->password = $request->input('password');
@@ -215,6 +234,12 @@ class crudUser extends Controller
             $currentProyectos = $user->userProyectos()->get()->keyBy('id_proyecto');
             $currentProjectIds = $currentProyectos->keys()->map(fn ($k) => (int) $k)->toArray();
             $newProjectIds = array_map('intval', $projectIds);
+
+            foreach ($currentProyectos as $proyectoActual) {
+                $metodoProyecto = $projectPaymentMethods[$proyectoActual->id_proyecto] ?? null;
+                $proyectoActual->metodo_pago = $metodoProyecto ?: null;
+                $proyectoActual->save();
+            }
 
             // 3. Eliminar proyectos que ya no están seleccionados (esto también elimina sus deptos por el boot del modelo)
             $projectsToRemove = array_diff($currentProjectIds, $newProjectIds);
@@ -233,6 +258,7 @@ class crudUser extends Controller
                 \App\Models\UserProyecto::create([
                     'id_user' => $user->id,
                     'id_proyecto' => $projectId,
+                    'metodo_pago' => $projectPaymentMethods[$projectId] ?? null,
                 ]);
             }
 

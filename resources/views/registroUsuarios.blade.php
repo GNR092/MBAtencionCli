@@ -100,10 +100,13 @@
                     <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
                         Proyectos
                     </label>
+                    @php
+                        $selectedProjects = collect(old('proyect', []))->map(fn ($id) => (string) $id)->toArray();
+                    @endphp
                     <select name="proyect[]" id="proyect" multiple required
                         class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495] transition-colors h-32">
                         @foreach($proyectos as $proyecto)
-                            <option value="{{ $proyecto->id_proyecto }}">
+                            <option value="{{ $proyecto->id_proyecto }}" {{ in_array((string) $proyecto->id_proyecto, $selectedProjects, true) ? 'selected' : '' }}>
                                 {{ $proyecto->nombre_proyecto }}@if($proyecto->razonSocial) - {{ $proyecto->razonSocial->nombre_razon_social }}@endif
                             </option>
                         @endforeach
@@ -150,17 +153,6 @@
                             value="{{ old('fecha_nacimiento') }}">
                     </div>
 
-                    <div>
-                        <label for="metodo_pago" class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
-                            Método de Pago
-                        </label>
-                        <select id="metodo_pago" name="metodo_pago"
-                            class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495] transition-colors">
-                            <option value="">Sin especificar</option>
-                            <option value="efectivo" {{ old('metodo_pago') == 'efectivo' ? 'selected' : '' }}>Efectivo</option>
-                            <option value="transferencia" {{ old('metodo_pago') == 'transferencia' ? 'selected' : '' }}>Transferencia bancaria</option>
-                        </select>
-                    </div>
                 </div>
 
                 <div class="pt-4">
@@ -185,6 +177,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const projectOptions = @json($proyectos->map(fn($p) => ['id' => $p->id_proyecto, 'nombre' => $p->nombre_proyecto, 'razon_social' => $p->razonSocial?->nombre_razon_social])->keyBy('id'));
+    const oldProjectPaymentMethods = @json(old('project_payment_methods', []));
 
     window.renderDynamicProjectFields = function() {
         const selectedProjectIds = Array.from(proyectSelect.selectedOptions).map(option => option.value);
@@ -197,6 +190,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const projectContainer = document.createElement('div');
                 projectContainer.id = `project_container_${projectId}`;
                 projectContainer.className = 'bg-[#0d1f30]/50 rounded-xl border border-[#d8c495]/20 p-5 space-y-4';
+                const selectedPaymentMethod = oldProjectPaymentMethods[projectId] || '';
 
                 projectContainer.innerHTML = `
                     <div class="flex justify-between items-center border-b border-[#d8c495]/20 pb-3">
@@ -205,6 +199,16 @@ document.addEventListener('DOMContentLoaded', function () {
                             class="bg-[#d8c495]/10 text-[#d8c495] text-xs px-4 py-2 rounded-lg border border-[#d8c495]/30 hover:bg-[#d8c495] hover:text-[#112134] transition-all font-bold uppercase">
                             + Departamento
                         </button>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-white/70 mb-2">Método de Pago del Proyecto:</label>
+                        <select name="project_payment_methods[${projectId}]"
+                            class="w-full bg-[#0d1f30] border border-white/10 rounded-lg px-3 py-2 text-white focus:border-[#d8c495] outline-none"
+                            required>
+                            <option value="" ${selectedPaymentMethod === '' ? 'selected' : ''}>-- Seleccione método --</option>
+                            <option value="efectivo" ${selectedPaymentMethod === 'efectivo' ? 'selected' : ''}>Efectivo</option>
+                            <option value="transferencia" ${selectedPaymentMethod === 'transferencia' ? 'selected' : ''}>Transferencia bancaria</option>
+                        </select>
                     </div>
                     <div id="departments_container_${projectId}" class="space-y-4 pt-2">
                     </div>
@@ -307,6 +311,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     proyectSelect.addEventListener('change', window.renderDynamicProjectFields);
+    window.renderDynamicProjectFields();
 });
 </script>
 @endsection
