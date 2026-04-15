@@ -69,10 +69,16 @@ class CuentasPorPagar extends Controller
                 'cuentasporpagar.monto_pagado',
                 'cuentasporpagar.estado',
                 'contract.importe_bruto_renta as importeBaseContrato',
-                DB::raw('(SELECT MAX(i.importeBase) FROM impuesto i WHERE i.xml_file_id = cuentasporpagar.xml_file_id) as importeBaseXML'),
                 'regimen_fiscals.nombre_regimen as regimenFiscal',
                 'cuentasporpagar.mesesdepago'
-            );
+            )
+            ->selectSub(function ($subQuery) {
+                $subQuery->from('impuesto as i')
+                    ->select('i.importeBase')
+                    ->whereColumn('i.xml_file_id', 'cuentasporpagar.xml_file_id')
+                    ->orderByDesc('i.importeBase')
+                    ->limit(1);
+            }, 'importeBaseXML');
 
         $this->aplicarExclusionCancelados($cuentas, 'cuentasporpagar');
 
@@ -165,9 +171,15 @@ class CuentasPorPagar extends Controller
                 'cuentasporpagar.estado',
                 'cuentasporpagar.mesesdepago',
                 'contract.importe_bruto_renta as importeBaseContrato',
-                DB::raw('(SELECT MAX(i.importeBase) FROM impuesto i WHERE i.xml_file_id = cuentasporpagar.xml_file_id) as importeBaseXML'),
                 'regimen_fiscals.nombre_regimen as regimenFiscal',
-            );
+            )
+            ->selectSub(function ($subQuery) {
+                $subQuery->from('impuesto as i')
+                    ->select('i.importeBase')
+                    ->whereColumn('i.xml_file_id', 'cuentasporpagar.xml_file_id')
+                    ->orderByDesc('i.importeBase')
+                    ->limit(1);
+            }, 'importeBaseXML');
 
         $this->aplicarExclusionCancelados($cuentas, 'cuentasporpagar');
 
