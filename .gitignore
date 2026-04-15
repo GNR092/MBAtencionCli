@@ -56,3 +56,4 @@ AGENTS.md
 scripts/generar_facturas_ficticias.php
 AtencionInver.ffs_gui
 session-ses_*.md
+/.codesearch.db

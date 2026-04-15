@@ -186,7 +186,7 @@
 
     <div id="sidebar-overlay"></div>
 
-    <div class="h-screen flex flex-col relative z-10">
+    <div class="h-screen flex flex-col relative">
         <header
             class="relative z-30 flex items-center justify-between px-4 py-3 text-white shadow-lg border-b border-[#d8c495]/30 bg-[#112134]/80 backdrop-blur-md">
             <div class="flex items-center gap-3">
