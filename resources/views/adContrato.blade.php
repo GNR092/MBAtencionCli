@@ -72,6 +72,28 @@
                     @endif
                 </div>
 
+                @if(!$contract)
+                <div class="mb-6">
+                    <label class="block text-xs font-bold uppercase tracking-[0.2em] text-[#d8c495]/70 mb-3">
+                        Departamento
+                    </label>
+                    <select name="id_user_depto" id="id_user_depto"
+                        class="w-full bg-[#0d1a29] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
+                        <option value="" class="bg-[#0d1a29] text-white/40">Mantener/seleccionar departamento existente</option>
+                    </select>
+                    <p id="id_user_depto_help" class="text-white/50 text-xs mt-2"></p>
+
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" name="nuevo_depto_nombre" id="nuevo_depto_nombre"
+                            placeholder="Si no aparece, escribe nuevo departamento"
+                            class="w-full bg-[#0d1a29] border border-[#d8c495]/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
+                        <input type="text" name="nuevo_depto_predial" id="nuevo_depto_predial"
+                            placeholder="Predial opcional del nuevo departamento"
+                            class="w-full bg-[#0d1a29] border border-[#d8c495]/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
+                    </div>
+                </div>
+                @endif
+
                 <!-- Fechas -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div>
@@ -214,11 +236,60 @@ document.getElementById('inactivo').addEventListener('change', function() {
 @if(!$contract)
 const userSelect = document.getElementById('user_id');
 const proyectSelect = document.getElementById('proyect');
+const deptoSelect = document.getElementById('id_user_depto');
+const deptoHelp = document.getElementById('id_user_depto_help');
+
+function renderDeptos(deptos) {
+    if (!deptoSelect) return;
+    deptoSelect.innerHTML = '<option value="" class="bg-[#0d1a29] text-white/40">Mantener/seleccionar departamento existente</option>';
+
+    if (!Array.isArray(deptos) || deptos.length === 0) {
+        deptoHelp.textContent = 'El proyecto no tiene departamentos cargados. Puedes capturar uno nuevo abajo.';
+        return;
+    }
+
+    deptoHelp.textContent = '';
+    deptos.forEach((d) => {
+        const opt = document.createElement('option');
+        opt.value = d.id_user_depto;
+        opt.className = 'bg-[#0d1a29] text-white';
+        opt.textContent = d.nombre + (d.predial ? ' - Predial: ' + d.predial : '');
+        deptoSelect.appendChild(opt);
+    });
+}
+
+function clearDeptos() {
+    if (!deptoSelect) return;
+    deptoSelect.innerHTML = '<option value="" class="bg-[#0d1a29] text-white/40">Selecciona primero usuario y proyecto</option>';
+    deptoHelp.textContent = '';
+}
+
+async function loadDeptos(userId, projectId) {
+    if (!userId || !projectId) {
+        clearDeptos();
+        return;
+    }
+
+    deptoSelect.innerHTML = '<option value="" class="bg-[#0d1a29] text-white/40">Cargando departamentos...</option>';
+
+    try {
+        const resp = await fetch(`/api/users/${userId}/projects/${projectId}/departments`);
+        if (!resp.ok) {
+            renderDeptos([]);
+            return;
+        }
+        const deptos = await resp.json();
+        renderDeptos(deptos);
+    } catch (_) {
+        renderDeptos([]);
+    }
+}
 
 userSelect.addEventListener('change', function() {
     const userId = this.value;
     proyectSelect.innerHTML = '<option value="" class="bg-[#0d1a29] text-white/40">Cargando proyectos...</option>';
     proyectSelect.disabled = true;
+    clearDeptos();
 
     if (!userId) {
         proyectSelect.innerHTML = '<option value="" class="bg-[#0d1a29] text-white/40">Selecciona primero un inversionista</option>';
@@ -247,6 +318,10 @@ userSelect.addEventListener('change', function() {
             proyectSelect.innerHTML = '<option value="" class="bg-[#0d1a29] text-white/40">Error al cargar proyectos</option>';
             proyectSelect.disabled = false;
         });
+});
+
+proyectSelect.addEventListener('change', function() {
+    loadDeptos(userSelect.value, this.value);
 });
 @endif
 </script>

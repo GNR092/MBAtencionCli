@@ -25,6 +25,12 @@
             font-display: swap;
         }
 
+        html, body {
+            min-height: 100svh;
+            margin: 0;
+            background: #242424;
+        }
+
         /* Clase forzada para asegurar que se aplique */
         .fuente-personalizada {
             font-family: 'Dancing Script', serif !important;
@@ -48,18 +54,58 @@
         .animate-form-entrance {
             animation: slide-up-form 5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s backwards;
         }
+
+        .login-hero-title {
+            font-size: clamp(1.7rem, 5vw, 3rem) !important;
+            line-height: 1.2 !important;
+            letter-spacing: 0 !important;
+            text-transform: none !important;
+        }
+
+        @media (min-width: 768px) {
+            .login-hero-title {
+                font-size: clamp(2.3rem, 4.2vw, 3.6rem) !important;
+            }
+        }
+
+        @media (max-height: 520px) and (orientation: landscape) {
+            .login-shell {
+                justify-content: flex-start;
+                padding-top: 0.9rem;
+                padding-bottom: 0.9rem;
+            }
+
+            .login-logo {
+                width: 6.8rem;
+            }
+
+            .login-hero-copy {
+                margin-top: 0.3rem;
+            }
+
+            .login-hero-title {
+                font-size: 1.3rem !important;
+                line-height: 1.1 !important;
+            }
+
+            .login-card {
+                margin-top: 0.8rem;
+                padding-top: 0.9rem;
+                padding-bottom: 0.9rem;
+            }
+        }
     </style>
 </head>
-<body>
-<figure class="relative h-screen w-screen overflow-hidden">
+<body class="bg-[#242424]">
+<figure class="relative h-[100svh] min-h-[100svh] w-screen overflow-y-auto overflow-x-hidden">
     <div class="absolute inset-0 bg-cover bg-center bg-[#3c3c3c]"></div>
     <div class="absolute inset-0 bg-black/40"></div>
 
-    <div class="relative flex flex-col items-center justify-center h-full text-white">
+    <div class="login-shell relative flex flex-col items-center justify-center h-full text-white">
 
-        <img src="/uploads/Logo-Png.svg" alt="logo" class="w-52 h-auto animate-logo-entrance z-10">
+        <img src="/uploads/Logo-Png.svg" alt="logo" class="login-logo w-40 md:w-52 h-auto animate-logo-entrance z-10">
 
-        <div class="flex justify-center w-full px-4 text-center"
+        <div class="login-hero-copy flex justify-center w-full px-4 text-center"
              x-data="{
         linea1: 'Bienvenido a la comunidad de inversionistas'.split(' '),
         linea2: 'que vive de sus rentas garantizadas.'.split(' '),
@@ -69,7 +115,7 @@
         }
      }">
 
-            <h1 class="fuente-personalizada text-3xl md:text-5xl text-dorado-400 leading-tight drop-shadow-lg text-center">
+            <h1 class="login-hero-title fuente-personalizada text-dorado-400 drop-shadow-lg text-center">
         <span class="block mb-2">
             <template x-for="(word, index) in linea1">
                 <span
@@ -92,7 +138,7 @@
             </h1>
         </div>
 
-        <div class="p-6 rounded-lg animate-form-entrance w-full max-w-sm mt-8">
+        <div class="login-card p-5 md:p-6 rounded-lg animate-form-entrance w-full max-w-sm mt-6 md:mt-8">
             <h2 class="text-2xl font-bold mb-6 text-center uppercase tracking-widest">Iniciar Sesión</h2>
             <form id="login-form" onsubmit="loginUsuario(event)">
                 <div class="py-2">

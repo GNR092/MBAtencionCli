@@ -329,6 +329,9 @@ class ContractController extends Controller
             'archivo' => 'required|file|mimes:pdf|max:2048',
             'user_id' => 'required|exists:users,id',
             'proyect' => 'required|exists:proyectos,id_proyecto',
+            'id_user_depto' => 'nullable|exists:user_depto,id_user_depto',
+            'nuevo_depto_nombre' => 'nullable|string|max:255',
+            'nuevo_depto_predial' => 'nullable|string|max:255',
             'importe_bruto_renta' => 'required',
             'fecha_inicio' => 'required|date',
             'fecha_terminacion' => 'required|date',
@@ -346,11 +349,16 @@ class ContractController extends Controller
             'id_proyecto' => $proyectoId,
         ]);
 
-        $idUserDepto = $this->resolveUserDeptoId((int) $userProyecto->id_user_p, null);
+        $idUserDepto = $this->resolveOrCreateDeptoFromRequest(
+            $request,
+            (int) $userProyecto->id_user_p,
+            null,
+            str_replace(['$', ','], '', $request->input('importe_bruto_renta'))
+        );
         if (! $idUserDepto) {
             Storage::delete($path);
 
-            return back()->with('error', 'Error: El proyecto seleccionado no tiene departamentos configurados para este usuario.');
+            return back()->with('error', 'Selecciona un departamento válido o captura uno nuevo para este proyecto.');
         }
 
         Contract::create([
