@@ -15,22 +15,46 @@ return new class extends Migration
             $table->string('mes_pago', 7)->nullable()->after('uuid')->comment('Y-m extraído de mesesdepago->mes');
         });
 
-        // Poblar mes_pago desde el JSON existente
-        DB::statement("
-            UPDATE cuentasporpagar
-            SET mes_pago = JSON_UNQUOTE(JSON_EXTRACT(mesesdepago, '$.mes'))
-            WHERE mesesdepago IS NOT NULL
-              AND JSON_EXTRACT(mesesdepago, '$.mes') IS NOT NULL
-        ");
+        // Poblar mes_pago desde el JSON existente (portable para MySQL/PostgreSQL)
+        DB::table('cuentasporpagar')
+            ->select('id_cuentas_por_pagar', 'mesesdepago')
+            ->whereNotNull('mesesdepago')
+            ->orderBy('id_cuentas_por_pagar')
+            ->chunkById(500, function ($rows) {
+                foreach ($rows as $row) {
+                    $mesPago = $this->extractMesPago($row->mesesdepago);
+
+                    if (! $mesPago) {
+                        continue;
+                    }
+
+                    DB::table('cuentasporpagar')
+                        ->where('id_cuentas_por_pagar', $row->id_cuentas_por_pagar)
+                        ->update(['mes_pago' => $mesPago]);
+                }
+            }, 'id_cuentas_por_pagar');
 
         // Eliminar duplicados: mantener el de mayor id por (id_contract, mes_pago)
-        DB::statement('
-            DELETE c1 FROM cuentasporpagar c1
-            INNER JOIN cuentasporpagar c2
-              ON  c1.id_contract = c2.id_contract
-              AND c1.mes_pago    = c2.mes_pago
-              AND c1.id_cuentas_por_pagar < c2.id_cuentas_por_pagar
-        ');
+        $duplicateGroups = DB::table('cuentasporpagar')
+            ->select(
+                'id_contract',
+                'mes_pago',
+                DB::raw('MAX(id_cuentas_por_pagar) as keep_id'),
+                DB::raw('COUNT(*) as total')
+            )
+            ->whereNotNull('id_contract')
+            ->whereNotNull('mes_pago')
+            ->groupBy('id_contract', 'mes_pago')
+            ->havingRaw('COUNT(*) > 1')
+            ->get();
+
+        foreach ($duplicateGroups as $group) {
+            DB::table('cuentasporpagar')
+                ->where('id_contract', $group->id_contract)
+                ->where('mes_pago', $group->mes_pago)
+                ->where('id_cuentas_por_pagar', '<>', $group->keep_id)
+                ->delete();
+        }
 
         // Generar UUID para registros existentes
         $rows = DB::table('cuentasporpagar')->whereNull('uuid')->pluck('id_cuentas_por_pagar');
@@ -53,5 +77,32 @@ return new class extends Migration
             $table->dropUnique(['uuid']);
             $table->dropColumn(['uuid', 'mes_pago']);
         });
+    }
+
+    private function extractMesPago(mixed $rawMesesDepago): ?string
+    {
+        $payload = $rawMesesDepago;
+
+        if (is_string($rawMesesDepago)) {
+            $decoded = json_decode($rawMesesDepago, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $payload = $decoded;
+            }
+        }
+
+        if (is_object($payload)) {
+            $payload = (array) $payload;
+        }
+
+        if (! is_array($payload)) {
+            return null;
+        }
+
+        $mes = isset($payload['mes']) ? trim((string) $payload['mes']) : '';
+        if (! preg_match('/^\d{4}-\d{2}$/', $mes)) {
+            return null;
+        }
+
+        return $mes;
     }
 };

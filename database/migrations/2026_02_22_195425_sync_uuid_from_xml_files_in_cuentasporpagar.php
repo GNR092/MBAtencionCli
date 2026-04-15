@@ -8,6 +8,21 @@ return new class extends Migration
     public function up(): void
     {
         // Reemplazar UUIDs aleatorios con el folio fiscal real del CFDI
+        $driver = DB::getDriverName();
+
+        if ($driver === 'pgsql') {
+            DB::statement("
+                UPDATE cuentasporpagar AS c
+                SET uuid = x.uuid
+                FROM xml_files AS x
+                WHERE c.xml_file_id = x.id
+                  AND x.uuid IS NOT NULL
+                  AND x.uuid <> ''
+            ");
+
+            return;
+        }
+
         DB::statement("
             UPDATE cuentasporpagar c
             INNER JOIN xml_files x ON c.xml_file_id = x.id

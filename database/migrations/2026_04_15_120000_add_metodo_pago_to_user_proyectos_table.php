@@ -13,15 +13,41 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('user_proyectos', function (Blueprint $table) {
-            $table->string('metodo_pago', 50)->nullable()->after('id_proyecto');
+            $table->string('metodo_pago', 50)->nullable();
         });
 
         DB::table('user_proyectos')
-            ->join('users', 'users.id', '=', 'user_proyectos.id_user')
-            ->whereNull('user_proyectos.metodo_pago')
-            ->update([
-                'user_proyectos.metodo_pago' => DB::raw('users.metodo_pago'),
-            ]);
+            ->select('id_user_p', 'id_user')
+            ->orderBy('id_user_p')
+            ->chunkById(500, function ($rows) {
+                $userIds = collect($rows)
+                    ->pluck('id_user')
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all();
+
+                if (empty($userIds)) {
+                    return;
+                }
+
+                $methodsByUser = DB::table('users')
+                    ->whereIn('id', $userIds)
+                    ->pluck('metodo_pago', 'id');
+
+                foreach ($rows as $row) {
+                    $metodoPago = $methodsByUser[$row->id_user] ?? null;
+
+                    if (! $metodoPago) {
+                        continue;
+                    }
+
+                    DB::table('user_proyectos')
+                        ->where('id_user_p', $row->id_user_p)
+                        ->whereNull('metodo_pago')
+                        ->update(['metodo_pago' => $metodoPago]);
+                }
+            }, 'id_user_p');
     }
 
     /**

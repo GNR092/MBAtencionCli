@@ -1,16 +1,21 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement('ALTER TABLE proyectos DROP FOREIGN KEY proyectos_id_razon_social_foreign');
-        DB::statement('ALTER TABLE proyectos DROP INDEX proyectos_id_razon_social_unique');
-        DB::statement('ALTER TABLE proyectos CHANGE COLUMN id_razon_social id_razon_social BIGINT UNSIGNED NULL');
-        DB::statement('ALTER TABLE proyectos ADD CONSTRAINT proyectos_id_razon_social_foreign FOREIGN KEY (id_razon_social) REFERENCES razones_sociales (id_razon_social) ON DELETE SET NULL');
+        Schema::table('proyectos', function (Blueprint $table) {
+            $table->dropForeign(['id_razon_social']);
+            $table->dropUnique(['id_razon_social']);
+            $table->foreign('id_razon_social')
+                ->references('id_razon_social')
+                ->on('razones_sociales')
+                ->nullOnDelete();
+        });
     }
 
     public function down(): void {}
