@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $indexes = collect(DB::select('SHOW INDEX FROM cuentasporpagar'))->pluck('Key_name')->all();
+        $indexes = $this->getIndexNames();
 
         if (in_array('cuentasporpagar_uuid_unique', $indexes, true)) {
             Schema::table('cuentasporpagar', function (Blueprint $table) {
@@ -17,7 +17,7 @@ return new class extends Migration
             });
         }
 
-        $indexes = collect(DB::select('SHOW INDEX FROM cuentasporpagar'))->pluck('Key_name')->all();
+        $indexes = $this->getIndexNames();
         if (! in_array('idx_cuentasporpagar_uuid', $indexes, true)) {
             Schema::table('cuentasporpagar', function (Blueprint $table) {
                 $table->index('uuid', 'idx_cuentasporpagar_uuid');
@@ -27,7 +27,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        $indexes = collect(DB::select('SHOW INDEX FROM cuentasporpagar'))->pluck('Key_name')->all();
+        $indexes = $this->getIndexNames();
 
         if (in_array('idx_cuentasporpagar_uuid', $indexes, true)) {
             Schema::table('cuentasporpagar', function (Blueprint $table) {
@@ -35,11 +35,27 @@ return new class extends Migration
             });
         }
 
-        $indexes = collect(DB::select('SHOW INDEX FROM cuentasporpagar'))->pluck('Key_name')->all();
+        $indexes = $this->getIndexNames();
         if (! in_array('cuentasporpagar_uuid_unique', $indexes, true)) {
             Schema::table('cuentasporpagar', function (Blueprint $table) {
                 $table->unique('uuid', 'cuentasporpagar_uuid_unique');
             });
         }
+    }
+
+    private function getIndexNames(): array
+    {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'pgsql') {
+            return collect(DB::select(
+                'SELECT indexname FROM pg_indexes WHERE schemaname = current_schema() AND tablename = ?',
+                ['cuentasporpagar']
+            ))->pluck('indexname')->all();
+        }
+
+        return collect(DB::select('SHOW INDEX FROM cuentasporpagar'))
+            ->pluck('Key_name')
+            ->all();
     }
 };
