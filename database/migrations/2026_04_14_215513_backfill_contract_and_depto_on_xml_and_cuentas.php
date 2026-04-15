@@ -63,10 +63,11 @@ return new class extends Migration
             });
 
         if (Schema::hasTable('cuentasporpagar')) {
-            DB::table('cuentasporpagar as c')
-                ->join('contract as ct', 'ct.id', '=', 'c.id_contract')
-                ->whereNull('c.id_user_depto')
-                ->update(['c.id_user_depto' => DB::raw('ct.id_user_depto')]);
+            if (DB::getDriverName() === 'pgsql') {
+                DB::statement('UPDATE cuentasporpagar AS c SET id_user_depto = ct.id_user_depto FROM contract AS ct WHERE ct.id = c.id_contract AND c.id_user_depto IS NULL');
+            } else {
+                DB::statement('UPDATE cuentasporpagar c INNER JOIN contract ct ON ct.id = c.id_contract SET c.id_user_depto = ct.id_user_depto WHERE c.id_user_depto IS NULL');
+            }
 
             DB::statement("UPDATE cuentasporpagar SET origen = CASE WHEN xml_file_id IS NOT NULL THEN 'xml' ELSE 'esperado' END WHERE origen IS NULL OR origen = ''");
         }
