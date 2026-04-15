@@ -30,16 +30,31 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('contract', function (Blueprint $table) {
-            // Reverse the foreign key
-            $table->dropForeign(['id_user_p']);
-            $table->dropColumn('id_user_p');
+        if (! Schema::hasTable('contract')) {
+            return;
+        }
 
+        if (Schema::hasColumn('contract', 'id_user_p')) {
+            Schema::table('contract', function (Blueprint $table) {
+                try {
+                    $table->dropForeign(['id_user_p']);
+                } catch (\Throwable $e) {
+                    // La FK puede no existir en estados parciales.
+                }
+
+                $table->dropColumn('id_user_p');
+            });
+        }
+
+        Schema::table('contract', function (Blueprint $table) {
             // Revert the 'contenido' column type. Data will be lost.
             $table->longText('contenido')->change();
-
-            // Revert 'proyecto' column to not nullable if it was so before
-            $table->string('proyecto')->nullable(false)->change();
         });
+
+        if (! Schema::hasColumn('contract', 'proyecto')) {
+            Schema::table('contract', function (Blueprint $table) {
+                $table->string('proyecto')->default('');
+            });
+        }
     }
 };
