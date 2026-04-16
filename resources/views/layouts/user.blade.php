@@ -1,8 +1,7 @@
 @extends('layouts.base')
 
 @section('layout-content')
-    {{-- Assets y Fuentes --}}
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- Fuentes --}}
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
     <style>
