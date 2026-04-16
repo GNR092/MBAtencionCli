@@ -512,6 +512,9 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         $this->recalcularSaldos();
 
         $selectedMonth = $request->month ?? now()->format('Y-m');
+        if (! preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', (string) $selectedMonth)) {
+            $selectedMonth = now()->format('Y-m');
+        }
         $mesTabLabel = strtoupper($selectedMonth);
         try {
             $mesDate = Carbon::createFromFormat('Y-m', $selectedMonth);
@@ -704,6 +707,33 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         }
 
         $cuenta = DB::table('cuentasporpagar')->where('id_cuentas_por_pagar', $id)->first();
+        if (! $cuenta) {
+            return response()->json(['success' => false, 'message' => 'Cuenta no encontrada']);
+        }
+
+        if (! empty($cuenta->es_retroactivo) && empty($cuenta->xml_file_id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No puedes cambiar el estado de un retroactivo sin factura subida.',
+            ]);
+        }
+
+        try {
+            $mesCuenta = Carbon::createFromFormat('Y-m', (string) $cuenta->mes_pago)->startOfMonth();
+            $mesActual = now()->startOfMonth();
+
+            if ($mesCuenta->lt($mesActual) && $nuevoEstado !== (string) $cuenta->estado) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El periodo de esta cuenta ya cerro y no permite cambios de estado.',
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo validar el periodo de la cuenta.',
+            ]);
+        }
 
         $updates = ['estado' => $nuevoEstado, 'updated_at' => now()];
 

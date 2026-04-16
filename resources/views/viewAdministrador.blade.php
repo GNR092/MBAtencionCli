@@ -251,6 +251,15 @@
 <script>
 let _chartAnual = null, _chartProyecto = null;
 const _MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const CURRENT_MONTH = '{{ now()->format("Y-m") }}';
+
+function isPastPeriod(periodo) {
+    if (!periodo || !/^\d{4}-\d{2}$/.test(periodo)) {
+        return false;
+    }
+
+    return periodo < CURRENT_MONTH;
+}
 
 function openModal()         { document.getElementById('chartsmModal').classList.remove('hidden'); cargarGraficaAnual(); }
 function closeModal()        { document.getElementById('chartsmModal').classList.add('hidden'); }
@@ -342,11 +351,14 @@ function openDetalleModal(grupo) {
         row.dataset.saldoNeto = cuenta.saldo_neto || 0;
         
         const hasUuid = cuenta.uuid && cuenta.uuid.trim() !== '';
+        const periodoCuenta = cuenta.mes_pago || mesPago;
+        const isLockedByPeriod = isPastPeriod(periodoCuenta);
         const estadoColor = hasUuid ? getEstadoColor(cuenta.estado) : 'text-white/50';
+        const disabledAttr = isLockedByPeriod ? ' disabled title="Periodo cerrado: no se puede modificar estado" ' : ' ';
         
         const selectHtml = hasUuid 
-            ? '<select class="estado-select bg-[#0d1f30] border border-white/20 rounded-lg px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-[#d8c495] ' + estadoColor + '" ' +
-              'data-id="' + cuenta.id_cuentas_por_pagar + '" data-prev="' + cuenta.estado + '" data-saldo-neto="' + (cuenta.saldo_neto || 0) + '">' +
+            ? '<select class="estado-select bg-[#0d1f30] border border-white/20 rounded-lg px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-[#d8c495] ' + estadoColor + (isLockedByPeriod ? ' opacity-60 cursor-not-allowed' : '') + '" ' +
+              'data-id="' + cuenta.id_cuentas_por_pagar + '" data-prev="' + cuenta.estado + '" data-saldo-neto="' + (cuenta.saldo_neto || 0) + '"' + disabledAttr + '>' +
               '<option value="pendiente" ' + (cuenta.estado === 'pendiente' ? 'selected' : '') + '>Pendiente</option>' +
               '<option value="parcial" ' + (cuenta.estado === 'parcial' ? 'selected' : '') + '>Parcial</option>' +
               '<option value="pagado" ' + (cuenta.estado === 'pagado' ? 'selected' : '') + '>Pagado</option>' +

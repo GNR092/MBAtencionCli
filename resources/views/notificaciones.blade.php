@@ -31,77 +31,74 @@
     {{-- Tabla --}}
     <div class="w-full px-2 mb-20">
 
-        <div class="w-full bg-white rounded-2xl shadow-2xl border border-carbon-200 overflow-hidden flex flex-col">
+        <div class="w-full rounded-3xl border border-dorado-400/20 bg-[#0d1f30]/80 backdrop-blur-md overflow-hidden flex flex-col shadow-xl shadow-black/20">
 
-            {{-- HEADER: Pestañas EXPANDIDAS (Ocupan el 100% exacto) --}}
-            <div class="flex w-full bg-carbon-900 border-b-4 border-dorado">
+            {{-- HEADER: Pestañas --}}
+            <div class="flex w-full bg-[#0a1520] border-b border-dorado-400/20">
 
-                {{-- Botón Nuevas: flex-1 para crecer y ocupar el 50% --}}
+                {{-- Botón Nuevas --}}
                 <button
-                    class="tablink flex-1 text-[11px] tracking-[0.3em] uppercase font-bold transition-all duration-300 text-dorado-400 py-5 hover:bg-white/5 focus:outline-none border-r border-white/10 text-center"
-                    onclick="openPage('New', this, 'rgba(255, 255, 255, 0.1)')" id="defaultOpen">
+                    class="tablink flex-1 text-[11px] tracking-[0.3em] uppercase font-bold transition-all duration-300 text-dorado-400 py-4 hover:bg-white/5 focus:outline-none border-r border-white/10 text-center"
+                    onclick="openPage('New', this, 'rgba(255, 255, 255, 0.05)')" id="defaultOpen">
                     Nuevas
                 </button>
 
-                {{-- Botón Anteriores: flex-1 para crecer y ocupar el otro 50% --}}
+                {{-- Botón Anteriores --}}
                 <button
-                    class="tablink flex-1 text-[11px] tracking-[0.3em] uppercase font-bold transition-all duration-300 text-gray-400 hover:text-white py-5 hover:bg-white/5 focus:outline-none text-center"
-                    onclick="openPage('Before', this, 'rgba(255, 255, 255, 0.1)')">
+                    class="tablink flex-1 text-[11px] tracking-[0.3em] uppercase font-bold transition-all duration-300 text-white/40 hover:text-white py-4 hover:bg-white/5 focus:outline-none text-center"
+                    onclick="openPage('Before', this, 'rgba(255, 255, 255, 0.05)')">
                     Anteriores
                 </button>
             </div>
 
             {{-- AREA DE CONTENIDO --}}
-            <div class="bg-white h-[580px] relative overflow-hidden">
+            <div class="bg-[#0d1f30]/60 h-[580px] relative overflow-hidden">
 
                 {{-- CONTENIDO: NUEVAS --}}
                 <div id="New" class="tabcontent w-full h-full absolute inset-0 overflow-y-auto custom-scroll block">
-                    <ul class="divide-y divide-gray-100 min-h-full">
+                    <ul class="divide-y divide-dorado-400/10 min-h-full">
                         @forelse($nuevas as $n)
-                        <li class="group relative p-6 hover:bg-amber-50/40 transition-colors duration-200">
+                        <li class="group relative p-6 hover:bg-white/5 transition-colors duration-200">
                             <span class="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full bg-dorado-400 opacity-80"></span>
                             <div class="pl-4 flex flex-col gap-3">
                                 <div class="flex items-start justify-between gap-3">
-                                    <h3 class="text-carbon-900 text-[11px] font-black uppercase tracking-widest leading-tight flex-1">
+                                    <h3 class="text-white text-[11px] font-black uppercase tracking-widest leading-tight flex-1">
                                         {{ $n->data['asunto'] }}
                                     </h3>
                                     <span class="shrink-0 text-[9px] text-dorado-400 tracking-widest uppercase font-semibold bg-dorado/10 border border-dorado/20 px-2 py-1 rounded-full whitespace-nowrap">
                                         {{ $n->created_at->diffForHumans() }}
                                     </span>
                                 </div>
-                                <p class="text-gray-500 text-[11px] leading-relaxed">
+                                <p class="text-white/55 text-[11px] leading-relaxed">
                                     {{ $n->data['mensaje'] }}
                                 </p>
                                 <div class="flex items-center justify-between pt-1">
-                                    <span class="text-[9px] text-gray-300 uppercase tracking-widest">
+                                    <span class="text-[9px] text-white/40 uppercase tracking-widest">
                                         {{ $n->created_at->format('d/m/Y · H:i') }}
                                     </span>
                                     <form method="POST" action="{{ route('notificaciones.leer', $n->id) }}">
                                         @csrf
                                         <button type="submit"
-                                            class="text-[9px] tracking-[0.2em] uppercase font-bold text-dorado-400 hover:text-white hover:bg-dorado-400 border border-dorado-400/50 px-4 py-1.5 rounded-lg transition-all duration-200">
-                                            Marcar leída
+                                            class="text-[9px] tracking-[0.2em] uppercase font-bold text-dorado-400 hover:text-[#0d1f30] hover:bg-dorado-400 border border-dorado-400/50 px-4 py-1.5 rounded-lg transition-all duration-200">
+                                            Marcar leida
                                         </button>
                                     </form>
                                 </div>
                             </div>
                         </li>
                         @empty
-                        {{-- Estado Vacío: Centrado perfecto usando Flex en todo el alto --}}
-                        <li
-                            class="w-full h-full flex flex-col items-center justify-center text-center p-8 absolute inset-0">
-                            <div class="mb-6 p-6 bg-gray-50 rounded-full border border-gray-100 shadow-inner">
-                                <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor"
+                        <li class="w-full h-full flex flex-col items-center justify-center text-center p-8 absolute inset-0">
+                            <div class="mb-6 p-6 bg-white/5 rounded-full border border-dorado-400/20">
+                                <svg class="w-12 h-12 text-dorado-400/40" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4">
-                                    </path>
+                                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
                                 </svg>
                             </div>
-                            <h4 class="text-carbon-900 text-xs tracking-[0.25em] uppercase font-bold mb-2">
-                                Bandeja Vacía
+                            <h4 class="text-white/70 text-xs tracking-[0.25em] uppercase font-bold mb-2">
+                                Bandeja Vacia
                             </h4>
-                            <p class="text-gray-400 text-[10px] uppercase tracking-wider">
+                            <p class="text-white/40 text-[10px] uppercase tracking-wider">
                                 No tienes nuevas notificaciones
                             </p>
                         </li>
@@ -111,20 +108,20 @@
 
                 {{-- CONTENIDO: ANTERIORES --}}
                 <div id="Before" class="tabcontent w-full h-full absolute inset-0 overflow-y-auto custom-scroll hidden">
-                    <ul class="divide-y divide-gray-100 min-h-full">
+                    <ul class="divide-y divide-dorado-400/10 min-h-full">
                         @forelse($antiguas as $n)
-                        <li class="group relative p-5 hover:bg-gray-50 transition-colors duration-200">
+                        <li class="group relative p-5 hover:bg-white/5 transition-colors duration-200">
                             <div class="flex items-start justify-between gap-3">
                                 <div class="flex items-start gap-3 flex-1 min-w-0">
-                                    <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0"></span>
+                                    <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-white/30 shrink-0"></span>
                                     <div class="min-w-0">
-                                        <h3 class="text-carbon-900 text-[11px] font-bold uppercase tracking-wide leading-tight">
+                                        <h3 class="text-white/80 text-[11px] font-bold uppercase tracking-wide leading-tight">
                                             {{ $n->data['asunto'] }}
                                         </h3>
-                                        <p class="text-gray-400 text-[10px] leading-relaxed mt-1 line-clamp-2">
+                                        <p class="text-white/40 text-[10px] leading-relaxed mt-1 line-clamp-2">
                                             {{ $n->data['mensaje'] }}
                                         </p>
-                                        <span class="text-[9px] text-gray-300 uppercase tracking-widest mt-1 block">
+                                        <span class="text-[9px] text-white/30 uppercase tracking-widest mt-1 block">
                                             {{ $n->created_at->format('d/m/Y · H:i') }}
                                         </span>
                                     </div>
@@ -132,24 +129,22 @@
                                 <form method="POST" action="{{ route('notificaciones.eliminar', $n->id) }}" class="shrink-0">
                                     @csrf @method('DELETE')
                                     <button type="submit"
-                                        class="opacity-0 group-hover:opacity-100 text-[9px] tracking-widest uppercase font-bold text-red-400 hover:text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-all border border-transparent hover:border-red-100">
+                                        class="opacity-0 group-hover:opacity-100 text-[9px] tracking-widest uppercase font-bold text-red-400/70 hover:text-red-400 hover:bg-red-400/10 px-3 py-1.5 rounded-lg transition-all border border-transparent hover:border-red-400/20">
                                         ✕
                                     </button>
                                 </form>
                             </div>
                         </li>
                         @empty
-                        {{-- Estado Vacío Historial --}}
-                        <li
-                            class="w-full h-full flex flex-col items-center justify-center text-center p-8 absolute inset-0">
+                        <li class="w-full h-full flex flex-col items-center justify-center text-center p-8 absolute inset-0">
                             <div class="mb-4 opacity-30">
-                                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor"
+                                <svg class="w-10 h-10 text-white/40" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                             </div>
-                            <p class="text-gray-400 text-[10px] tracking-[0.2em] uppercase font-bold">
+                            <p class="text-white/40 text-[10px] tracking-[0.2em] uppercase font-bold">
                                 Historial sin registros
                             </p>
                         </li>

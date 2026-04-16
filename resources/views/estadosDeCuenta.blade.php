@@ -33,84 +33,67 @@
         <div class="flex flex-col gap-8 bg-transparent">
 
             {{-- ISLA 1: BUSCADOR Y ACCIONES --}}
-            <div class="bg-white rounded-2xl shadow-xl border border-carbon-200 p-8 md:p-10">
+            <div class="rounded-3xl border border-dorado-400/20 bg-[#0d1f30]/75 backdrop-blur-md p-6 md:p-8 lg:p-10 shadow-xl shadow-black/20">
 
                 <div class="flex flex-col xl:flex-row items-end justify-between gap-8">
 
-                    {{-- Formulario de Búsqueda --}}
                     <form method="GET" action="{{ route('estados-cuenta.index') }}"
-                        class="flex-1 flex flex-col lg:flex-row items-end gap-6 w-full">
+                        class="flex-1 flex flex-col lg:flex-row items-end gap-5 md:gap-6 w-full">
                         @csrf
 
                         <div class="flex-1 w-full">
-                            <label class="block text-xs font-bold uppercase tracking-[0.2em] text-carbon-900 mb-3">
+                            <label class="block text-[11px] font-bold uppercase tracking-[0.2em] text-dorado-400 mb-3">
                                 Filtrar Documentos
                             </label>
-                            <div class="relative w-full">
-                                <input type="text" name="search" value="{{ request('search') }}"
-                                    placeholder="ESCRIBIR..."
-                                    class="w-full bg-gray-50 border border-gray-300 rounded-lg py-4 pl-4 pr-4 text-xl text-carbon-900 font-light focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-all uppercase tracking-tight placeholder-gray-300">
-                            </div>
+                            <input type="text" name="search" value="{{ request('search') }}"
+                                placeholder="Escribir..."
+                                class="w-full bg-black/25 border border-dorado-400/20 rounded-xl py-3.5 px-4 text-lg md:text-xl text-white font-light focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 transition-all uppercase tracking-tight placeholder:text-white/35">
                         </div>
 
                         <div class="w-full lg:w-48">
-                            <label class="block text-xs font-bold uppercase tracking-[0.2em] text-carbon-900 mb-3">
-                                Categoría
+                            <label class="block text-[11px] font-bold uppercase tracking-[0.2em] text-dorado-400 mb-3">
+                                Categoria
                             </label>
                             <div class="relative">
                                 <select name="categoria"
-                                    class="w-full bg-gray-50 border border-gray-300 rounded-lg py-4 pl-4 pr-10 text-lg text-carbon-900 font-light focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 appearance-none cursor-pointer transition-all">
-                                    <option value="mes" {{ request('categoria') == 'mes' ? 'selected' : '' }}>MES
-                                    </option>
-                                    <option value="estado" {{ request('categoria') == 'estado' ? 'selected' : '' }}>
-                                        ESTADO</option>
+                                    class="w-full bg-black/25 border border-dorado-400/20 rounded-xl py-3.5 pl-4 pr-10 text-base text-white font-light focus:outline-none focus:border-dorado-400 focus:ring-1 focus:ring-dorado-400 appearance-none cursor-pointer transition-all">
+                                    <option value="mes" {{ request('categoria') == 'mes' ? 'selected' : '' }}>Mes</option>
+                                    <option value="estado" {{ request('categoria') == 'estado' ? 'selected' : '' }}>Estado</option>
                                     <option value="id" {{ request('categoria') == 'id' ? 'selected' : '' }}>ID</option>
                                 </select>
-                                <div
-                                    class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
+                                <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-dorado-400/70">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 9l-7 7-7-7"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                     </svg>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="flex gap-4 w-full lg:w-auto">
+                        <div class="flex gap-3 w-full lg:w-auto">
                             <button type="submit"
-                                class="bg-carbon-900 text-white text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:bg-dorado-400 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
+                                class="bg-carbon-900 text-white text-xs md:text-sm tracking-[0.2em] uppercase font-bold px-6 md:px-8 py-3.5 rounded-xl hover:bg-dorado-400 hover:text-carbon-900 transition-all duration-300">
                                 Buscar
                             </button>
                             <a href="{{ route('estados-cuenta.limpiar') }}"
-                                class="flex items-center justify-center border border-gray-300 text-gray-500 text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:border-carbon-900 hover:text-carbon-900 transition-all duration-300">
+                                class="flex items-center justify-center border border-dorado-400/25 text-white/70 text-xs md:text-sm tracking-[0.2em] uppercase font-bold px-6 md:px-8 py-3.5 rounded-xl hover:border-dorado-400 hover:text-dorado-400 transition-all duration-300">
                                 Limpiar
                             </a>
                         </div>
                     </form>
 
-                    {{-- Botón Imprimir (BLINDADO CONTRA TAMAÑO GIGANTE) --}}
-                    <div
-                        class="w-full xl:w-auto border-t xl:border-t-0 xl:border-l border-gray-100 pt-6 xl:pt-0 xl:pl-8 flex items-end">
+                    <div class="w-full xl:w-auto border-t xl:border-t-0 xl:border-l border-dorado-400/10 pt-6 xl:pt-0 xl:pl-8 flex items-end">
                         <button onClick="openModalDescarga()"
-                            class="w-full xl:w-auto bg-dorado-400 text-white text-sm tracking-[0.2em] uppercase font-bold px-8 py-4 rounded-lg hover:bg-[#b58714] transition-all duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-3">
-
-                            <div class="w-4 h-4 min-w-[16px] min-h-[16px] flex-none flex items-center justify-center">
-                                <svg style="width: 16px; height: 16px;" class="w-full h-full" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
-                                    </path>
-                                </svg>
-                            </div>
-
+                            class="w-full xl:w-auto bg-dorado-400 text-carbon-900 text-xs md:text-sm tracking-[0.2em] uppercase font-bold px-8 py-3.5 rounded-xl hover:bg-[#b58714] transition-all duration-300 shadow-md hover:shadow-xl flex items-center justify-center gap-3">
+                            <svg style="width: 16px; height: 16px;" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                            </svg>
                             <span>Imprimir</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            {{-- ISLA 2: TABLA --}}
-            <div class="tabla-dorada-container bg-white rounded-2xl shadow-xl border border-carbon-200 overflow-hidden">
+            <div class="tabla-dorada-container rounded-3xl overflow-hidden">
                 <div class="overflow-x-auto custom-scroll">
                     <table class="tabla-dorada">
                         <thead>
@@ -125,12 +108,12 @@
                         <tbody>
                             @forelse($cuentas as $cuenta)
                             <tr>
-                                <td class="text-left pl-6 font-bold text-gray-400">
+                                <td class="text-left pl-6 font-bold text-white/40">
                                     #{{ $cuenta->id_cuentas_por_pagar }}
                                 </td>
 
-                                <td class="font-bold text-carbon-900 uppercase">
-                                    {{ $cuenta->proyecto ?? '—' }}
+                                <td class="font-bold text-white uppercase">
+                                    {{ $cuenta->proyecto ?? 'Sin proyecto' }}
                                 </td>
 
                                 <td class="text-center">
@@ -139,7 +122,7 @@
                                     </span>
                                 </td>
 
-                                <td class="text-center text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                <td class="text-center text-xs font-medium text-white/65 uppercase tracking-wide">
                                     {{ $cuenta->mes_pago ?? '-' }}
                                 </td>
 
@@ -150,7 +133,7 @@
                             @empty
                             <tr>
                                 <td colspan="5"
-                                    class="py-16 text-center text-gray-400 text-xs uppercase tracking-widest font-bold">
+                                    class="py-16 text-center text-white/40 text-xs uppercase tracking-widest font-bold">
                                     No hay facturas registradas
                                 </td>
                             </tr>
@@ -160,11 +143,10 @@
                 </div>
             </div>
 
-            {{-- ISLA 3: FOOTER (Gráficas) --}}
-            <div class=" rounded-2xl shadow-xl p-8 md:p-10 flex justify-center md:justify-start">
+            <div class="rounded-2xl border border-dorado-400/20 bg-[#0d1f30]/75 backdrop-blur-sm p-6 md:p-8 flex justify-center md:justify-start">
                 <button onClick="openModal()"
-                    class="w-full md:w-auto bg-dorado-400 text-white text-sm tracking-[0.2em] uppercase font-bold px-20 py-10 rounded-lg hover:bg-[#b58714] transition-all duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-0.5">
-                    Visualizar gráficas
+                    class="w-full md:w-auto bg-dorado-400 text-carbon-900 text-xs md:text-sm tracking-[0.2em] uppercase font-bold px-12 md:px-16 py-4 rounded-xl hover:bg-[#b58714] transition-all duration-300 shadow-md hover:shadow-xl">
+                    Visualizar graficas
                 </button>
             </div>
 

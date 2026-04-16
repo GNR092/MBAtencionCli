@@ -204,8 +204,12 @@ function openDetalleModal(grupo) {
         tr.className = 'hover:bg-white/5 border-b border-[#d8c495]/10';
 
         const estadoColor = getEstadoColor(cuenta.estado);
-        const selectHtml = '<select class="estado-select bg-[#0d1f30] border border-white/20 rounded-lg px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-[#d8c495] ' + estadoColor + '" ' +
-            'data-id="' + cuenta.id_cuentas_por_pagar + '" data-prev="' + (cuenta.estado || 'pendiente') + '" data-saldo-neto="' + (cuenta.saldo_neto || 0) + '">' +
+        const tieneFacturaSubida = !!cuenta.xml_file_id;
+        const disabledAttr = tieneFacturaSubida ? '' : 'disabled';
+        const bloqueoVisual = tieneFacturaSubida ? '' : 'opacity-60 cursor-not-allowed';
+        const bloqueoTitle = tieneFacturaSubida ? '' : 'title="Sube factura para cambiar estado"';
+        const selectHtml = '<select class="estado-select bg-[#0d1f30] border border-white/20 rounded-lg px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-[#d8c495] ' + estadoColor + ' ' + bloqueoVisual + '" ' +
+            'data-id="' + cuenta.id_cuentas_por_pagar + '" data-prev="' + (cuenta.estado || 'pendiente') + '" data-saldo-neto="' + (cuenta.saldo_neto || 0) + '" data-tiene-factura="' + (tieneFacturaSubida ? '1' : '0') + '" ' + disabledAttr + ' ' + bloqueoTitle + '>' +
             '<option value="pendiente" ' + (cuenta.estado === 'pendiente' ? 'selected' : '') + '>Pendiente</option>' +
             '<option value="parcial" ' + (cuenta.estado === 'parcial' ? 'selected' : '') + '>Parcial</option>' +
             '<option value="pagado" ' + (cuenta.estado === 'pagado' ? 'selected' : '') + '>Pagado</option>' +
@@ -267,6 +271,12 @@ function updateEstadoSelect(sel, estado) {
 function attachEstadoListeners() {
     document.querySelectorAll('#detalleCuerpo .estado-select').forEach(function(sel) {
         sel.addEventListener('change', function() {
+            if (this.dataset.tieneFactura !== '1') {
+                this.value = this.dataset.prev || 'pendiente';
+                updateEstadoSelect(this, this.value);
+                return;
+            }
+
             const prev = this.dataset.prev;
             const id = this.dataset.id;
             const selectEl = this;

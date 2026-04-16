@@ -59,3 +59,4 @@ session-ses_*.md
 /.codesearch.db
 /.agents
 skills-lock.json
+/.claude
