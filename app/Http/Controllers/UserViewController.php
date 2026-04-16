@@ -18,7 +18,7 @@ class UserViewController extends Controller
         }
 
         $anuncios = \App\Models\Anuncio::where('estado', 'activo')
-            ->orderByRaw("FIELD(prioridad, 'alta', 'media', 'baja')")
+            ->orderByRaw("CASE prioridad WHEN 'alta' THEN 1 WHEN 'media' THEN 2 WHEN 'baja' THEN 3 ELSE 4 END")
             ->orderBy('created_at', 'desc')
             ->get();
 
