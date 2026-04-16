@@ -123,17 +123,17 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::get('/api/cuentas/meses-facturados/{year}', [CuentasPorPagar::class, 'mesesConFacturas']);
 
     // Contratos (administrador)
-    Route::post('/subir-archivo', [ContractController::class, 'subir'])->name('admin.contratos.store');
-    Route::get('/subir-archivo', [ContractController::class, 'show'])->name('admin.contratos.index');
-    Route::post('/subir-archivo/confirm-password', [ContractController::class, 'confirmPassword'])->name('admin.contratos.confirmar');
-    Route::get('/subir-archivo/crear', [ContractController::class, 'crear'])->name('admin.contratos.create');
-    Route::post('/subir-archivo/delete', [ContractController::class, 'delete'])->name('admin.contratos.eliminar');
-    Route::post('/subir-archivo/confirm-password-editar', [ContractController::class, 'confirmPasswordEdit'])->name('admin.contratos.confirmar-editar');
-    Route::get('/subir-archivo/{id}/editar', [ContractController::class, 'editar'])->name('admin.contratos.editar');
-    Route::put('/subir-archivo/{id}/actualizar', [ContractController::class, 'actualizar'])->name('admin.contratos.actualizar');
-    Route::post('/subir-archivo/{id}/renovar', [ContractController::class, 'renovar'])->name('admin.contratos.renovar');
-    Route::get('/subir-archivo/clean', [ContractController::class, 'clean'])->name('admin.contratos.limpiar');
-    Route::post('/subir-archivo/search', [ContractController::class, 'search'])->name('admin.contratos.buscar');
+    Route::post('/administracion-contratos', [ContractController::class, 'subir'])->name('admin.contratos.store');
+    Route::get('/administracion-contratos', [ContractController::class, 'show'])->name('admin.contratos.index');
+    Route::post('/administracion-contratos/confirm-password', [ContractController::class, 'confirmPassword'])->name('admin.contratos.confirmar');
+    Route::get('/administracion-contratos/crear', [ContractController::class, 'crear'])->name('admin.contratos.create');
+    Route::post('/administracion-contratos/delete', [ContractController::class, 'delete'])->name('admin.contratos.eliminar');
+    Route::post('/administracion-contratos/confirm-password-editar', [ContractController::class, 'confirmPasswordEdit'])->name('admin.contratos.confirmar-editar');
+    Route::get('/administracion-contratos/{id}/editar', [ContractController::class, 'editar'])->name('admin.contratos.editar');
+    Route::put('/administracion-contratos/{id}/actualizar', [ContractController::class, 'actualizar'])->name('admin.contratos.actualizar');
+    Route::post('/administracion-contratos/{id}/renovar', [ContractController::class, 'renovar'])->name('admin.contratos.renovar');
+    Route::get('/administracion-contratos/clean', [ContractController::class, 'clean'])->name('admin.contratos.limpiar');
+    Route::post('/administracion-contratos/search', [ContractController::class, 'search'])->name('admin.contratos.buscar');
     Route::get('/api/users/{user}/projects', [ContractController::class, 'getProjectsForUser'])->name('api.usuarios.proyectos');
     Route::get('/api/users/{user}/projects/{project}/departments', [ContractController::class, 'getDepartmentsForUserProject'])->name('api.usuarios.proyectos.departamentos');
 

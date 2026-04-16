@@ -29,7 +29,7 @@
                 </p>
             </div>
 
-            <form action="{{ $contract ? '/subir-archivo/'.$contract->id.'/actualizar' : route('admin.contratos.store') }}" method="POST" enctype="multipart/form-data" class="p-8">
+            <form action="{{ $contract ? route('admin.contratos.actualizar', $contract->id) : route('admin.contratos.store') }}" method="POST" enctype="multipart/form-data" class="p-8">
                 @csrf
                 @if($contract)
                 @method('PUT')

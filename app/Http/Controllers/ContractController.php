@@ -212,6 +212,10 @@ class ContractController extends Controller
         }
 
         if (! $idUserDepto) {
+            $idUserDepto = $this->resolveDeptoByUserAndProject($userId, $proyectoId, $contrato->id_user_depto);
+        }
+
+        if (! $idUserDepto) {
             // Permitir cambiar solo el proyecto sin forzar alta/cambio de departamento.
             // Si el contrato no tiene departamento ligado y el proyecto tampoco tiene deptos,
             // se mantiene en null para no bloquear la corrección del proyecto.
@@ -292,6 +296,10 @@ class ContractController extends Controller
         }
 
         if (! $idUserDepto) {
+            $idUserDepto = $this->resolveDeptoByUserAndProject($userId, $proyectoId, $contratoOriginal->id_user_depto);
+        }
+
+        if (! $idUserDepto) {
             return back()->with('error', 'Selecciona un departamento válido o captura uno nuevo para renovar este contrato.');
         }
 
@@ -355,6 +363,11 @@ class ContractController extends Controller
             null,
             str_replace(['$', ','], '', $request->input('importe_bruto_renta'))
         );
+
+        if (! $idUserDepto) {
+            $idUserDepto = $this->resolveDeptoByUserAndProject((int) $userId, (int) $proyectoId, null);
+        }
+
         if (! $idUserDepto) {
             Storage::delete($path);
 
@@ -438,12 +451,26 @@ class ContractController extends Controller
 
         $users = User::all();
 
+        $fallbackDeptoByProject = DB::table('user_depto as ud')
+            ->select('ud.id_user_p', DB::raw('MIN(ud.id_user_depto) as fallback_id_user_depto'))
+            ->groupBy('ud.id_user_p');
+
         $query = DB::table('contract')
             ->join('users', 'contract.user_id', '=', 'users.id')
             ->leftJoin('user_proyectos', 'contract.id_user_p', '=', 'user_proyectos.id_user_p')
             ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
             ->leftJoin('user_depto', 'contract.id_user_depto', '=', 'user_depto.id_user_depto')
-            ->select('contract.*', 'users.name as user_name', DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'), DB::raw('COALESCE(user_depto.nombre, "Sin departamento") as departamento'), DB::raw('COALESCE(NULLIF(user_depto.predial, ""), "Sin predial") as predial'))
+            ->leftJoinSub($fallbackDeptoByProject, 'ud_fallback', function ($join) {
+                $join->on('ud_fallback.id_user_p', '=', 'contract.id_user_p');
+            })
+            ->leftJoin('user_depto as user_depto_fallback', 'user_depto_fallback.id_user_depto', '=', 'ud_fallback.fallback_id_user_depto')
+            ->select(
+                'contract.*',
+                'users.name as user_name',
+                DB::raw("COALESCE(proyectos.nombre_proyecto, 'Sin proyecto') as proyecto"),
+                DB::raw("COALESCE(user_depto.nombre, user_depto_fallback.nombre, 'Sin departamento') as departamento"),
+                DB::raw("COALESCE(NULLIF(user_depto.predial, ''), NULLIF(user_depto_fallback.predial, ''), 'Sin predial') as predial")
+            )
             ->orderBy('contract.created_at', 'asc');
 
         if (request()->filled('month')) {
@@ -673,5 +700,20 @@ class ContractController extends Controller
         }
 
         return $this->resolveUserDeptoId($idUserP, $preferredDeptoId);
+    }
+
+    private function resolveDeptoByUserAndProject(int $userId, int $projectId, ?int $preferredDeptoId): ?int
+    {
+        $depto = DB::table('user_depto')
+            ->join('user_proyectos', 'user_depto.id_user_p', '=', 'user_proyectos.id_user_p')
+            ->where('user_proyectos.id_user', $userId)
+            ->where('user_proyectos.id_proyecto', $projectId)
+            ->when($preferredDeptoId, function ($query) use ($preferredDeptoId) {
+                $query->orderByRaw('CASE WHEN user_depto.id_user_depto = ? THEN 0 ELSE 1 END', [(int) $preferredDeptoId]);
+            })
+            ->orderBy('user_depto.id_user_depto')
+            ->value('user_depto.id_user_depto');
+
+        return $depto ? (int) $depto : null;
     }
 }

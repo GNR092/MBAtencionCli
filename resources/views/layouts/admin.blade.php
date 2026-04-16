@@ -93,6 +93,12 @@
     }
 
     @media (min-width: 1024px) {
+        #sidebar-overlay,
+        #sidebar-overlay.active {
+            display: none !important;
+            pointer-events: none !important;
+        }
+
         #sidebar {
             position: relative;
             top: 0;
@@ -281,7 +287,7 @@
                                 <a href="/lista-de-inversionistas"
                                     class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Lista
                                     de inversionistas</a>
-                                <a href="/subir-archivo"
+                                <a href="{{ route('admin.contratos.index') }}"
                                     class="sidebar-link block py-2.5 pl-8 text-xs text-gray-300 hover:text-[#d8c495] hover:bg-white/5 transition-colors">Administración
                                     de contratos</a>
                                 <a href="/incrementos"
@@ -381,6 +387,17 @@
         const mainContent = document.getElementById('main-content');
         const header = document.querySelector('header');
 
+        const syncSidebarMode = () => {
+            if (!sidebar || !sidebarOverlay) {
+                return;
+            }
+
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('sidebar-active');
+                sidebarOverlay.classList.remove('active');
+            }
+        };
+
         const syncHeaderHeight = () => {
             if (!header) {
                 return;
@@ -392,6 +409,8 @@
 
         syncHeaderHeight();
         window.addEventListener('resize', syncHeaderHeight);
+        syncSidebarMode();
+        window.addEventListener('resize', syncSidebarMode);
 
         // Restaurar estado del sidebar desde localStorage
         const savedState = localStorage.getItem('sidebar_state');
@@ -465,10 +484,8 @@
             }
 
             link.addEventListener('click', function() {
-                if (window.innerWidth < 1024) {
-                    sidebar.classList.remove('sidebar-active');
-                    sidebarOverlay.classList.remove('active');
-                }
+                sidebar.classList.remove('sidebar-active');
+                sidebarOverlay.classList.remove('active');
             });
         });
 

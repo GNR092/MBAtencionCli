@@ -77,7 +77,17 @@ class CfdiValidatorController extends BaseController
             ->join('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
             ->where('contract.user_id', $user->id)
             ->where('contract.estado', 'activo')
-            ->whereNotNull('contract.id_user_depto')
+            ->where(function ($query) {
+                $query->whereExists(function ($sub) {
+                    $sub->select(DB::raw(1))
+                        ->from('user_depto as ud_directo')
+                        ->whereColumn('ud_directo.id_user_depto', 'contract.id_user_depto');
+                })->orWhereExists(function ($sub) {
+                    $sub->select(DB::raw(1))
+                        ->from('user_depto as ud_proyecto')
+                        ->whereColumn('ud_proyecto.id_user_p', 'contract.id_user_p');
+                });
+            })
             ->select('proyectos.id_proyecto', 'proyectos.nombre_proyecto')
             ->distinct()
             ->orderBy('proyectos.nombre_proyecto')

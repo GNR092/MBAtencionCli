@@ -417,15 +417,20 @@ class UserFactController extends Controller
             ->where('id_proyecto', $selectedProjectId)
             ->first();
 
-        $contract = $userProyecto
-            ? Contract::with('userDepto')->where('id_user_p', $userProyecto->id_user_p)->orderByDesc('id')->first()
-            : null;
+        $contract = null;
+        if ($userProyecto) {
+            $contractQuery = Contract::with('userDepto')
+                ->where('id_user_p', $userProyecto->id_user_p)
+                ->orderByDesc('id');
+
+            $contract = (clone $contractQuery)->where('estado', 'activo')->first() ?? $contractQuery->first();
+        }
 
         if (! $contract) {
             return redirect()->back()->withErrors(['message' => 'No se encontró un contrato activo para este proyecto.']);
         }
 
-        $contractDepto = $contract->userDepto;
+        $contractDepto = $this->resolveContractDepto((int) $contract->id_user_p, $contract->id_user_depto ? (int) $contract->id_user_depto : null);
         if (! $contractDepto || ! $this->normalizarDepartamento($contractDepto->nombre ?? '')) {
             return redirect()->back()->withErrors(['message' => 'El contrato no tiene departamento configurado para validar la factura.']);
         }
@@ -915,7 +920,36 @@ class UserFactController extends Controller
         }
 
         return Contract::where('id_user_p', $userProyecto->id_user_p)
-            ->whereNotNull('id_user_depto')
+            ->where(function ($query) {
+                $query->whereExists(function ($sub) {
+                    $sub->select(DB::raw(1))
+                        ->from('user_depto as ud_directo')
+                        ->whereColumn('ud_directo.id_user_depto', 'contract.id_user_depto');
+                })->orWhereExists(function ($sub) {
+                    $sub->select(DB::raw(1))
+                        ->from('user_depto as ud_proyecto')
+                        ->whereColumn('ud_proyecto.id_user_p', 'contract.id_user_p');
+                });
+            })
             ->exists();
+    }
+
+    private function resolveContractDepto(int $idUserP, ?int $idUserDepto): ?object
+    {
+        if ($idUserDepto) {
+            $directo = DB::table('user_depto')
+                ->where('id_user_p', $idUserP)
+                ->where('id_user_depto', $idUserDepto)
+                ->first(['id_user_depto', 'nombre', 'predial']);
+
+            if ($directo) {
+                return $directo;
+            }
+        }
+
+        return DB::table('user_depto')
+            ->where('id_user_p', $idUserP)
+            ->orderBy('id_user_depto')
+            ->first(['id_user_depto', 'nombre', 'predial']);
     }
 }
