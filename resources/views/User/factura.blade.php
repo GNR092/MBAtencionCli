@@ -17,7 +17,7 @@
 
     <header class="mb-16 px-2">
         <div class="flex items-baseline gap-4">
-            <h1 class="text-white text-6xl md:text-8xl font-extralight tracking-[-0.02em] leading-none uppercase">
+            <h1 class="page-title">
                 Facturación
             </h1>
         </div>

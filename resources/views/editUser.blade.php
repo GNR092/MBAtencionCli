@@ -6,7 +6,7 @@
         <header class="mb-8">
             <div class="flex items-baseline gap-4">
                 <span class="text-dorado-400 text-sm font-serif italic">|</span>
-                <h1 class="text-white text-5xl md:text-7xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                <h1 class="page-title">
                     Editar Usuario
                 </h1>
             </div>

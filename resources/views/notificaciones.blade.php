@@ -19,11 +19,11 @@
     {{-- Hero Section --}}
     <header class="mb-20 px-2">
         <div class="flex items-baseline gap-4">
-            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+            <h1 class="page-title">
                 Notificaciones
             </h1>
         </div>
-        <p class="text-white/50 text-s tracking-[0.3em] uppercase mt-6 ml-12">
+        <p class="text-white/50 text-xs tracking-[0.3em] uppercase mt-6 ml-12">
             Centro de mensajes y alertas del sistema
         </p>
     </header>

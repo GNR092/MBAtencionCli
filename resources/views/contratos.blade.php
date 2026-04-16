@@ -20,7 +20,7 @@
     <header class="relative z-10 mb-10 md:mb-14 px-2">
         <div class="flex items-baseline gap-4">
             <span class="text-dorado-400 text-sm md:text-base font-serif italic">|</span>
-            <h1 class="text-white text-5xl sm:text-6xl md:text-8xl font-extralight tracking-[-0.03em] leading-none uppercase">
+            <h1 class="page-title">
                 Contratos
             </h1>
         </div>

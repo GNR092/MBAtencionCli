@@ -5,7 +5,7 @@
     <header class="mb-10 px-2">
         <div class="flex items-baseline gap-4">
             <span class="text-dorado-400 text-sm font-serif italic">|</span>
-            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+            <h1 class="page-title">
                 Eliminados
             </h1>
         </div>
@@ -101,8 +101,8 @@
 @push('modals')
 <!-- Modal detalle eliminados -->
 <div id="detalleModal"
-    class="bg-black/60 backdrop-blur-sm fixed inset-0 z-9999 flex items-center justify-center hidden p-4">
-    <div class="bg-[#112134] border border-red-600/30 rounded-3xl shadow-2xl p-4 md:p-6 relative w-full max-w-auto max-h-[90vh] overflow-hidden flex flex-col">
+    class="bg-black/60 backdrop-blur-sm fixed inset-0 z-[9999] flex items-center justify-center hidden p-4">
+    <div class="bg-[#112134] border border-red-600/30 rounded-3xl shadow-2xl p-4 md:p-6 relative w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
         <div class="flex justify-between items-center mb-4 border-b border-red-600/30 pb-3">
             <h2 class="text-xl font-bold text-red-400" id="detalleTitulo">Detalle de Eliminados</h2>
             <button type="button" onclick="closeDetalleModal()" class="text-white/50 hover:text-white text-2xl">&times;</button>

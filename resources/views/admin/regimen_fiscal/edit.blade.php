@@ -5,7 +5,7 @@
     <header class="mb-10 px-2">
         <div class="flex items-baseline gap-4">
             <span class="text-dorado-400 text-sm font-serif italic">|</span>
-            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+            <h1 class="page-title">
                 Editar Régimen Fiscal
             </h1>
         </div>

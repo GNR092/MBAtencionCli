@@ -6,7 +6,7 @@
         <header class="px-1">
             <div class="flex items-baseline gap-4">
                 <span class="text-dorado-400 text-sm font-serif italic">|</span>
-                <h1 class="text-white text-4xl md:text-6xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                <h1 class="page-title">
                     Registro de Inversionista
                 </h1>
             </div>

@@ -5,7 +5,7 @@
     <header class="mb-10 px-2">
         <div class="flex items-baseline gap-4">
             <span class="text-dorado-400 text-sm font-serif italic">|</span>
-            <h1 class="text-white text-5xl md:text-7xl font-extralight tracking-[-0.02em] leading-none uppercase">
+            <h1 class="page-title">
                 Liquidaciones
             </h1>
         </div>
@@ -201,8 +201,8 @@
 
 <!-- Modal detalle inversionista -->
 <div id="detalleModal"
-    class="bg-black/60 backdrop-blur-sm fixed inset-0 z-9999 flex items-center justify-center hidden p-4">
-    <div class="bg-[#112134] border border-[#d8c495]/20 rounded-3xl shadow-2xl p-4 md:p-6 relative w-full max-w-auto max-h-[90vh] overflow-hidden flex flex-col">
+    class="bg-black/60 backdrop-blur-sm fixed inset-0 z-[9999] flex items-center justify-center hidden p-4">
+    <div class="bg-[#112134] border border-[#d8c495]/20 rounded-3xl shadow-2xl p-4 md:p-6 relative w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
         <div class="flex justify-between items-center mb-4 border-b border-[#d8c495]/20 pb-3">
             <h2 class="text-xl font-bold text-[#d8c495]" id="detalleTitulo">Detalle de Cuentas</h2>
             <button type="button" onclick="closeDetalleModal()" class="text-white/50 hover:text-white text-2xl">&times;</button>

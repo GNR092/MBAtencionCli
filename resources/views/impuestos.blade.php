@@ -2,12 +2,12 @@
 
 @section('content')
 <div class="w-full p-4 md:p-6 animate-fadeInUp">
-    <div class="max-w-auto
+    <div class="max-w-7xl
      mx-auto">
         <header class="mb-10 px-2">
             <div class="flex items-baseline gap-4">
                 <span class="text-dorado-400 text-sm font-serif italic">|</span>
-                <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                <h1 class="page-title">
                     Impuestos
                 </h1>
             </div>

@@ -19,11 +19,11 @@
     {{-- Hero Section (Proporciones Exactas de Referencia) --}}
     <header class="mb-20 px-2">
         <div class="flex items-baseline gap-4">
-            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
+            <h1 class="page-title">
                 Rendimientos
             </h1>
         </div>
-        <p class="text-white/50 text-s tracking-[0.3em] uppercase mt-6 ml-12">
+        <p class="text-white/50 text-xs tracking-[0.3em] uppercase mt-6 ml-12">
             Historial detallado y rendimiento de activos
         </p>
     </header>
@@ -156,7 +156,7 @@
     <div id="chartsmModal" class="fixed inset-0 z-50 flex items-center justify-center hidden p-6">
         <div class="absolute inset-0 bg-black/95 backdrop-blur-xl" onclick="closeModal()"></div>
         <div
-            class="bg-carbon-900 border border-white/5 w-full max-w-4xl max-h-[90vh] overflow-y-auto relative z-10 shadow-3xl">
+            class="bg-carbon-900 border border-white/5 w-full max-w-4xl max-h-[90vh] overflow-y-auto relative z-10 shadow-2xl">
             <div class="p-12 md:p-20 text-white">
                 <div class="flex justify-between items-start mb-16 border-b border-white/5 pb-8">
                     <h2 class="text-5xl font-extralight uppercase tracking-tighter text-white">Reporte<br><span
@@ -184,7 +184,7 @@
 
     <div id="descargaModal" class="fixed inset-0 z-50 flex items-center justify-center hidden p-6">
         <div class="absolute inset-0 bg-black/95 backdrop-blur-xl" onclick="closeModalDescarga()"></div>
-        <div class="bg-carbon-900 border border-white/5 w-full max-w-2xl relative z-10 shadow-3xl p-12 md:p-20">
+        <div class="bg-carbon-900 border border-white/5 w-full max-w-2xl relative z-10 shadow-2xl p-12 md:p-20">
             <h2 class="text-white text-4xl font-extralight uppercase tracking-tighter mb-12">Opciones de<br><span
                     class="text-dorado-400 font-bold">Descarga</span></h2>
             <form action="{{ route('estados-cuenta.pdf') }}" method="POST" class="space-y-12">
