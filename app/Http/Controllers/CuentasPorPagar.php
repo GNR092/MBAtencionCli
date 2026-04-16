@@ -28,7 +28,7 @@ class CuentasPorPagar extends Controller
                 'cuentasporpagar.*',
                 'users.name as name',
                 'contract.importe_bruto_renta as importeBase',
-                DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'),
+                DB::raw("COALESCE(proyectos.nombre_proyecto, 'Sin proyecto') as proyecto"),
             );
 
         $this->aplicarExclusionCancelados($query);
@@ -406,6 +406,23 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         $this->generarCuentasDesdeContratos();
         $this->recalcularSaldos();
 
+        $driver = DB::connection()->getDriverName();
+        $deptoDetalleMapSql = $driver === 'pgsql'
+            ? "(SELECT STRING_AGG(CONCAT_WS('|', ud.nombre, COALESCE(NULLIF(ud.predial, ''), 'N/A'), COALESCE(NULLIF(ud.tipo, ''), 'N/A')), ';') FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p)"
+            : "(SELECT GROUP_CONCAT(CONCAT_WS('|', ud.nombre, COALESCE(NULLIF(ud.predial, ''), 'N/A'), COALESCE(NULLIF(ud.tipo, ''), 'N/A')) SEPARATOR ';') FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p)";
+        $departamentosUsuarioSql = $driver === 'pgsql'
+            ? "(SELECT ARRAY_TO_STRING(ARRAY_AGG(DISTINCT ud.nombre ORDER BY ud.nombre), ', ') FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p)"
+            : "(SELECT GROUP_CONCAT(DISTINCT ud.nombre ORDER BY ud.nombre SEPARATOR ', ') FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p)";
+        $predialesUsuarioSql = $driver === 'pgsql'
+            ? "(SELECT ARRAY_TO_STRING(ARRAY_AGG(DISTINCT ud.predial ORDER BY ud.predial), ', ') FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p AND ud.predial IS NOT NULL AND ud.predial != '' AND ud.predial != 'N/A')"
+            : "(SELECT GROUP_CONCAT(DISTINCT ud.predial ORDER BY ud.predial SEPARATOR ', ') FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p AND ud.predial IS NOT NULL AND ud.predial != '' AND ud.predial != 'N/A')";
+        $tiposUsuarioSql = $driver === 'pgsql'
+            ? "(SELECT ARRAY_TO_STRING(ARRAY_AGG(DISTINCT ud.tipo ORDER BY ud.tipo), ', ') FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p AND ud.tipo IS NOT NULL AND ud.tipo != '')"
+            : "(SELECT GROUP_CONCAT(DISTINCT ud.tipo ORDER BY ud.tipo SEPARATOR ', ') FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p AND ud.tipo IS NOT NULL AND ud.tipo != '')";
+        $mesSubidaSql = $driver === 'pgsql'
+            ? "TO_CHAR(xml_files.created_at, 'YYYY-MM')"
+            : "DATE_FORMAT(xml_files.created_at, '%Y-%m')";
+
         $query = Cuentas::with('contract')
             ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
             ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
@@ -419,15 +436,15 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 'users.name as name',
                 'contract.importe_bruto_renta as importeBase',
                 'contract.tipo as contract_tipo',
-                DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'),
-                DB::raw('COALESCE(razones_sociales.nombre_razon_social, "Sin razon social") as razon_social'),
+                DB::raw("COALESCE(proyectos.nombre_proyecto, 'Sin proyecto') as proyecto"),
+                DB::raw("COALESCE(razones_sociales.nombre_razon_social, 'Sin razon social') as razon_social"),
                 'xml_files.departamento',
-                DB::raw('(SELECT GROUP_CONCAT(CONCAT_WS("|", ud.nombre, COALESCE(NULLIF(ud.predial, ""), "N/A"), COALESCE(NULLIF(ud.tipo, ""), "N/A")) SEPARATOR ";") FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p) as depto_detalle_map'),
-                DB::raw('(SELECT GROUP_CONCAT(DISTINCT ud.nombre ORDER BY ud.nombre SEPARATOR ", ") FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p) as departamentos_usuario'),
-                DB::raw('(SELECT GROUP_CONCAT(DISTINCT ud.predial ORDER BY ud.predial SEPARATOR ", ") FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p AND ud.predial IS NOT NULL AND ud.predial != "" AND ud.predial != "N/A") as prediales_usuario'),
-                DB::raw('(SELECT GROUP_CONCAT(DISTINCT ud.tipo ORDER BY ud.tipo SEPARATOR ", ") FROM user_depto ud WHERE ud.id_user_p = contract.id_user_p AND ud.tipo IS NOT NULL AND ud.tipo != "") as tipos_usuario'),
-                DB::raw('COALESCE(NULLIF(user_proyectos.metodo_pago, ""), users.metodo_pago) as metodo_pago'),
-                DB::raw('DATE_FORMAT(xml_files.created_at, "%Y-%m") as mes_subida'),
+                DB::raw("{$deptoDetalleMapSql} as depto_detalle_map"),
+                DB::raw("{$departamentosUsuarioSql} as departamentos_usuario"),
+                DB::raw("{$predialesUsuarioSql} as prediales_usuario"),
+                DB::raw("{$tiposUsuarioSql} as tipos_usuario"),
+                DB::raw("COALESCE(NULLIF(user_proyectos.metodo_pago, ''), users.metodo_pago) as metodo_pago"),
+                DB::raw("{$mesSubidaSql} as mes_subida"),
             );
 
         $this->aplicarExclusionCancelados($query);
@@ -552,6 +569,14 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             return view('tablas-control', compact('registros', 'selectedMonth', 'totalNeto', 'totalPagado', 'totalPendiente', 'tabs', 'activeTab', 'pendingTabLabel'));
         }
 
+        $driver = DB::connection()->getDriverName();
+        $monthSql = $driver === 'pgsql'
+            ? "TO_CHAR(xml_files.created_at, 'YYYY-MM')"
+            : "DATE_FORMAT(xml_files.created_at, '%Y-%m')";
+        $incrementoVigenteSql = $driver === 'pgsql'
+            ? "(SELECT ii.importe_base FROM incrementos_importe ii WHERE ii.id_contract = contract.id AND TO_CHAR(ii.fecha_inicio, 'YYYY-MM') <= cuentasporpagar.mes_pago AND (ii.fecha_fin IS NULL OR TO_CHAR(ii.fecha_fin, 'YYYY-MM') >= cuentasporpagar.mes_pago) ORDER BY ii.fecha_inicio DESC LIMIT 1)"
+            : "(SELECT ii.importe_base FROM incrementos_importe ii WHERE ii.id_contract = contract.id AND DATE_FORMAT(ii.fecha_inicio, '%Y-%m') <= cuentasporpagar.mes_pago AND (ii.fecha_fin IS NULL OR DATE_FORMAT(ii.fecha_fin, '%Y-%m') >= cuentasporpagar.mes_pago) ORDER BY ii.fecha_inicio DESC LIMIT 1)";
+
         $registros = Cuentas::query()
             ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
             ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
@@ -571,20 +596,20 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 'cuentasporpagar.saldo_pendiente',
                 'cuentasporpagar.isr',
                 'users.name as inversionista',
-                DB::raw('COALESCE(NULLIF(user_proyectos.metodo_pago, ""), users.metodo_pago) as metodo_pago'),
+                DB::raw("COALESCE(NULLIF(user_proyectos.metodo_pago, ''), users.metodo_pago) as metodo_pago"),
                 'contract.id_user_p',
                 'contract.importe_bruto_renta as contrato_importe',
-                DB::raw('(SELECT ii.importe_base FROM incrementos_importe ii WHERE ii.id_contract = contract.id AND DATE_FORMAT(ii.fecha_inicio, "%Y-%m") <= cuentasporpagar.mes_pago AND (ii.fecha_fin IS NULL OR DATE_FORMAT(ii.fecha_fin, "%Y-%m") >= cuentasporpagar.mes_pago) ORDER BY ii.fecha_inicio DESC LIMIT 1) as incremento_vigente'),
-                DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'),
-                DB::raw('COALESCE(razones_sociales.nombre_razon_social, "Sin razón social") as razon_social'),
-                DB::raw('COALESCE(razones_sociales.rfc, "") as rfc_oculto'),
+                DB::raw("{$incrementoVigenteSql} as incremento_vigente"),
+                DB::raw("COALESCE(proyectos.nombre_proyecto, 'Sin proyecto') as proyecto"),
+                DB::raw("COALESCE(razones_sociales.nombre_razon_social, 'Sin razon social') as razon_social"),
+                DB::raw("COALESCE(razones_sociales.rfc, '') as rfc_oculto"),
                 'xml_files.departamento as xml_departamentos'
             );
 
         $this->aplicarExclusionCancelados($registros);
 
         $registros = $registros
-            ->where(function ($query) use ($activeTab, $selectedMonth) {
+            ->where(function ($query) use ($activeTab, $selectedMonth, $monthSql) {
                 if (in_array($activeTab, ['deber-ser', 'pagado', 'no-pagado'], true)) {
                     $query->where('cuentasporpagar.mes_pago', '<=', $selectedMonth);
 
@@ -592,9 +617,9 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 }
 
                 if ($activeTab === 'extra') {
-                    $query->where(function ($sub) use ($selectedMonth) {
+                    $query->where(function ($sub) use ($selectedMonth, $monthSql) {
                         $sub->where('cuentasporpagar.mes_pago', $selectedMonth)
-                            ->orWhereRaw('DATE_FORMAT(xml_files.created_at, "%Y-%m") = ?', [$selectedMonth]);
+                            ->orWhereRaw("{$monthSql} = ?", [$selectedMonth]);
                     });
 
                     return;
