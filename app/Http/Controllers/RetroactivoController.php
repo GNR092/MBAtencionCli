@@ -18,6 +18,11 @@ class RetroactivoController extends Controller
             return redirect('/inicio-de-sesion');
         }
 
+        $driver = DB::connection()->getDriverName();
+        $mesSubidaSql = $driver === 'pgsql'
+            ? "TO_CHAR(xml_files.created_at, 'YYYY-MM')"
+            : "DATE_FORMAT(xml_files.created_at, '%Y-%m')";
+
         $query = Cuentas::with('contract')
             ->leftJoin('xml_files', 'cuentasporpagar.xml_file_id', '=', 'xml_files.id')
             ->leftJoin('contract', 'cuentasporpagar.id_contract', '=', 'contract.id')
@@ -28,8 +33,8 @@ class RetroactivoController extends Controller
                 'cuentasporpagar.*',
                 'users.name as name',
                 'contract.importe_bruto_renta as importeBase',
-                DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'),
-                DB::raw('DATE_FORMAT(xml_files.created_at, "%Y-%m") as mes_subida'),
+                DB::raw("COALESCE(proyectos.nombre_proyecto, 'Sin proyecto') as proyecto"),
+                DB::raw("{$mesSubidaSql} as mes_subida")
             );
 
         $query->where('cuentasporpagar.es_retroactivo', true);
@@ -149,6 +154,11 @@ class RetroactivoController extends Controller
             return redirect('/inicio-de-sesion');
         }
 
+        $driver = DB::connection()->getDriverName();
+        $mesSubidaSql = $driver === 'pgsql'
+            ? "TO_CHAR(xml_files.created_at, 'YYYY-MM')"
+            : "DATE_FORMAT(xml_files.created_at, '%Y-%m')";
+
         $query = RetroactivoEliminado::with('contract')
             ->leftJoin('contract', 'retroactivos_eliminados.id_contract', '=', 'contract.id')
             ->leftJoin('users', 'contract.user_id', '=', 'users.id')
@@ -159,8 +169,8 @@ class RetroactivoController extends Controller
                 'retroactivos_eliminados.*',
                 'users.name as name',
                 'contract.importe_bruto_renta as importeBase',
-                DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'),
-                DB::raw('DATE_FORMAT(xml_files.created_at, "%Y-%m") as mes_subida'),
+                DB::raw("COALESCE(proyectos.nombre_proyecto, 'Sin proyecto') as proyecto"),
+                DB::raw("{$mesSubidaSql} as mes_subida")
             );
 
         $query->when($request->filled(['search', 'categoria']), function ($q) use ($request) {
