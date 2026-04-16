@@ -32,10 +32,6 @@
     font-family: 'Doulos SIL', sans-serif;
 }
 
-body {
-    font-family: 'Doulos SIL', sans-serif;
-}
-
 @theme {
     --font-sans:
         "Instrument Sans", ui-sans-serif, system-ui, sans-serif,
@@ -307,18 +303,18 @@ body {
     justify-content: center;
 }
 
-h1 {
-    color: #fff;
-    font-size: 3rem;
-    font-weight: 200;
-    letter-spacing: -0.02em;
-    line-height: 1;
+.page-title {
+    color: var(--text-primary);
+    font-size: clamp(1.9rem, 1.5rem + 1.4vw, 2.75rem);
+    font-weight: 300;
+    letter-spacing: -0.015em;
+    line-height: 1.05;
     text-transform: uppercase;
 }
 
 @media (min-width: 768px) {
-    h1 {
-        font-size: 4.5rem;
+    .page-title {
+        font-size: clamp(2.15rem, 1.7rem + 1.2vw, 3rem);
     }
 }
 
