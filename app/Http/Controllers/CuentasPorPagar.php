@@ -554,9 +554,6 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         }
 
         $driver = DB::connection()->getDriverName();
-        $monthSql = $driver === 'pgsql'
-            ? "TO_CHAR(xml_files.created_at, 'YYYY-MM')"
-            : "DATE_FORMAT(xml_files.created_at, '%Y-%m')";
 
         $incrementoVigenteSql = $driver === 'pgsql'
             ? "(SELECT ii.importe_base FROM incrementos_importe ii WHERE ii.id_contract = contract.id AND TO_CHAR(ii.fecha_inicio, 'YYYY-MM') <= cuentasporpagar.mes_pago AND (ii.fecha_fin IS NULL OR TO_CHAR(ii.fecha_fin, 'YYYY-MM') >= cuentasporpagar.mes_pago) ORDER BY ii.fecha_inicio DESC LIMIT 1)"
@@ -586,30 +583,53 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         $this->aplicarExclusionCancelados($registros);
 
         $registros = $registros
-            ->where(function ($query) use ($activeTab, $selectedMonth, $monthSql) {
-                if (in_array($activeTab, ['deber-ser', 'pagado', 'no-pagado'], true)) {
-                    $query->where('cuentasporpagar.mes_pago', '<=', $selectedMonth);
+            ->where(function ($query) use ($activeTab, $selectedMonth) {
+                if ($activeTab === 'principal') {
+                    $query->where('cuentasporpagar.mes_pago', $selectedMonth)
+                        ->where('cuentasporpagar.origen', 'xml')
+                        ->whereNotNull('cuentasporpagar.xml_file_id')
+                        ->whereNotNull('cuentasporpagar.uuid');
 
                     return;
                 }
 
-                if ($activeTab === 'extra') {
-                    $query->where(function ($sub) use ($selectedMonth, $monthSql) {
-                        $sub->where('cuentasporpagar.mes_pago', $selectedMonth)
-                            ->orWhereRaw("{$monthSql} = ?", [$selectedMonth]);
+                if ($activeTab === 'deber-ser') {
+                    $query->where('cuentasporpagar.mes_pago', $selectedMonth);
+
+                    return;
+                }
+
+                if ($activeTab === 'no-pagado') {
+                    $query->where('cuentasporpagar.mes_pago', '<', $selectedMonth)
+                        ->where('cuentasporpagar.estado', '!=', 'pagado')
+                        ->where('contract.estado', 'activo');
+
+                    return;
+                }
+
+                if ($activeTab === 'pagado') {
+                    $query->where(function ($pagado) use ($selectedMonth) {
+                        $pagado->where(function ($mesActual) use ($selectedMonth) {
+                            $mesActual->where('cuentasporpagar.mes_pago', $selectedMonth)
+                                ->where('cuentasporpagar.estado', 'pagado');
+                        })->orWhere(function ($retroPagado) use ($selectedMonth) {
+                            $retroPagado->where('cuentasporpagar.mes_pago', '<', $selectedMonth)
+                                ->where('cuentasporpagar.es_retroactivo', true)
+                                ->where('cuentasporpagar.estado', 'pagado');
+                        });
                     });
 
                     return;
                 }
 
+                if ($activeTab === 'extra') {
+                    $query->where('cuentasporpagar.mes_pago', '<', $selectedMonth)
+                        ->where('cuentasporpagar.es_retroactivo', true);
+
+                    return;
+                }
+
                 $query->where('cuentasporpagar.mes_pago', $selectedMonth);
-            })
-            ->when($activeTab === 'no-pagado', fn ($query) => $query->where('cuentasporpagar.estado', '!=', 'pagado'))
-            ->when($activeTab === 'deber-ser', fn ($query) => $query->where('cuentasporpagar.es_extra', false))
-            ->when($activeTab === 'pagado', fn ($query) => $query->where('cuentasporpagar.estado', 'pagado'))
-            ->when($activeTab === 'extra', function ($query) {
-                $query->where('cuentasporpagar.estado', 'pagado')
-                    ->where(fn ($extra) => $extra->where('cuentasporpagar.es_extra', true)->orWhere('cuentasporpagar.meses_cubiertos', '>', 1));
             })
             ->orderBy('users.name')
             ->orderBy('cuentasporpagar.id_cuentas_por_pagar')
