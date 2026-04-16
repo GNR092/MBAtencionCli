@@ -516,29 +516,16 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         try {
             $mesDate = Carbon::createFromFormat('Y-m', $selectedMonth);
             $meses = [
-                1 => 'ENERO',
-                2 => 'FEBRERO',
-                3 => 'MARZO',
-                4 => 'ABRIL',
-                5 => 'MAYO',
-                6 => 'JUNIO',
-                7 => 'JULIO',
-                8 => 'AGOSTO',
-                9 => 'SEPTIEMBRE',
-                10 => 'OCTUBRE',
-                11 => 'NOVIEMBRE',
-                12 => 'DICIEMBRE',
+                1 => 'ENERO', 2 => 'FEBRERO', 3 => 'MARZO', 4 => 'ABRIL', 5 => 'MAYO', 6 => 'JUNIO',
+                7 => 'JULIO', 8 => 'AGOSTO', 9 => 'SEPTIEMBRE', 10 => 'OCTUBRE', 11 => 'NOVIEMBRE', 12 => 'DICIEMBRE',
             ];
             $mesTabLabel = $meses[(int) $mesDate->format('n')].' '.$mesDate->format('Y');
         } catch (\Exception $e) {
         }
 
         $legacyTabs = [
-            'bdd-febrero' => 'principal',
-            'bdd-no-pagado' => 'no-pagado',
-            'bdd-deber-ser' => 'deber-ser',
-            'bdd-pagado' => 'pagado',
-            'bdd-extra' => 'extra',
+            'bdd-febrero' => 'principal', 'bdd-no-pagado' => 'no-pagado', 'bdd-deber-ser' => 'deber-ser',
+            'bdd-pagado' => 'pagado', 'bdd-extra' => 'extra',
         ];
 
         $requestedTab = $request->query('tab', 'principal');
@@ -547,11 +534,8 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         }
 
         $tabs = [
-            'principal' => $mesTabLabel,
-            'no-pagado' => 'NO PAGADO',
-            'deber-ser' => 'DEBER SER',
-            'pagado' => 'PAGADO',
-            'extra' => 'EXTRA',
+            'principal' => $mesTabLabel, 'no-pagado' => 'NO PAGADO', 'deber-ser' => 'DEBER SER',
+            'pagado' => 'PAGADO', 'extra' => 'EXTRA',
         ];
         $activeTab = $requestedTab;
         if (! array_key_exists($activeTab, $tabs)) {
@@ -573,6 +557,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         $monthSql = $driver === 'pgsql'
             ? "TO_CHAR(xml_files.created_at, 'YYYY-MM')"
             : "DATE_FORMAT(xml_files.created_at, '%Y-%m')";
+
         $incrementoVigenteSql = $driver === 'pgsql'
             ? "(SELECT ii.importe_base FROM incrementos_importe ii WHERE ii.id_contract = contract.id AND TO_CHAR(ii.fecha_inicio, 'YYYY-MM') <= cuentasporpagar.mes_pago AND (ii.fecha_fin IS NULL OR TO_CHAR(ii.fecha_fin, 'YYYY-MM') >= cuentasporpagar.mes_pago) ORDER BY ii.fecha_inicio DESC LIMIT 1)"
             : "(SELECT ii.importe_base FROM incrementos_importe ii WHERE ii.id_contract = contract.id AND DATE_FORMAT(ii.fecha_inicio, '%Y-%m') <= cuentasporpagar.mes_pago AND (ii.fecha_fin IS NULL OR DATE_FORMAT(ii.fecha_fin, '%Y-%m') >= cuentasporpagar.mes_pago) ORDER BY ii.fecha_inicio DESC LIMIT 1)";
@@ -585,23 +570,15 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             ->leftJoin('proyectos', 'user_proyectos.id_proyecto', '=', 'proyectos.id_proyecto')
             ->leftJoin('razones_sociales', 'proyectos.id_razon_social', '=', 'razones_sociales.id_razon_social')
             ->select(
-                'cuentasporpagar.id_cuentas_por_pagar',
-                'cuentasporpagar.estado',
-                'cuentasporpagar.mes_pago',
-                'cuentasporpagar.mesesdepago',
-                'cuentasporpagar.saldo_neto',
-                'cuentasporpagar.monto_pagado',
-                'cuentasporpagar.meses_cubiertos',
-                'cuentasporpagar.es_extra',
-                'cuentasporpagar.saldo_pendiente',
-                'cuentasporpagar.isr',
-                'users.name as inversionista',
+                'cuentasporpagar.id_cuentas_por_pagar', 'cuentasporpagar.estado', 'cuentasporpagar.mes_pago',
+                'cuentasporpagar.mesesdepago', 'cuentasporpagar.saldo_neto', 'cuentasporpagar.monto_pagado',
+                'cuentasporpagar.meses_cubiertos', 'cuentasporpagar.es_extra', 'cuentasporpagar.saldo_pendiente',
+                'cuentasporpagar.isr', 'users.name as inversionista',
                 DB::raw("COALESCE(NULLIF(user_proyectos.metodo_pago, ''), users.metodo_pago) as metodo_pago"),
-                'contract.id_user_p',
-                'contract.importe_bruto_renta as contrato_importe',
+                'contract.id_user_p', 'contract.importe_bruto_renta as contrato_importe',
                 DB::raw("{$incrementoVigenteSql} as incremento_vigente"),
                 DB::raw("COALESCE(proyectos.nombre_proyecto, 'Sin proyecto') as proyecto"),
-                DB::raw("COALESCE(razones_sociales.nombre_razon_social, 'Sin razon social') as razon_social"),
+                DB::raw("COALESCE(razones_sociales.nombre_razon_social, 'Sin razón social') as razon_social"),
                 DB::raw("COALESCE(razones_sociales.rfc, '') as rfc_oculto"),
                 'xml_files.departamento as xml_departamentos'
             );
@@ -627,21 +604,12 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
 
                 $query->where('cuentasporpagar.mes_pago', $selectedMonth);
             })
-            ->when($activeTab === 'no-pagado', function ($query) {
-                $query->where('cuentasporpagar.estado', '!=', 'pagado');
-            })
-            ->when($activeTab === 'deber-ser', function ($query) {
-                $query->where('cuentasporpagar.es_extra', false);
-            })
-            ->when($activeTab === 'pagado', function ($query) {
-                $query->where('cuentasporpagar.estado', 'pagado');
-            })
+            ->when($activeTab === 'no-pagado', fn ($query) => $query->where('cuentasporpagar.estado', '!=', 'pagado'))
+            ->when($activeTab === 'deber-ser', fn ($query) => $query->where('cuentasporpagar.es_extra', false))
+            ->when($activeTab === 'pagado', fn ($query) => $query->where('cuentasporpagar.estado', 'pagado'))
             ->when($activeTab === 'extra', function ($query) {
                 $query->where('cuentasporpagar.estado', 'pagado')
-                    ->where(function ($extra) {
-                        $extra->where('cuentasporpagar.es_extra', true)
-                            ->orWhere('cuentasporpagar.meses_cubiertos', '>', 1);
-                    });
+                    ->where(fn ($extra) => $extra->where('cuentasporpagar.es_extra', true)->orWhere('cuentasporpagar.meses_cubiertos', '>', 1));
             })
             ->orderBy('users.name')
             ->orderBy('cuentasporpagar.id_cuentas_por_pagar')
@@ -652,9 +620,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             ->get()
             ->groupBy('id_user_p');
 
-        $normalizarNombre = function (?string $nombre): string {
-            return strtolower(preg_replace('/\s+/', '', trim((string) $nombre)));
-        };
+        $normalizarNombre = fn (?string $nombre): string => strtolower(preg_replace('/\s+/', '', trim((string) $nombre)));
 
         $registros = $registros->map(function ($registro) use ($deptosPorUserProyecto, $normalizarNombre) {
             $conceptoIdx = null;
@@ -675,10 +641,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             $deptoData = null;
             $deptosUsuario = $deptosPorUserProyecto->get($registro->id_user_p, collect());
             if ($deptosUsuario->isNotEmpty()) {
-                $deptoData = $deptosUsuario->first(function ($d) use ($departamento, $normalizarNombre) {
-                    return $normalizarNombre($d->nombre) === $normalizarNombre($departamento);
-                });
-
+                $deptoData = $deptosUsuario->first(fn ($d) => $normalizarNombre($d->nombre) === $normalizarNombre($departamento));
                 if (! $deptoData) {
                     $deptoData = $deptosUsuario->first(function ($d) {
                         $predial = trim((string) ($d->predial ?? ''));
@@ -689,21 +652,17 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
             }
 
             $tipoRaw = strtolower(trim((string) ($deptoData->tipo ?? '')));
-            if ($tipoRaw === 'campus') {
-                $tipoDepartamento = 'Campus';
-            } elseif (in_array($tipoRaw, ['condominio', 'condominios'], true)) {
-                $tipoDepartamento = 'Condominios';
-            } else {
-                $tipoDepartamento = 'N/A';
-            }
+            $tipoDepartamento = match ($tipoRaw) {
+                'campus' => 'Campus',
+                'condominio', 'condominios' => 'Condominios',
+                default => 'N/A',
+            };
 
             $registro->departamento = $departamento ?: ($deptoData->nombre ?? 'N/A');
             $registro->tipo_departamento = $tipoDepartamento;
             $predial = trim((string) ($deptoData->predial ?? ''));
             $registro->cuenta_predial = strtoupper($predial) === 'N/A' ? '' : $predial;
-            $registro->importe_renta = $registro->incremento_vigente
-                ?? ($deptoData->importe ?? null)
-                ?? ($registro->contrato_importe ?? 0);
+            $registro->importe_renta = $registro->incremento_vigente ?? ($deptoData->importe ?? null) ?? ($registro->contrato_importe ?? 0);
 
             return $registro;
         });
