@@ -18,7 +18,11 @@
 
             /* AQUÍ ESTÁ EL CAMBIO: Usamos el archivo .svg */
             /*background-image: url("{{ asset('images/marmol2.svg') }}"); */
-            background-color: #3c3c3c;
+            background-color: #0d1f30;
+            background-image:
+                radial-gradient(circle at 12% 18%, rgba(216, 196, 149, 0.09), transparent 28%),
+                radial-gradient(circle at 82% 82%, rgba(216, 196, 149, 0.06), transparent 30%),
+                linear-gradient(160deg, rgba(8, 18, 28, 0.95), rgba(13, 31, 48, 0.96));
 
             /* 'cover' asegura que el SVG cubra toda la pantalla sin deformarse */
             background-size: cover;

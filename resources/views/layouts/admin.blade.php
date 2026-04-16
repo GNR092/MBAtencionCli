@@ -197,7 +197,7 @@
 
     <div class="h-screen flex flex-col relative">
         <header
-            class="relative z-30 flex items-center justify-between px-4 py-3 text-white shadow-lg border-b border-[#d8c495]/30 bg-[#112134]/80 backdrop-blur-md">
+            class="sticky top-0 z-30 flex items-center justify-between px-4 py-3 text-white shadow-lg border-b border-[#d8c495]/30 bg-[#112134]/80 backdrop-blur-md">
             <div class="flex items-center gap-3">
                 <button id="sidebar-toggle" class="p-1 hover:bg-white/10 rounded-lg transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -344,15 +344,15 @@
             </aside>
 
             <main id="main-content" class="flex-1 overflow-y-auto custom-scrollbar">
-                <div class="fade-in-content">
+                <div class="fade-in-content page-wrap">
                     {{-- Mensajes Flash --}}
                     @if(session('error'))
-                        <div class="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg mb-4">
+                        <div class="alert-flash alert-flash-error">
                             {{ session('error') }}
                         </div>
                     @endif
                     @if($errors->any())
-                        <div class="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg mb-4">
+                        <div class="alert-flash alert-flash-error">
                             <ul class="list-disc pl-5 space-y-1">
                                 @foreach($errors->all() as $error)
                                     <li>{{ $error }}</li>
@@ -361,7 +361,7 @@
                         </div>
                     @endif
                     @if(session('success'))
-                        <div class="bg-green-500/20 border border-green-500 text-green-200 px-4 py-3 rounded-lg mb-4">
+                        <div class="alert-flash alert-flash-success">
                             {{ session('success') }}
                         </div>
                     @endif
@@ -464,20 +464,10 @@
                 }
             }
 
-            link.addEventListener('click', function(event) {
-                const allowNative = event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || this.target === '_blank';
-                if (!allowNative) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-
+            link.addEventListener('click', function() {
                 if (window.innerWidth < 1024) {
                     sidebar.classList.remove('sidebar-active');
                     sidebarOverlay.classList.remove('active');
-                }
-
-                if (!allowNative && this.href) {
-                    window.location.assign(this.href);
                 }
             });
         });

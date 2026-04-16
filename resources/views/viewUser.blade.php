@@ -1,17 +1,11 @@
 @extends('layouts.base')
 
 @section('layout-content')
-    {{-- Mantenemos tus estilos específicos pero forzamos transparencias --}}
+    {{-- MB Signature User Dashboard - Glassmorphism Dark Theme --}}
     <style>
-        /* PERFORACIÓN PARA VER EL FONDO ANIMADO */
-        html, body, #app-layout {
-            background: transparent !important;
-            background-color: transparent !important;
-        }
-
         /* Scrollbar personalizada */
         .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
         .custom-scroll::-webkit-scrollbar-thumb { background: #d8c495; border-radius: 10px; }
 
         @keyframes fadeInUp {
@@ -31,21 +25,29 @@
             height: 100px !important;
             width: auto !important;
             object-fit: contain !important;
-            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
             transition: transform 0.3s ease;
         }
         @media (min-width: 768px) { .logo-img { height: 150px !important; } }
         .logo-img:hover { transform: scale(1.1); }
 
-        .btn-original-style {
-            background-color: rgba(255, 255, 255, 0.9) !important; /* Blanco casi opaco */
-            border-radius: 1rem;
+        /* User Card - Glassmorphism */
+        .user-card {
+            background: rgba(13, 31, 48, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(216, 196, 149, 0.2);
+            border-radius: 1.5rem;
             transition: all 0.3s ease;
         }
 
-        .btn-original-style:hover {
-            transform: translateY(-0.25rem); /* Equivalente a hover:-translate-y-1 */
-            background-color: rgba(255, 255, 255, 1) !important;
+        .user-card:hover {
+            border-color: rgba(216, 196, 149, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .user-card-metric {
+            color: #d8c495;
         }
     </style>
 
@@ -85,41 +87,56 @@
                 </div>
             @endif
 
-            {{-- Header traslúcido --}}
-            <header class="flex flex-col md:flex-row items-center justify-between w-full animate-fadeInUp py-4 px-6 gap-4 rounded-2xl shadow-2xl" style="background-color: rgba(60, 60, 60, 0.8) !important; backdrop-filter: blur(10px);">
-                <div class="flex items-center gap-4">
+            {{-- Header glassmorphism night blue --}}
+            <header class="flex items-center justify-between w-full animate-fadeInUp py-2 px-3 rounded-xl bg-[#0d1f30]/80 backdrop-blur-md border border-[#d8c495]/20">
+                <div class="flex items-center gap-3">
                     <div class="relative group cursor-pointer" title="Cambiar foto">
-                        @php $avatarSize = "w-12 h-12 md:w-20 md:h-20"; @endphp
+                        @php $avatarSize = "w-8 h-8 md:w-10 md:h-10"; @endphp
                         @if($user->foto)
-                            <img id="avatar-preview" src="{{ asset('storage/' . $user->foto) . '?v=' . $user->updated_at->timestamp }}" class="{{ $avatarSize }} rounded-full object-cover border-2 border-[#d8c495]">
+                            <img id="avatar-preview" src="{{ asset('storage/' . $user->foto) . '?v=' . $user->updated_at->timestamp }}" class="{{ $avatarSize }} rounded-full object-cover border border-[#d8c495]">
                         @else
-                            <div id="avatar-initials" class="{{ $avatarSize }} flex items-center justify-center rounded-full bg-[#112134] text-white font-bold text-xl md:text-2xl border-2 border-[#d8c495]">
+                            <div id="avatar-initials" class="{{ $avatarSize }} flex items-center justify-center rounded-full bg-[#0d1f30] text-white font-bold text-sm md:text-base border border-[#d8c495]">
                                 {{ strtoupper(substr($user->name, 0, 1)) }}
                             </div>
                         @endif
                         <label for="foto-input" class="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                         </label>
                         <form id="foto-form" action="{{ route('perfil.foto') }}" method="POST" enctype="multipart/form-data" class="hidden">
                             @csrf @method('PUT')
                             <input id="foto-input" type="file" name="foto" accept="image/jpg,image/jpeg,image/png" class="hidden">
                         </form>
                     </div>
-                    <div class="flex flex-col">
-                        <h1 class="text-lg md:text-2xl font-bold text-white tracking-tight">Bienvenido, <span style="color: #d8c495 !important;">{{ $user->name ?? 'Usuario' }}</span></h1>
-                        <p class="text-xs md:text-sm text-gray-300 italic">Vive de tus rentas, ¡Sin dolores de cabeza!</p>
+                    <div class="flex flex-col leading-relaxed">
+                        <span class="text-xs text-white/60">Bienvenido, </span><span class="text-xs font-bold text-[#d8c495]">{{ $user->name ?? 'Usuario' }}</span>
                     </div>
                 </div>
-                <form method="get" action="{{ route('logout') }}" class="m-0">
-                    <button type="submit" class="w-full md:w-auto px-4 py-2 text-sm border border-[#d8c495] text-[#d8c495] rounded-xl hover:bg-[#d8c495] hover:text-[#3c3c3c] transition-all font-bold">Cerrar sesión</button>
-                </form>
+
+                <div class="flex items-center gap-2">
+                    {{-- Notificaciones --}}
+                    <div class="relative inline-block" id="notification-bell-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 text-white/50 cursor-pointer hover:text-[#d8c495] transition">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/>
+                        </svg>
+                        <span id="notification-badge" class="absolute -top-0.5 -right-0.5 bg-red-600 text-white text-[8px] font-bold rounded-full h-3 w-3 flex items-center justify-center hidden">0</span>
+                    </div>
+
+                    {{-- Logout icon --}}
+                    <form method="get" action="{{ route('logout') }}" class="m-0">
+                        <button type="submit" class="p-1.5 text-white/40 hover:text-[#d8c495] transition-colors" title="Cerrar sesion">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
             </header>
 
-            {{-- Grid de botones --}}
+{{-- Grid de botones - Glassmorphism cards --}}
             <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
                 @php
                     $opciones = [
-                        ['route' => 'user.facturacion', 'label' => 'Facturación'],
+                        ['route' => 'user.facturacion', 'label' => 'Facturacion'],
                         ['route' => 'cuentas-cobrar.index', 'label' => 'Cobrar Rentas'],
                         ['route' => 'notificaciones.index', 'label' => 'Notificaciones'],
                         ['route' => 'contratos.index', 'label' => 'Contratos'],
@@ -129,15 +146,14 @@
 
                 @foreach($opciones as $opt)
                     <a href="{{ route($opt['route']) }}"
-                       class="group relative bg-white/90 rounded-2xl p-4 md:p-6 shadow-lg border-b-4 border-transparent hover:border-[#d8c495] transition-all transform hover:-translate-y-1 flex flex-col items-center justify-center h-24 md:h-32 overflow-hidden">
+                       class="group relative user-card p-4 md:p-6 flex flex-col items-center justify-center h-24 md:h-32 overflow-hidden">
 
-                        {{-- BLOQUE DE NÚMEROS (Posición Absoluta Arriba) --}}
-                        {{-- Visible siempre para que se vea la animación --}}
+                        {{-- BLOQUE DE NUMEROS (Posicion Absoluta Arriba) --}}
                         <div class="absolute top-3 w-full flex justify-center pointer-events-none">
 
                             {{-- CASO 1: COBRAR RENTAS --}}
                             @if($opt['label'] === 'Cobrar Rentas' && isset($sumImporteCobrarRentas))
-                                <div class="flex items-baseline gap-1 text-[#3c3c3c">
+                                <div class="flex items-baseline gap-1 user-card-metric">
                                     <span class="text-xs font-semibold opacity-80">$</span>
                                     <span class="text-lg md:text-xl font-bold tracking-tight counter-currency"
                                           data-target="{{ $sumImporteCobrarRentas }}">0</span>
@@ -146,7 +162,7 @@
 
                             {{-- CASO 2: CONTRATOS --}}
                             @if($opt['label'] === 'Contratos' && isset($deptoCount))
-                                <div class="flex items-baseline gap-1 text-[#3c3c3c]">
+                                <div class="flex items-baseline gap-1 user-card-metric">
                             <span class="text-lg md:text-xl font-bold tracking-tight counter-int"
                                   data-target="{{ $deptoCount }}">0</span>
                                     <span class="text-[10px] font-medium opacity-70 uppercase tracking-widest ml-1">Propiedades</span>
@@ -154,8 +170,8 @@
                             @endif
                         </div>
 
-                        {{-- TÍTULO DEL BOTÓN (Centrado vertical y horizontalmente) --}}
-                        <span class="font-black text-xs md:text-sm uppercase text-[#3c3c3c] tracking-widest leading-tight z-10 mt-2">
+                        {{-- TITULO DEL BOTON (Centrado vertical y horizontalmente) --}}
+                        <span class="font-black text-xs md:text-sm uppercase text-white tracking-widest leading-tight z-10 mt-2">
                     {{$opt['label']}}
                 </span>
                     </a>
@@ -237,26 +253,26 @@
         </svg>
     </button>
 
-    <div id="chatModal" class="fixed inset-0 z-[10000] hidden items-end sm:items-center justify-center bg-black/50 backdrop-blur-[2px]">
-        <div class="bg-white w-full sm:w-[400px] h-[80vh] sm:h-[600px] sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-fadeInUp">
-            <div class="bg-[#3c3c3c] p-4 flex justify-between items-center shadow-md">
+    <div id="chatModal" class="fixed inset-0 z-[10000] hidden items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="bg-[#0d1f30]/95 backdrop-blur-md w-full sm:w-[400px] h-[80vh] sm:h-[600px] sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-fadeInUp border border-[#d8c495]/20">
+            <div class="bg-[#0d1f30] p-4 flex justify-between items-center shadow-md border-b border-[#d8c495]/20">
                 <div class="flex items-center gap-2">
                     <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                    <h3 class="text-[#d8c495] font-bold text-lg">Soporte en línea</h3>
+                    <h3 class="text-[#d8c495] font-bold text-lg">Soporte en linea</h3>
                 </div>
-                <button id="closeChatBtn" class="text-gray-400 hover:text-white transition-colors text-2xl leading-none">&times;</button>
+                <button id="closeChatBtn" class="text-white/50 hover:text-white transition-colors text-2xl leading-none">&times;</button>
             </div>
 
-            <div id="chatMessages" class="flex-1 p-4 overflow-y-auto bg-gray-50 custom-scroll flex flex-col gap-2">
-                <div class="text-center text-gray-400 text-sm mt-4">Iniciando conversación...</div>
+            <div id="chatMessages" class="flex-1 p-4 overflow-y-auto bg-[#0d1f30]/50 custom-scroll flex flex-col gap-2">
+                <div class="text-center text-white/40 text-sm mt-4">Iniciando conversacion...</div>
             </div>
 
-            <div class="p-3 bg-white border-t border-gray-200">
+            <div class="p-3 bg-[#0d1f30] border-t border-[#d8c495]/20">
                 <div class="flex gap-2">
                     <input type="text" id="chatInput"
-                           class="flex-1 bg-gray-100 border-0 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#d8c495] focus:outline-none text-gray-700"
+                           class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#d8c495] focus:outline-none text-white placeholder-white/40"
                            placeholder="Escribe tu mensaje..." autocomplete="off">
-                    <button id="sendChatBtn" class="bg-[#d8c495] text-[#3c3c3c] p-3 rounded-xl hover:bg-[#c5b386] transition-colors shadow-md">
+                    <button id="sendChatBtn" class="bg-[#d8c495] text-[#0d1f30] p-3 rounded-xl hover:bg-[#c9a143] transition-colors shadow-md">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                         </svg>

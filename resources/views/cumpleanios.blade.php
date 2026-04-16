@@ -16,7 +16,11 @@
         {{-- Este mes --}}
         <section class="mb-10 px-2">
             <div class="flex items-center gap-3 mb-4">
-                <span class="text-2xl">🎂</span>
+                <svg class="w-6 h-6 text-[#d8c495]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 birthday-cake.svg120l-1.5 6.5A2 2 0 0117.164 22H6.836a2 2 0 01-1.994-1.834L3 12m6-6h12a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2v-6a2 2 0 012-2z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6V2m0 0c-1.5 0-3 1-3 3s1.5 3 3 3 3-1 3-3-1.5-3-3-3z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 6c0-1.5 1-3 2.5-3s2.5 1.5 2.5 3M13 6c0-1.5 1-3 2.5-3s2.5 1.5 2.5 3"/>
+                </svg>
                 <h2 class="text-[#d8c495] text-sm font-bold uppercase tracking-widest">Este mes</h2>
                 <span class="text-white/30 text-xs">— {{ $hoy->isoFormat('MMMM YYYY') }}</span>
             </div>
@@ -61,7 +65,9 @@
         {{-- Próximo mes --}}
         <section class="mb-10 px-2">
             <div class="flex items-center gap-3 mb-4">
-                <span class="text-xl">📅</span>
+                <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
                 <h2 class="text-white/60 text-sm font-bold uppercase tracking-widest">Próximo mes</h2>
                 <span class="text-white/30 text-xs">— {{ $hoy->copy()->addMonth()->isoFormat('MMMM') }}</span>
             </div>
@@ -90,7 +96,9 @@
         @if($restantes->isNotEmpty())
         <section class="px-2">
             <div class="flex items-center gap-3 mb-4">
-                <span class="text-xl opacity-50">🗓</span>
+                <svg class="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zM16 2v4M8 2v4M3 10h18"/>
+                </svg>
                 <h2 class="text-white/40 text-sm font-bold uppercase tracking-widest">Resto del año</h2>
             </div>
             <div class="tabla-dorada-container">

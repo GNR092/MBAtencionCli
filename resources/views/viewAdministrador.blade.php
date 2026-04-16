@@ -1,14 +1,15 @@
 @extends('layouts.admin')
 
 @section('content')
-    <div class="max-w-full mx-auto p-4 md:p-6">
+    <div class="max-w-full mx-auto p-4 md:p-6 animate-fadeInUp">
     <header class="mb-10 px-2">
         <div class="flex items-baseline gap-4">
-            
-            <h1 class="text-white text-2xl md:text-4xl font-extralight tracking-[-0.02em] leading-none uppercase">
-                Pagar Cuentas
+            <span class="text-dorado-400 text-sm font-serif italic">|</span>
+            <h1 class="text-white text-5xl md:text-7xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                Liquidaciones
             </h1>
         </div>
+        <p class="text-white/60 mt-4 text-xs uppercase tracking-widest">Control y gestión de pagos a inversionistas</p>
     </header>
 
     <div class="max-w-full mx-auto space-y-6">
@@ -16,26 +17,30 @@
         <!-- Barra de búsqueda -->
         <form method="GET" action="{{ route('cuentas-pagar.index') }}" class="tabla-dorada-search">
             @csrf
-            <label for="searchInput">BUSCAR POR:</label>
-            <input type="text" id="searchInput" name="search" value="{{ request('search') }}"
-                placeholder="Nombre o ID..." class="flex-1 min-w-40">
-            <select name="categoria" id="categoria">
-                <option value="mes" {{ request('categoria') == 'mes' ? 'selected' : '' }}>Mes</option>
-                <option value="estado" {{ request('categoria') == 'estado' ? 'selected' : '' }}>Estado</option>
-                <option value="name" {{ request('categoria') == 'name' ? 'selected' : '' }}>Inversionista</option>
-            </select>
-            <button type="submit"
-                class="bg-[#d8c495] hover:bg-[#c9a143] text-[#0d1f30] px-6 py-2.5 rounded-xl font-bold transition shadow-md">
-                BUSCAR
-            </button>
-            <a href="{{ route('cuentas-pagar.limpiar') }}"
-                class="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-xl font-bold transition text-center">
-                LIMPIAR
-            </a>
-            <button type="button" onClick="openModalDescarga()"
-                class="bg-[#d8c495] hover:bg-[#c9a143] text-[#0d1f30] px-8 py-2.5 rounded-xl font-bold transition shadow-md">
-                DESCARGAR
-            </button>
+            <div class="flex flex-col gap-1">
+                <label for="searchInput">Criterio de búsqueda</label>
+                <input type="text" id="searchInput" name="search" value="{{ request('search') }}"
+                    placeholder="Nombre, ID o Folio..." class="min-w-64">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label for="categoria">Filtrar por</label>
+                <select name="categoria" id="categoria" class="min-w-40">
+                    <option value="mes" {{ request('categoria') == 'mes' ? 'selected' : '' }}>Periodo (Mes)</option>
+                    <option value="estado" {{ request('categoria') == 'estado' ? 'selected' : '' }}>Estado de Pago</option>
+                    <option value="name" {{ request('categoria') == 'name' ? 'selected' : '' }}>Inversionista</option>
+                </select>
+            </div>
+            <div class="flex items-end gap-2 ml-auto">
+                <button type="submit" class="btn-dorado">
+                    Ejecutar Búsqueda
+                </button>
+                <a href="{{ route('cuentas-pagar.limpiar') }}" class="btn-outline">
+                    Limpiar
+                </a>
+                <button type="button" onClick="openModalDescarga()" class="btn-dorado">
+                    Exportar Reporte
+                </button>
+            </div>
         </form>
 
         <!-- Tabla -->
@@ -206,31 +211,31 @@
             <table class="tabla-dorada w-full text-xs">
                 <thead class="sticky top-0 bg-[#0d1f30]">
                     <tr>
-                        <th class="px-2 py-2 hidden">ID</th>
-                        <th class="px-2 py-2">Folio Fiscal</th>
-                        <th class="px-2 py-2">Inversionista</th>
-                        <th class="px-2 py-2">Proyecto</th>
-                        <th class="px-2 py-2">Departamento</th>
-                        <th class="px-2 py-2">Cuenta Predial</th>
-                        <th class="px-2 py-2">Tipo</th>
-                        <th class="px-2 py-2">Estado</th>
-                        <th class="px-2 py-2">Mes Correspondiente</th>
-                        <th class="px-2 py-2">Mes Subida</th>
-                        <th class="px-2 py-2">Base</th>
-                        <th class="px-2 py-2">ISR</th>
-                        <th class="px-2 py-2">Neto</th>
-                        <th class="px-2 py-2">Pagado</th>
-                        <th class="px-2 py-2">Pendiente</th>
+                        <th class="col-id hidden">ID</th>
+                        <th class="col-text">Folio Fiscal</th>
+                        <th class="col-text">Inversionista</th>
+                        <th class="col-text">Proyecto</th>
+                        <th class="col-text">Departamento</th>
+                        <th>Cuenta Predial</th>
+                        <th>Tipo</th>
+                        <th>Estado</th>
+                        <th>Mes Correspondiente</th>
+                        <th>Mes Subida</th>
+                        <th class="col-money">Base</th>
+                        <th class="col-money">ISR</th>
+                        <th class="col-money">Neto</th>
+                        <th class="col-money">Pagado</th>
+                        <th class="col-money">Pendiente</th>
                     </tr>
                 </thead>
                 <tbody id="detalleCuerpo">
                 </tbody>
                 <tfoot class="sticky bottom-0 bg-[#0d1f30]">
                     <tr>
-                        <td colspan="11" class="text-right px-2 py-2 text-white/60">Total:</td>
-                        <td id="detalleTotalNeto" class="text-[#d8c495] font-bold px-2 py-2"></td>
-                        <td id="detalleTotalPagado" class="text-green-400 font-bold px-2 py-2"> </td>
-                        <td id="detalleTotalPendiente" class="text-red-400 font-bold px-2 py-2"></td>
+                        <td colspan="10" class="text-right px-2 py-2 text-white/60">Total:</td>
+                        <td id="detalleTotalNeto" class="col-money text-[#d8c495] font-bold px-2 py-2"></td>
+                        <td id="detalleTotalPagado" class="col-money text-green-400 font-bold px-2 py-2"> </td>
+                        <td id="detalleTotalPendiente" class="col-money text-red-400 font-bold px-2 py-2"></td>
                     </tr>
                 </tfoot>
             </table>

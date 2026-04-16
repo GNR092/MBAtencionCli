@@ -42,7 +42,28 @@ body {
         "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
         "Noto Color Emoji";
 
-    /*Colores*/
+    /* MB Signature - Night Blue (Surface) */
+    --color-night-950: #060d14;
+    --color-night-900: #0a1520;
+    --color-night-800: #0d1f30;
+    --color-night-700: #112134;
+    --color-night-600: #162940;
+    --color-night-500: #1a334d;
+
+    /* MB Signature - Dorado (Gold Accent) */
+    --color-dorado-50: #fbf7e8;
+    --color-dorado-100: #f5ebc5;
+    --color-dorado-200: #ebd88d;
+    --color-dorado-300: #debf55;
+    --color-dorado-400: #d8c495;
+    --color-dorado-500: #c9a143;
+    --color-dorado-600: #b88a14;
+    --color-dorado-700: #936e10;
+    --color-dorado-800: #6e520c;
+    --color-dorado-900: #493708;
+    --color-dorado-950: #181203;
+
+    /* Legacy carbon palette (for reference only - prefer night-*) */
     --color-carbon-50: #f6f6f6;
     --color-carbon-100: #e7e7e7;
     --color-carbon-200: #c4c4c4;
@@ -54,18 +75,6 @@ body {
     --color-carbon-800: #282828;
     --color-carbon-900: #1a1a1a;
     --color-carbon-950: #0a0a0a;
-
-    --color-dorado-50: #fbf7e8;
-    --color-dorado-100: #f5ebc5;
-    --color-dorado-200: #ebd88d;
-    --color-dorado-300: #debf55;
-    --color-dorado-400: #d4a017;
-    --color-dorado-500: #b88a14;
-    --color-dorado-600: #936e10;
-    --color-dorado-700: #6e520c;
-    --color-dorado-800: #493708;
-    --color-dorado-900: #312505;
-    --color-dorado-950: #181203;
 
     /* --- REINCORPORAR ANIMACIONES --- */
     @keyframes zoom-out-logo {
@@ -149,116 +158,146 @@ body {
     background-color: #c4b385;
 }
 
-/* --- CLASE MAESTRA PARA TABLAS (Dark Glassmorphism) ---
-   Usa .tabla-dorada-search para la barra de búsqueda
-   y .tabla-dorada-container + .tabla-dorada para la tabla.
+/* --- MB SIGNATURE - SURFACE SYSTEM ---
+   Glassmorphism con Night Blue
 */
 
 .tabla-dorada-search {
-    background-color: rgb(17 33 52 / 0.6);
+    background-color: rgba(13, 31, 48, 0.7);
     backdrop-filter: blur(12px);
-    padding: 1rem;
+    padding: 1.25rem;
     border-radius: 1rem;
-    border: 1px solid rgb(216 196 149 / 0.2);
-    margin-bottom: 1.5rem;
+    border: 1px solid rgba(216, 196, 149, 0.2);
+    margin-bottom: 2rem;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
 }
 
 .tabla-dorada-search label {
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: 0.65rem;
+    font-weight: 800;
     color: #d8c495;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
 }
 
 .tabla-dorada-search input[type="text"],
-.tabla-dorada-search input[type="date"] {
-    padding: 0.5rem 1rem;
+.tabla-dorada-search input[type="date"],
+.tabla-dorada-search select {
+    padding: 0.6rem 1rem;
     border-radius: 0.75rem;
-    border: 1px solid rgb(216 196 149 / 0.3);
-    background-color: rgb(255 255 255 / 0.1);
+    border: 1px solid rgba(216, 196, 149, 0.15);
+    background-color: rgba(0, 0, 0, 0.2);
     color: #fff;
     outline: none;
-    transition: border-color 0.2s;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
 }
 
 .tabla-dorada-search input::placeholder {
-    color: rgb(255 255 255 / 0.3);
+    color: rgba(255, 255, 255, 0.3);
 }
 
 .tabla-dorada-search input:focus,
 .tabla-dorada-search select:focus {
     border-color: #d8c495;
-    box-shadow: 0 0 0 2px rgb(216 196 149 / 0.3);
+    background-color: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 0 1px #d8c495;
 }
 
-.tabla-dorada-search select {
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.75rem;
-    border: 1px solid rgb(216 196 149 / 0.3);
-    background-color: #0d1f30;
-    color: #fff;
-    outline: none;
-    transition: border-color 0.2s;
+.btn-dorado {
+    @apply bg-[#d8c495] hover:bg-[#c9a143] text-[#0d1f30] px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg active:scale-95 uppercase tracking-wider text-xs;
+}
+
+.btn-outline {
+    @apply bg-white/5 hover:bg-white/10 text-white px-6 py-2.5 rounded-xl font-bold transition-all border border-white/10 active:scale-95 uppercase tracking-wider text-xs;
 }
 
 .tabla-dorada-container {
-    background-color: rgb(17 33 52 / 0.6);
-    backdrop-filter: blur(12px);
-    border-radius: 1rem;
-    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3);
+    background-color: rgba(13, 31, 48, 0.8);
+    backdrop-filter: blur(16px);
+    border-radius: 1.25rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     overflow-x: auto;
-    border: 1px solid rgb(216 196 149 / 0.2);
+    border: 1px solid rgba(216, 196, 149, 0.15);
 }
 
 .tabla-dorada {
-    @apply w-full text-sm text-center border-collapse;
+    @apply w-full text-sm border-collapse;
 }
 
 .tabla-dorada thead {
     background-color: #0d1f30;
     color: #d8c495;
     text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    border-bottom: 2px solid rgb(216 196 149 / 0.4);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid rgba(216, 196, 149, 0.3);
 }
 
 .tabla-dorada th {
-    @apply px-4 py-4;
+    @apply px-4 py-5 font-bold text-center;
 }
 
 .tabla-dorada tbody {
-    border-color: rgb(216 196 149 / 0.1);
+    border-color: rgba(216, 196, 149, 0.1);
 }
 
 .tabla-dorada tbody tr {
     color: #fff;
-    border-bottom: 1px solid rgb(216 196 149 / 0.1);
-    transition: background-color 0.2s;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    transition: all 0.2s ease;
 }
 
 .tabla-dorada tbody tr:hover {
-    background-color: rgb(255 255 255 / 0.05);
+    background-color: rgba(216, 196, 149, 0.05);
 }
 
 .tabla-dorada td {
-    @apply px-4 py-4;
-    color: #fff;
+    @apply px-4 py-4 text-center;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* Helper classes for specific column types */
+.tabla-dorada .col-money {
+    @apply text-right font-mono font-medium;
+    letter-spacing: -0.02em;
+}
+
+.tabla-dorada .col-text {
+    @apply text-left;
+}
+
+.tabla-dorada .col-id {
+    @apply text-center text-white/30 font-mono text-xs;
+}
+
+.tabla-dorada .status-pill {
+    @apply px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border;
+}
+
+.tabla-dorada .status-pagado {
+    @apply bg-green-500/10 text-green-400 border-green-400/30;
+}
+
+.tabla-dorada .status-pendiente {
+    @apply bg-red-500/10 text-red-400 border-red-500/30;
+}
+
+.tabla-dorada .status-parcial {
+    @apply bg-yellow-500/10 text-yellow-400 border-yellow-500/30;
 }
 
 .tabla-dorada tfoot {
-    background-color: #0d1f30;
-    border-top: 1px solid rgb(216 196 149 / 0.2);
+    background-color: rgba(13, 31, 48, 0.5);
+    border-top: 1px solid rgba(216, 196, 149, 0.2);
 }
 
 .tabla-dorada tfoot tr {
-    font-weight: 700;
-    color: #fff;
+    font-weight: 600;
 }
 
 .tabla-dorada-footer {
@@ -281,4 +320,62 @@ h1 {
     h1 {
         font-size: 4.5rem;
     }
+}
+
+:root {
+    --surface-0: rgba(13, 31, 48, 0.42);
+    --surface-1: rgba(13, 31, 48, 0.58);
+    --surface-2: rgba(13, 31, 48, 0.74);
+    --line-soft: rgba(216, 196, 149, 0.12);
+    --line-focus: rgba(216, 196, 149, 0.36);
+    --text-primary: rgba(255, 255, 255, 0.95);
+    --text-secondary: rgba(255, 255, 255, 0.62);
+}
+
+.page-wrap {
+    width: 100%;
+    max-width: 1660px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+@media (min-width: 768px) {
+    .page-wrap {
+        padding: 1.5rem;
+    }
+}
+
+.surface-panel {
+    background: var(--surface-2);
+    border: 1px solid var(--line-soft);
+    border-radius: 1rem;
+    backdrop-filter: blur(12px);
+}
+
+.surface-subtle {
+    background: var(--surface-1);
+    border: 1px solid var(--line-soft);
+    border-radius: 0.75rem;
+    backdrop-filter: blur(8px);
+}
+
+.alert-flash {
+    border-radius: 0.75rem;
+    border-width: 1px;
+    padding: 0.85rem 1rem;
+    font-size: 0.82rem;
+    letter-spacing: 0.01em;
+    margin-bottom: 0.85rem;
+}
+
+.alert-flash-error {
+    background: rgba(220, 38, 38, 0.12);
+    border-color: rgba(248, 113, 113, 0.35);
+    color: rgba(254, 202, 202, 0.95);
+}
+
+.alert-flash-success {
+    background: rgba(22, 163, 74, 0.12);
+    border-color: rgba(74, 222, 128, 0.35);
+    color: rgba(220, 252, 231, 0.95);
 }

@@ -28,7 +28,7 @@
         html, body {
             min-height: 100svh;
             margin: 0;
-            background: #242424;
+            background: #0d1f30;
         }
 
         /* Clase forzada para asegurar que se aplique */
@@ -96,9 +96,9 @@
         }
     </style>
 </head>
-<body class="bg-[#242424]">
+<body class="bg-[#0d1f30]">
 <figure class="relative h-[100svh] min-h-[100svh] w-screen overflow-y-auto overflow-x-hidden">
-    <div class="absolute inset-0 bg-cover bg-center bg-[#3c3c3c]"></div>
+    <div class="absolute inset-0 bg-cover bg-center bg-[#0d1f30]"></div>
     <div class="absolute inset-0 bg-black/40"></div>
 
     <div class="login-shell relative flex flex-col items-center justify-center h-full text-white">
@@ -138,29 +138,29 @@
             </h1>
         </div>
 
-        <div class="login-card p-5 md:p-6 rounded-lg animate-form-entrance w-full max-w-sm mt-6 md:mt-8">
-            <h2 class="text-2xl font-bold mb-6 text-center uppercase tracking-widest">Iniciar Sesión</h2>
+        <div class="login-card p-5 md:p-6 rounded-2xl animate-form-entrance w-full max-w-sm mt-6 md:mt-8 bg-[#0d1f30]/80 backdrop-blur-md border border-[#d8c495]/20 shadow-2xl">
+            <h2 class="text-2xl font-bold mb-6 text-center uppercase tracking-widest text-white">Iniciar Sesion</h2>
             <form id="login-form" onsubmit="loginUsuario(event)">
                 <div class="py-2">
-                    <label for="email" class="text-[#d8c495] block text-xs font-bold uppercase mb-1">Correo Electrónico</label>
+                    <label for="email" class="text-[#d8c495] block text-xs font-bold uppercase mb-1">Correo Electronico</label>
                     <input type="email" id="email" autocomplete="email" required
-                           class="w-full text-white bg-white/10 rounded-lg border-transparent focus:border-[#d8c495] focus:ring-[#d8c495] transition-all placeholder-gray-400"/>
+                           class="w-full text-white bg-white/5 rounded-xl border border-white/10 px-4 py-3 focus:border-[#d8c495] focus:ring-2 focus:ring-[#d8c495] transition-all placeholder-gray-400"/>
                 </div>
 
                 <div class="py-2">
-                    <label for="password" class="text-[#d8c495] block text-xs font-bold uppercase mb-1">Contraseña</label>
+                    <label for="password" class="text-[#d8c495] block text-xs font-bold uppercase mb-1">Contrasena</label>
                     <input type="password" id="password" autocomplete="new-password" required
-                           class="w-full text-white bg-white/10 rounded-lg border-transparent focus:border-[#d8c495] focus:ring-[#d8c495] transition-all placeholder-gray-400"/>
+                           class="w-full text-white bg-white/5 rounded-xl border border-white/10 px-4 py-3 focus:border-[#d8c495] focus:ring-2 focus:ring-[#d8c495] transition-all placeholder-gray-400"/>
                 </div>
 
                 <button type="submit"
-                        class="group py-3 mt-6 w-full px-4 text-[#3c3c3c] bg-white rounded-lg font-bold hover:bg-[#d8c495] transition-all duration-300 shadow-lg">
+                        class="group py-3 mt-6 w-full px-4 text-[#0d1f30] bg-[#d8c495] rounded-xl font-bold hover:bg-[#c9a143] transition-all duration-300 shadow-lg">
                     <span class="block group-hover:hidden">
                         INGRESAR
                     </span>
 
                     <span class="hidden group-hover:block">
-                       ¡QUIERO MIS RENTAS!
+                       QUIERO MIS RENTAS!
                      </span>
                 </button>
 

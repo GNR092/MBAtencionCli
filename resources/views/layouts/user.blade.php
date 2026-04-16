@@ -10,7 +10,7 @@
         /* Forzamos que los contenedores raíz no tengan color */
         html, body, #app-layout, .h-screen {
             background: transparent !important;
-            background-color: #3c3c3c;
+            background-color: #0d1f30;
             background-image: none !important;
         }
 
@@ -53,7 +53,7 @@
     </style>
 
     <div class="h-screen flex flex-col relative z-10 bg-transparent">
-        <header class="relative z-30 flex items-center justify-between p-2 text-white shadow-md">
+        <header class="sticky top-0 relative z-30 flex items-center justify-between p-2 text-white shadow-md">
             <div class="flex items-center">
                 <button id="sidebar-toggle" class="text-white focus:outline-none mr-2 p-1 hover:bg-white/10 rounded-lg transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,8 +113,8 @@
                 </div>
             </aside>
 
-            <main id="main-content" class="flex-1 overflow-y-auto p-4 custom-scrollbar">
-                <div class="max-w-7xl mx-auto fade-in-content">
+            <main id="main-content" class="flex-1 overflow-y-auto custom-scrollbar">
+                <div class="max-w-7xl mx-auto fade-in-content page-wrap">
                     @yield('content')
                 </div>
             </main>

@@ -46,10 +46,10 @@
                     </div>
                     @else
                     <select name="user_id" id="user_id" required
-                        class="w-full bg-[#0d1a29] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
-                        <option value="" class="bg-[#0d1a29] text-white/40">Seleccionar inversionista</option>
+                        class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
+                        <option value="" class="bg-[#0d1f30] text-white/40">Seleccionar inversionista</option>
                         @foreach($users as $user)
-                        <option value="{{ $user->id }}" class="bg-[#0d1a29] text-white">{{ $user->name }}</option>
+                        <option value="{{ $user->id }}" class="bg-[#0d1f30] text-white">{{ $user->name }}</option>
                         @endforeach
                     </select>
                     @endif
@@ -66,8 +66,8 @@
                     </div>
                     @else
                     <select name="proyect" id="proyect" required
-                        class="w-full bg-[#0d1a29] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
-                        <option value="" class="bg-[#0d1a29] text-white/40">Selecciona primero un inversionista</option>
+                        class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
+                        <option value="" class="bg-[#0d1f30] text-white/40">Selecciona primero un inversionista</option>
                     </select>
                     @endif
                 </div>
@@ -78,18 +78,18 @@
                         Departamento
                     </label>
                     <select name="id_user_depto" id="id_user_depto"
-                        class="w-full bg-[#0d1a29] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
-                        <option value="" class="bg-[#0d1a29] text-white/40">Mantener/seleccionar departamento existente</option>
+                        class="w-full bg-[#0d1f30] border border-[#d8c495]/30 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
+                        <option value="" class="bg-[#0d1f30] text-white/40">Mantener/seleccionar departamento existente</option>
                     </select>
                     <p id="id_user_depto_help" class="text-white/50 text-xs mt-2"></p>
 
                     <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input type="text" name="nuevo_depto_nombre" id="nuevo_depto_nombre"
                             placeholder="Si no aparece, escribe nuevo departamento"
-                            class="w-full bg-[#0d1a29] border border-[#d8c495]/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
+                            class="w-full bg-[#0d1f30] border border-[#d8c495]/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
                         <input type="text" name="nuevo_depto_predial" id="nuevo_depto_predial"
                             placeholder="Predial opcional del nuevo departamento"
-                            class="w-full bg-[#0d1a29] border border-[#d8c495]/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
+                            class="w-full bg-[#0d1f30] border border-[#d8c495]/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d8c495]">
                     </div>
                 </div>
                 @endif
@@ -241,7 +241,7 @@ const deptoHelp = document.getElementById('id_user_depto_help');
 
 function renderDeptos(deptos) {
     if (!deptoSelect) return;
-    deptoSelect.innerHTML = '<option value="" class="bg-[#0d1a29] text-white/40">Mantener/seleccionar departamento existente</option>';
+    deptoSelect.innerHTML = '<option value="" class="bg-[#0d1f30] text-white/40">Mantener/seleccionar departamento existente</option>';
 
     if (!Array.isArray(deptos) || deptos.length === 0) {
         deptoHelp.textContent = 'El proyecto no tiene departamentos cargados. Puedes capturar uno nuevo abajo.';
@@ -252,7 +252,7 @@ function renderDeptos(deptos) {
     deptos.forEach((d) => {
         const opt = document.createElement('option');
         opt.value = d.id_user_depto;
-        opt.className = 'bg-[#0d1a29] text-white';
+        opt.className = 'bg-[#0d1f30] text-white';
         opt.textContent = d.nombre + (d.predial ? ' - Predial: ' + d.predial : '');
         deptoSelect.appendChild(opt);
     });
@@ -260,7 +260,7 @@ function renderDeptos(deptos) {
 
 function clearDeptos() {
     if (!deptoSelect) return;
-    deptoSelect.innerHTML = '<option value="" class="bg-[#0d1a29] text-white/40">Selecciona primero usuario y proyecto</option>';
+    deptoSelect.innerHTML = '<option value="" class="bg-[#0d1f30] text-white/40">Selecciona primero usuario y proyecto</option>';
     deptoHelp.textContent = '';
 }
 
@@ -270,7 +270,7 @@ async function loadDeptos(userId, projectId) {
         return;
     }
 
-    deptoSelect.innerHTML = '<option value="" class="bg-[#0d1a29] text-white/40">Cargando departamentos...</option>';
+    deptoSelect.innerHTML = '<option value="" class="bg-[#0d1f30] text-white/40">Cargando departamentos...</option>';
 
     try {
         const resp = await fetch(`/api/users/${userId}/projects/${projectId}/departments`);
@@ -287,12 +287,12 @@ async function loadDeptos(userId, projectId) {
 
 userSelect.addEventListener('change', function() {
     const userId = this.value;
-    proyectSelect.innerHTML = '<option value="" class="bg-[#0d1a29] text-white/40">Cargando proyectos...</option>';
+    proyectSelect.innerHTML = '<option value="" class="bg-[#0d1f30] text-white/40">Cargando proyectos...</option>';
     proyectSelect.disabled = true;
     clearDeptos();
 
     if (!userId) {
-        proyectSelect.innerHTML = '<option value="" class="bg-[#0d1a29] text-white/40">Selecciona primero un inversionista</option>';
+        proyectSelect.innerHTML = '<option value="" class="bg-[#0d1f30] text-white/40">Selecciona primero un inversionista</option>';
         proyectSelect.disabled = false;
         return;
     }
@@ -300,22 +300,22 @@ userSelect.addEventListener('change', function() {
     fetch(`/api/users/${userId}/projects`)
         .then(res => res.json())
         .then(proyectos => {
-            proyectSelect.innerHTML = '<option value="" class="bg-[#0d1a29] text-white/40">Seleccionar proyecto</option>';
+            proyectSelect.innerHTML = '<option value="" class="bg-[#0d1f30] text-white/40">Seleccionar proyecto</option>';
             if (proyectos.length === 0) {
-                proyectSelect.innerHTML = '<option value="" class="bg-[#0d1a29] text-white/40">Sin proyectos asignados</option>';
+                proyectSelect.innerHTML = '<option value="" class="bg-[#0d1f30] text-white/40">Sin proyectos asignados</option>';
             } else {
                 proyectos.forEach(p => {
                     const opt = document.createElement('option');
                     opt.value = p.id_proyecto;
                     opt.textContent = p.nombre_proyecto;
-                    opt.className = 'bg-[#0d1a29] text-white';
+                    opt.className = 'bg-[#0d1f30] text-white';
                     proyectSelect.appendChild(opt);
                 });
             }
             proyectSelect.disabled = false;
         })
         .catch(() => {
-            proyectSelect.innerHTML = '<option value="" class="bg-[#0d1a29] text-white/40">Error al cargar proyectos</option>';
+            proyectSelect.innerHTML = '<option value="" class="bg-[#0d1f30] text-white/40">Error al cargar proyectos</option>';
             proyectSelect.disabled = false;
         });
 });

@@ -2,135 +2,126 @@
 
 @section('content')
 <div class="w-full p-4 md:p-6 animate-fadeInUp">
-    <div class="max-w-full mx-auto p-4 md:p-6">
+    <div class="max-w-full mx-auto">
 
-        {{-- HEADER GIGANTE (Igual a Facturas) --}}
+        {{-- HEADER --}}
         <header class="mb-10 px-2">
-        <div class="flex items-baseline gap-4">
-            <span class="text-dorado-400 text-sm font-serif italic">|</span>
-            <h1 class="text-white text-7xl md:text-9xl font-extralight tracking-[-0.02em] leading-none uppercase">
-                Usuarios
-            </h1>
+            <div class="flex items-baseline gap-4">
+                <span class="text-dorado-400 text-sm font-serif italic">|</span>
+                <h1 class="text-white text-5xl md:text-7xl font-extralight tracking-[-0.02em] leading-none uppercase">
+                    Usuarios
+                </h1>
+            </div>
+        </header>
+
+        {{-- BARRA DE ACCIONES Y MENSAJES --}}
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 px-2 gap-4">
+            <div class="flex-1">
+                @if (session('success'))
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 text-green-400 border border-green-500/20 text-[10px] font-bold uppercase tracking-widest">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    {{ session('success') }}
+                </div>
+                @endif
+            </div>
         </div>
-    </header>
 
-    {{-- BARRA DE ACCIONES Y MENSAJES --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 px-2 gap-4">
+        {{-- TABLA DORADA --}}
+        <div class="tabla-dorada-container">
+            <div class="overflow-x-auto custom-scroll">
+                <table class="tabla-dorada">
+                    <thead>
+                        <tr>
+                            <th class="col-text">Nombre Completo</th>
+                            <th class="col-text">Correo Electrónico</th>
+                            <th>Estado / Rol</th>
+                            <th>Acciones de Control</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($users as $user)
+                        <tr id="user-{{ $user->id }}">
+                            <td class="col-text font-bold text-white uppercase tracking-tight">
+                                {{ $user->name }}
+                            </td>
+                            <td class="col-text text-white/60 font-medium">
+                                {{ $user->email }}
+                            </td>
+                            <td>
+                                <span class="status-pill bg-white/5 text-white/70 border-white/10">
+                                    Inversionista
+                                </span>
+                            </td>
+                            <td>
+                                <div class="flex justify-center gap-2">
+                                    @php
+                                        $userData = [
+                                            'id' => $user->id,
+                                            'name' => $user->name,
+                                            'email' => $user->email,
+                                            'phone' => $user->phone ? (strlen($user->phone) > 10 ? substr($user->phone, 2) : $user->phone) : '',
+                                            'id_regimen' => $user->id_regimen,
+                                            'fecha_nacimiento' => $user->fecha_nacimiento ? \Carbon\Carbon::parse($user->fecha_nacimiento)->format('Y-m-d') : null,
+                                            'metodo_pago' => $user->metodo_pago,
+                                            'projects' => []
+                                        ];
 
-        {{-- Mensaje de éxito --}}
-        <div class="flex-1">
-            @if (session('success'))
-            <div
-                class="inline-flex items-center gap-2 px-4 py-2 rounded bg-green-900/30 text-green-400 border border-green-500/30 text-xs tracking-wider uppercase">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                {{ session('success') }}
+                                        foreach($user->userProyectos ?? [] as $up) {
+                                            $depts = [];
+                                            foreach($up->deptos ?? [] as $d) {
+                                                $depts[] = [
+                                                    'nombre_depto' => $d->nombre,
+                                                    'tipo' => $d->tipo,
+                                                    'cuenta_numero' => $d->predial,
+                                                    'importe' => $d->importe,
+                                                    'cuenta_predial' => ($d->predial && $d->predial !== 'N/A')
+                                                ];
+                                            }
+                                            $userData['projects'][$up->id_proyecto] = [
+                                                'departments' => $depts,
+                                                'metodo_pago' => $up->metodo_pago,
+                                            ];
+                                        }
+                                    @endphp
+
+                                    <button onclick='openEditModal(@json($userData))'
+                                        class="text-[9px] font-black uppercase tracking-widest text-[#d8c495] hover:text-white border border-[#d8c495]/30 hover:border-white px-3 py-1 rounded transition-all">
+                                        Editar
+                                    </button>
+
+                                    <button onclick="openDeleteModal('{{ $user->id }}')"
+                                        class="text-[9px] font-black uppercase tracking-widest text-red-400 hover:text-red-300 border border-red-500/20 hover:border-red-500/40 px-3 py-1 rounded transition-all">
+                                        Eliminar
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="4" class="py-16 text-white/20 font-light text-center italic tracking-widest">
+                                No se encontraron registros en el sistema.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Paginación --}}
+            @if($users->hasPages())
+            <div class="bg-black/20 border-t border-white/5 p-6 flex justify-center">
+                {{ $users->links('pagination::tailwind') }}
             </div>
             @endif
         </div>
     </div>
-
-    {{-- TABLA DORADA --}}
-    <div class="tabla-dorada-container">
-        <div class="overflow-x-auto custom-scroll">
-            <table class="tabla-dorada">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>Rol</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($users as $user)
-                    <tr id="user-{{ $user->id }}">
-                        <td class="font-bold text-carbon-900 uppercase">
-                            {{ $user->name }}
-                        </td>
-                        <td class="text-gray-500 font-medium">
-                            {{ $user->email }}
-                        </td>
-                        <td>
-                            <span
-                                class="inline-block px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-[10px] font-bold uppercase tracking-wider border border-gray-300">
-                                Usuario
-                            </span>
-                        </td>
-                        <td>
-                            <div class="flex justify-center gap-2">
-                                @php
-                                // Solo los datos que SÍ existen en tu registro
-                                $userData = [
-                                'id' => $user->id,
-                                'name' => $user->name,
-                                'email' => $user->email,
-                                // Asumiendo que guardas con '52' al inicio, lo quitamos para mostrar
-                                'phone' => $user->phone ? (strlen($user->phone) > 10 ? substr($user->phone, 2) : $user->phone) : '',
-                                'id_regimen' => $user->id_regimen,
-                                'fecha_nacimiento' => $user->fecha_nacimiento ? \Carbon\Carbon::parse($user->fecha_nacimiento)->format('Y-m-d') : null,
-                                'metodo_pago' => $user->metodo_pago,
-                                'projects' => []
-                                ];
-
-                                // Estructura de proyectos y departamentos (Igual que antes)
-                                foreach($user->userProyectos ?? [] as $up) {
-
-                                $depts = [];
-                                foreach($up->deptos ?? [] as $d) {
-
-                                $depts[] = [
-                                'nombre_depto' => $d->nombre,
-                                'tipo' => $d->tipo,
-                                'cuenta_numero' => $d->predial,
-                                'importe' => $d->importe,
-                                'cuenta_predial' => ($d->predial && $d->predial !== 'N/A')
-                                ];
-                                }
-                                $userData['projects'][$up->id_proyecto] = [
-                                'departments' => $depts,
-                                'metodo_pago' => $up->metodo_pago,
-                                ];
-                                }
-                                @endphp
-
-                                <button onclick='openEditModal(@json($userData))'
-                                    class="bg-blue-50 text-blue-600 border border-blue-200 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-blue-100 transition">
-                                    Editar
-                                </button>
-
-                                <button onclick="openDeleteModal('{{ $user->id }}')"
-                                    class="bg-red-50 text-red-600 border border-red-200 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-red-100 transition">
-                                    Eliminar
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="4" class="py-10 text-carbon-900 font-medium text-center italic">
-                            No hay usuarios registrados.
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        {{-- Paginación --}}
-        @if($users->hasPages())
-        <div class="bg-gray-50 border-t border-carbon-200 p-4 flex justify-center">
-            {{ $users->links('pagination::tailwind') }}
-        </div>
-        @endif
-    </div>
-
 </div>
 @endsection
 
 @push('modals')
-<div id="modalUsuario" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto">
+<div id="modalUsuario" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto items-center justify-center">
     <div class="flex min-h-full items-center justify-center p-4">
         <div onclick="event.stopPropagation()" class="bg-carbon-900 rounded-xl shadow-2xl w-full max-w-2xl border border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-black/20">
@@ -138,8 +129,24 @@
                 <button onclick="cerrarModalUsuario()" class="text-white/50 hover:text-white">✕</button>
             </div>
             <div class="p-6 overflow-y-auto custom-scroll">
+                @if ($errors->any() && ! old('id'))
+                <div class="bg-red-900/30 border border-red-500/30 text-red-400 px-4 py-3 rounded mb-4">
+                    <ul class="list-disc list-inside text-xs">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
                 <form action="{{ route('usuarios.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-                    @include('usuarios._form', ['prefix' => 'crear', 'usuario' => null, 'roles' => $roles, 'areas' => $areas])
+                    @include('usuarios._form', [
+                        'prefix' => 'crear',
+                        'usuario' => null,
+                        'roles' => $roles,
+                        'areas' => $areas,
+                        'proyectos' => $proyectos,
+                        'regimenesFiscales' => $regimenesFiscales,
+                    ])
                     <div class="flex justify-end gap-3 pt-4 border-t border-white/10">
                         <button type="button" onclick="cerrarModalUsuario()" class="px-4 py-2 text-white/60 hover:text-white text-xs uppercase font-bold tracking-widest transition">Cancelar</button>
                         <button type="submit" class="bg-[#d8c495] hover:bg-[#c9a143] text-black px-6 py-2 rounded text-xs font-bold uppercase tracking-widest transition">Guardar</button>
@@ -159,7 +166,7 @@
         </div>
 
         <div class="p-6 overflow-y-auto center custom-scroll">
-            @if ($errors->any())
+            @if ($errors->any() && old('id'))
             <div class="bg-red-900/30 border border-red-500/30 text-red-400 px-4 py-3 rounded mb-4">
                 <ul class="list-disc list-inside text-xs">
                     @foreach ($errors->all() as $error)
@@ -665,6 +672,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("edit_phone").value = '{{ old('phone') }}';
     document.getElementById("edit_fecha_nacimiento").value = '{{ old('fecha_nacimiento') }}';
     document.getElementById("edit_regimen").value = '{{ old('regimenFiscal') }}';
+});
+</script>
+@endif
+
+@if ($errors->any() && ! old('id'))
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('modalUsuario');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
 });
 </script>
 @endif
