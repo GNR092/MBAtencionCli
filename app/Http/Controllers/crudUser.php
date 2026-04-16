@@ -307,7 +307,7 @@ class crudUser extends Controller
         // Todos los inversionistas con fecha de nacimiento
         $todos = User::where('role', 'usuario')
             ->whereNotNull('fecha_nacimiento')
-            ->orderByRaw('MONTH(fecha_nacimiento), DAY(fecha_nacimiento)')
+            ->orderByRaw('EXTRACT(MONTH FROM fecha_nacimiento), EXTRACT(DAY FROM fecha_nacimiento)')
             ->get()
             ->map(function ($user) use ($hoy) {
                 $cumple = \Carbon\Carbon::parse($user->fecha_nacimiento)->setYear($hoy->year);
