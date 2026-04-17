@@ -10,6 +10,14 @@
 @source '../**/*.js';
 
 @font-face {
+    font-family: 'Lovelyn';
+    /* Laravel mapea la carpeta 'public' como la raíz '/' */
+    src: url('/fonts/Lovelyn.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
     font-family: 'Doulos SIL';
     /* Laravel mapea la carpeta 'public' como la raíz '/' */
     src: url('/fonts/DoulosSILR.ttf') format('truetype');
@@ -31,6 +39,11 @@
 .font-doulos {
     font-family: 'Doulos SIL', sans-serif;
 }
+
+.font-lovelyn {
+    font-family: 'Lovelyn', sans-serif;
+}
+
 
 @theme {
     --font-sans:

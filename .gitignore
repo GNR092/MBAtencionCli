@@ -60,3 +60,4 @@ session-ses_*.md
 /.agents
 skills-lock.json
 /.claude
+/public/build/manifest.json

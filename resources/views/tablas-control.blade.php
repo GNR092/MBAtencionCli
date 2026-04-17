@@ -134,23 +134,6 @@
                                 </tr>
                             @endforelse
                         </tbody>
-                        <tfoot>
-                            <tr class="bg-black/20">
-                                <td colspan="10" class="text-right px-6 py-4 uppercase text-[10px] tracking-widest text-white/40">Total Neto del Mes</td>
-                                <td class="col-money px-4 py-4 text-xl text-[#d8c495] font-light tracking-tighter">${{ number_format($totalNeto, 2) }}</td>
-                                <td colspan="2"></td>
-                            </tr>
-                            <tr class="border-t border-[#d8c495]/5">
-                                <td colspan="10" class="text-right px-6 py-3 uppercase text-[10px] tracking-widest text-white/40">Total Liquidado</td>
-                                <td class="col-money px-4 py-3 text-emerald-300 font-medium">${{ number_format($totalPagado, 2) }}</td>
-                                <td colspan="2"></td>
-                            </tr>
-                            <tr class="border-t border-[#d8c495]/5">
-                                <td colspan="10" class="text-right px-6 py-3 uppercase text-[10px] tracking-widest text-white/40">Total por Pagar</td>
-                                <td class="col-money px-4 py-3 text-red-300 font-medium">${{ number_format($totalPendiente, 2) }}</td>
-                                <td colspan="2"></td>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
             </div>
