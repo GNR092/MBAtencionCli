@@ -21,7 +21,7 @@ class ListController extends Controller
         $user = Auth::user();
 
         if (! $user) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $monthParam = $request->input('month', now()->format('Y-m'));

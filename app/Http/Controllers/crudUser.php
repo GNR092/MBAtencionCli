@@ -86,7 +86,7 @@ class crudUser extends Controller
 
         $admin = Auth::user();
         if (! $admin || $admin->role !== 'administrador') {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         if (! Hash::check($request->password, $admin->password)) {
@@ -103,7 +103,7 @@ class crudUser extends Controller
         $admin = Auth::user();
 
         if (! $admin || $admin->role !== 'administrador') {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         if (session('validated_edit_user') != $id) {
@@ -143,7 +143,7 @@ class crudUser extends Controller
         $admin = Auth::user();
 
         if (! $admin || $admin->role !== 'administrador') {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         if (! Hash::check($request->input('password'), $admin->password)) {
@@ -177,7 +177,7 @@ class crudUser extends Controller
     {
         $admin = Auth::user();
         if (! $admin || $admin->role !== 'administrador') {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $id = $request->input('id');
@@ -332,7 +332,7 @@ class crudUser extends Controller
     {
         $admin = Auth::user();
         if (! $admin || $admin->role !== 'administrador') {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $request->validate([

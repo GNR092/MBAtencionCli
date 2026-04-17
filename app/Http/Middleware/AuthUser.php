@@ -15,7 +15,7 @@ class AuthUser
                 return response()->json(['error' => 'Unauthenticated.'], 401);
             }
 
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $user = Auth::user();
@@ -25,7 +25,7 @@ class AuthUser
                 return response()->json(['error' => 'Unauthorized.'], 403);
             }
 
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         return $next($request);

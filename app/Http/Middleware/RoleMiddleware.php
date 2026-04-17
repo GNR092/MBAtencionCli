@@ -12,7 +12,7 @@ class RoleMiddleware
         $user = Auth::user();
 
         if (! $user) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         if ($role && $user->role !== $role) {

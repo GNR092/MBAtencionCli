@@ -460,7 +460,7 @@
 
                             if (res.status === 401 || res.status === 419) {
                                 stopPolling();
-                                window.location.href = '/inicio-de-sesion';
+                                window.location.href = '/login';
                                 return;
                             }
 
@@ -517,7 +517,7 @@
 
                             if (res.status === 401 || res.status === 419) {
                                 stopPolling();
-                                window.location.href = '/inicio-de-sesion';
+                                window.location.href = '/login';
                                 return;
                             }
 

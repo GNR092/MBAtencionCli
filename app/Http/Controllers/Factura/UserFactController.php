@@ -118,7 +118,7 @@ class UserFactController extends Controller
         $user = Auth::user();
 
         if (! $user) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $allFacturasData = session()->get('factura_data', []);

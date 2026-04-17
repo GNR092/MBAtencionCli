@@ -15,7 +15,7 @@ class EstadoController extends Controller
 
         $user = Auth::user();
         if (! $user) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $yearActual = date('Y');
@@ -175,7 +175,7 @@ class EstadoController extends Controller
     {
         $usuario = Auth::user();
         if (! $usuario) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $desde = $request->desde; // formato YYYY-MM

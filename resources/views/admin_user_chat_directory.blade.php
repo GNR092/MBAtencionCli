@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (response.status === 401 || response.status === 419) {
                 clearInterval(messagePollingInterval);
-                window.location.href = '/inicio-de-sesion';
+                window.location.href = '/login';
                 return;
             }
 
@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (response.status === 401 || response.status === 419) {
                 clearInterval(messagePollingInterval);
-                window.location.href = '/inicio-de-sesion';
+                window.location.href = '/login';
                 return;
             }
 

@@ -18,7 +18,7 @@ class ContractController extends Controller
     {
         $user = Auth::user();
         if (! $user) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $query = DB::table('contract')
@@ -107,7 +107,7 @@ class ContractController extends Controller
         $admin = Auth::user();
 
         if (! $admin || $admin->role !== 'administrador') {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         if (Hash::check($request->password, $admin->password)) {
@@ -129,7 +129,7 @@ class ContractController extends Controller
 
         $admin = Auth::user();
         if (! $admin || $admin->role !== 'administrador') {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         if (! Hash::check($request->password, $admin->password)) {
@@ -146,7 +146,7 @@ class ContractController extends Controller
         $admin = Auth::user();
 
         if (! $admin || $admin->role !== 'administrador') {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         if (session('validated_edit_contrato') != $id) {
@@ -255,7 +255,7 @@ class ContractController extends Controller
     {
         $admin = Auth::user();
         if (! $admin || $admin->role !== 'administrador') {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $contratoOriginal = Contract::findOrFail($id);
@@ -397,7 +397,7 @@ class ContractController extends Controller
         $admin = Auth::user();
 
         if (! $admin || $admin->role !== 'administrador') {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         if (! session('validated_admin_contract')) {
@@ -418,7 +418,7 @@ class ContractController extends Controller
         $admin = Auth::user();
 
         if (! $admin || $admin->role !== 'administrador') {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         if (! Hash::check($request->input('password'), $admin->password)) {
@@ -446,7 +446,7 @@ class ContractController extends Controller
     {
         $user = Auth::user();
         if (! $user) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $users = User::all();
@@ -506,7 +506,7 @@ class ContractController extends Controller
     {
         $user = Auth::user();
         if (! $user) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $contrato = Contract::findOrFail($id);

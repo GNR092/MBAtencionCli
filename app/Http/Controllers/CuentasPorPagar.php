@@ -399,7 +399,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
     {
         $user = Auth::user();
         if (! $user) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $this->seedDesdeXmlFiles();
@@ -504,7 +504,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
     {
         $user = Auth::user();
         if (! $user) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $this->seedDesdeXmlFiles();

@@ -62,7 +62,7 @@ class AvisoController extends Controller
     {
         $usuario = $request->user();
         if (! $usuario) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $notificacion = $usuario->notifications()->where('id', $id)->first();
@@ -78,7 +78,7 @@ class AvisoController extends Controller
     {
         $usuario = $request->user();
         if (! $usuario) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $nuevas = $usuario->unreadNotifications;
@@ -103,7 +103,7 @@ class AvisoController extends Controller
                 return response()->json(['message' => 'Unauthorized'], 401);
             }
 
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $notificacion = $usuario->notifications()->where('id', $id)->first();

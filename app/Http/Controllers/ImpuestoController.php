@@ -53,7 +53,7 @@ class ImpuestoController extends Controller
 
         $user = Auth::user();
         if (! $user) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $query = DB::table('xml_files')

@@ -22,7 +22,7 @@ class GenerateController extends Controller
         $user = Auth::user();
 
         if (! $user) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $regimenesFiscales = RegimenFiscal::all();
@@ -54,7 +54,7 @@ class GenerateController extends Controller
 
         $user = Auth::user();
         if (! $user) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $phone = '52'.$request->input('phone');

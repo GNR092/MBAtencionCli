@@ -396,7 +396,7 @@ class CuentasPorCobrar extends Controller
     {
         $user = $request->user();
         if (! $user) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $this->calcularCuentasPorPagar($user->id);

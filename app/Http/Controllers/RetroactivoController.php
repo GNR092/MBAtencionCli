@@ -15,7 +15,7 @@ class RetroactivoController extends Controller
     {
         $user = Auth::user();
         if (! $user || $user->role !== 'administrador') {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $driver = DB::connection()->getDriverName();
@@ -74,7 +74,7 @@ class RetroactivoController extends Controller
     {
         $user = Auth::user();
         if (! $user || $user->role !== 'administrador') {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $cuenta = Cuentas::where('id_cuentas_por_pagar', $id)->first();
@@ -151,7 +151,7 @@ class RetroactivoController extends Controller
     {
         $user = Auth::user();
         if (! $user || $user->role !== 'administrador') {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $driver = DB::connection()->getDriverName();
@@ -205,7 +205,7 @@ class RetroactivoController extends Controller
     {
         $user = Auth::user();
         if (! $user || $user->role !== 'administrador') {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $eliminado = RetroactivoEliminado::find($id);
@@ -250,7 +250,7 @@ class RetroactivoController extends Controller
     {
         $user = Auth::user();
         if (! $user || $user->role !== 'administrador') {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $eliminado = RetroactivoEliminado::find($id);

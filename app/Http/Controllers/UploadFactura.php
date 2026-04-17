@@ -17,7 +17,7 @@ class UploadFactura extends Controller
     {
         $user = Auth::user();
         if (! $user) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $query = XmlFile::with(['user:id,name', 'user.proyectos:id_proyecto,nombre_proyecto']);
@@ -99,7 +99,7 @@ class UploadFactura extends Controller
     {
         $user = Auth::user();
         if (! $user) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $xmlFile = XmlFile::find($id);
@@ -133,7 +133,7 @@ class UploadFactura extends Controller
     {
         $user = Auth::user();
         if (! $user) {
-            return redirect('/inicio-de-sesion');
+            return redirect('/login');
         }
 
         $xmlFile = XmlFile::find($id);

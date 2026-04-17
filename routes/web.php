@@ -41,7 +41,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/inicio-de-sesion', [AuthController::class, 'showLoginForm'])->name('login.form');
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 

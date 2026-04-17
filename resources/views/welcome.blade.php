@@ -28,7 +28,7 @@
             <img src="/uploads/Logo-Png.svg" alt="logo" class="w-64 h-auto drop-shadow-2xl">
 
             <div class="mt-4">
-                <a href="/inicio-de-sesion" class="inline-block py-3 px-12 text-sm tracking-widest font-semibold text-white bg-black/80 hover:bg-black border border-white/10 rounded-full transition-all duration-300">
+                <a href="/login" class="inline-block py-3 px-12 text-sm tracking-widest font-semibold text-white bg-black/80 hover:bg-black border border-white/10 rounded-full transition-all duration-300">
                     INGRESAR
                 </a>
             </div>
