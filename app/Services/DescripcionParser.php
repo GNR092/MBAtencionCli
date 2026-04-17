@@ -47,11 +47,6 @@ class DescripcionParser
         return $texto;
     }
 
-    private function detectarProyectoSoloPrimeraPalabra(): bool
-    {
-        return (bool) config('descripcion_parser.solo_primera_palabra_proyecto', false);
-    }
-
     /**
      * Extrae numero(s) de departamento de la descripcion.
      * Retorna un array porque puede haber multiples deptos (ej: "A3,A4,A6,A8").
@@ -159,14 +154,6 @@ class DescripcionParser
             return null;
         }
 
-        $soloPrimeraPalabra = $this->detectarProyectoSoloPrimeraPalabra();
-        if ($soloPrimeraPalabra) {
-            $descripcionNormalizada = explode(' ', $descripcionNormalizada)[0] ?? '';
-            if ($descripcionNormalizada === '') {
-                return null;
-            }
-        }
-
         $mejorCoincidencia = null;
         $mejorPuntaje = 0;
         $candidatos = [];
@@ -192,18 +179,6 @@ class DescripcionParser
         }
 
         if (empty($candidatos)) {
-            return null;
-        }
-
-        if ($soloPrimeraPalabra) {
-            foreach ($candidatos as $candidato) {
-                $primeraPalabraProyecto = explode(' ', $candidato['nombre_normalizado'])[0] ?? '';
-
-                if ($primeraPalabraProyecto === $descripcionNormalizada) {
-                    return is_array($candidato['raw']) ? $candidato['raw'] : $candidato['raw']->toArray();
-                }
-            }
-
             return null;
         }
 
