@@ -213,21 +213,15 @@ class DescripcionParser
             foreach ($palabrasProyecto as $palabra) {
                 // Coincidencia exacta por token
                 if (in_array($palabra, $palabrasDescripcion, true)) {
-                    $palabrasEncontradas++;
+                    $palabrasEncontradas += 1.0;
 
                     continue;
                 }
 
-                // Busqueda parcial inversa: si la palabra del proyecto contiene
-                // alguna palabra truncada de la descripcion (min 4 chars)
+                // Busqueda parcial: palabra truncada contenida en la otra (min 4 chars)
                 foreach ($palabrasDescripcion as $palDesc) {
-                    if (mb_strlen($palDesc) >= 4 && mb_strpos($palabra, $palDesc) !== false) {
-                        $palabrasEncontradas += 0.6;
-                        break;
-                    }
-                    // Tambien al reves: "residen" esta dentro de "residencial"?
-                    if (mb_strlen($palDesc) >= 4 && mb_strpos($palDesc, $palabra) !== false) {
-                        $palabrasEncontradas += 0.6;
+                    if (mb_strlen($palDesc) >= 4 && (mb_strpos($palabra, $palDesc) !== false || mb_strpos($palDesc, $palabra) !== false)) {
+                        $palabrasEncontradas += 0.3;
                         break;
                     }
                 }
@@ -235,7 +229,7 @@ class DescripcionParser
 
             $puntaje = $palabrasEncontradas / count($palabrasProyecto);
 
-            if ($puntaje > $mejorPuntaje && $puntaje >= 0.6) {
+            if ($puntaje > $mejorPuntaje && $puntaje >= 0.8) {
                 $mejorPuntaje = $puntaje;
                 $mejorCoincidencia = is_array($candidato['raw']) ? $candidato['raw'] : $candidato['raw']->toArray();
             }
