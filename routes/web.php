@@ -196,3 +196,5 @@ Route::middleware([AuthUser::class])->group(function () {
 });
 
 Route::post('/password-check', [PasswordCheckController::class, 'check'])->name('password.check');
+
+require base_path('canva-hbd/routes/hbd-routes.php');

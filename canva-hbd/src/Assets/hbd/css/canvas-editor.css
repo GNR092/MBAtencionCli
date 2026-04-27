@@ -1,0 +1,38 @@
+/*
+ * Canva HBD - Canvas Editor Styles
+ */
+
+.canvas-editor-container {
+    user-select: none;
+}
+
+.canvas-component {
+    cursor: move;
+    position: absolute;
+}
+
+.canvas-component:hover {
+    outline: 2px dashed #3b82f6;
+}
+
+.canvas-component.selected {
+    outline: 2px solid #3b82f6;
+}
+
+.canvas-section {
+    position: relative;
+    border: 2px dashed transparent;
+    transition: border-color 0.2s;
+}
+
+.canvas-section:hover {
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.canvas-section.active {
+    border-color: #3b82f6;
+}
+
+.canvas-drag-handle {
+    cursor: move;
+}

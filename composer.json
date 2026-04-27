@@ -31,6 +31,7 @@
 
         "psr-4": {
             "App\\": "app/",
+            "Canva\\HBD\\": "canva-hbd/src/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         }
