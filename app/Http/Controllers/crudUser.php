@@ -301,6 +301,7 @@ class crudUser extends Controller
 
     public function cumpleanios()
     {
+        \Carbon\Carbon::setLocale('es');
         $hoy = now();
         $mesActual = $hoy->month;
 
