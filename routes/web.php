@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminChatController;
 use App\Http\Controllers\AnuncioController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AvisoController;
+use App\Http\Controllers\BirthdayCampaignController;
 use App\Http\Controllers\CfdiValidatorController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\crudUser;
@@ -111,6 +112,12 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::post('/users/buscar', [crudUser::class, 'buscar'])->name('usuarios.buscar');
     Route::get('/users/limpiar', [crudUser::class, 'limpiar'])->name('usuarios.limpiar');
     Route::get('/cumpleanios', [crudUser::class, 'cumpleanios'])->name('usuarios.cumpleanios');
+    Route::get('/cumpleanios/plantilla', [BirthdayCampaignController::class, 'templateEditor'])->name('cumpleanios.template');
+    Route::post('/cumpleanios/plantilla', [BirthdayCampaignController::class, 'saveTemplate'])->name('cumpleanios.template.save');
+    Route::get('/cumpleanios/configuracion', [BirthdayCampaignController::class, 'settings'])->name('cumpleanios.settings');
+    Route::post('/cumpleanios/configuracion', [BirthdayCampaignController::class, 'saveSettings'])->name('cumpleanios.settings.save');
+    Route::get('/cumpleanios/envios', [BirthdayCampaignController::class, 'deliveries'])->name('cumpleanios.deliveries');
+    Route::post('/cumpleanios/envios/{delivery}/retry', [BirthdayCampaignController::class, 'retryDelivery'])->name('cumpleanios.deliveries.retry');
 
     // Cuentas por pagar
     Route::get('/cuentas-por-pagar', [CuentasPorPagar::class, 'index'])->name('cuentas-pagar.index');
