@@ -1,111 +1,215 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="w-full p-4 md:p-6">
-    <div class="max-w-6xl mx-auto">
-        <div class="flex items-center justify-between mb-6">
-            <h1 class="page-title">Editor de Plantilla de Cumpleanos</h1>
-            <a href="{{ route('usuarios.cumpleanios') }}" class="btn-dorado">Volver</a>
-        </div>
+<div class="w-full p-4 md:p-6 lg:p-8">
+    <div class="max-w-7xl mx-auto">
 
-        <form action="{{ route('cumpleanios.template.save') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+        <header class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-xl bg-[#d8c495]/10 border border-[#d8c495]/20 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-[#d8c495]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-semibold text-white/95 tracking-tight">Editor de Plantilla</h1>
+                    <p class="text-xs text-white/40 mt-0.5">Diseña el fondo, zonas de texto e imágenes para la tarjeta</p>
+                </div>
+            </div>
+            <a href="{{ route('usuarios.cumpleanios') }}" class="btn-dorado">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Volver
+            </a>
+        </header>
+
+        <form action="{{ route('cumpleanios.template.save') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+
             @csrf
+
+            <section class="bg-[#0d1f30]/60 backdrop-blur-sm border border-[#d8c495]/10 rounded-2xl p-5">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-1 h-4 rounded-full bg-[#d8c495]"></div>
+                    <h2 class="text-sm font-medium text-[#d8c495]">Información de plantilla</h2>
+                </div>
+                <div class="grid md:grid-cols-2 gap-5">
+                    <div class="space-y-1.5">
+                        <label class="text-[11px] text-white/50 uppercase tracking-wider font-medium">Nombre</label>
+                        <input name="name" required value="{{ old('name', $template->name ?? 'Plantilla General') }}" class="w-full bg-[#0a1520] border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white/90 placeholder-white/20 focus:outline-none focus:border-[#d8c495]/40 focus:bg-[#0d1f30] transition-all">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-[11px] text-white/50 uppercase tracking-wider font-medium">Imagen de fondo</label>
+                        <input type="file" accept="image/*" name="background" id="backgroundInput" class="w-full bg-[#0a1520] border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white/90 file:mr-3 file:text-[#d8c495] file:border-0 file:bg-[#d8c495]/10 file:rounded-md file:px-3 file:py-1 file:text-xs file:font-medium file:cursor-pointer transition-all focus:outline-none focus:border-[#d8c495]/40">
+                        @if(!empty($template?->background_path))
+                            <label class="inline-flex items-center gap-2 text-xs text-white/40 mt-1.5 cursor-pointer hover:text-white/60 transition-colors">
+                                <input type="checkbox" name="remove_background" value="1" class="rounded border-white/20 bg-[#0a1520]">
+                                Quitar imagen actual
+                            </label>
+                        @endif
+                    </div>
+                </div>
+                <div class="mt-4 space-y-1.5">
+                    <label class="text-[11px] text-white/50 uppercase tracking-wider font-medium">Mensaje genérico <span class="text-[#d8c495]/50 normal-case tracking-normal">(usa [NOMBRE] para insertar el nombre)</span></label>
+                    <textarea name="default_message" rows="2" class="w-full bg-[#0a1520] border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white/90 placeholder-white/20 focus:outline-none focus:border-[#d8c495]/40 focus:bg-[#0d1f30] transition-all resize-none">{{ old('default_message', $template->default_message ?? 'Feliz cumpleaños [NOMBRE], te deseamos un excelente día.') }}</textarea>
+                </div>
+            </section>
+
+            <section class="bg-[#0d1f30]/60 backdrop-blur-sm border border-[#d8c495]/10 rounded-2xl p-5">
+                <div class="flex items-center justify-between flex-wrap gap-4 mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-1 h-4 rounded-full bg-[#d8c495]"></div>
+                        <h2 class="text-sm font-medium text-[#d8c495]">Lienzo de diseño</h2>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] text-white/30 uppercase tracking-wider font-medium">Ancho</span>
+                            <input type="number" id="canvasWidth" value="{{ $template->canvas_width ?? 960 }}" min="400" max="2000" class="w-16 bg-[#0a1520] border border-white/10 rounded-md px-2 py-1.5 text-xs text-white/80 text-center focus:outline-none focus:border-[#d8c495]/40">
+                        </div>
+                        <span class="text-white/20 text-xs">×</span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] text-white/30 uppercase tracking-wider font-medium">Alto</span>
+                            <input type="number" id="canvasHeight" value="{{ $template->canvas_height ?? 540 }}" min="300" max="1500" class="w-16 bg-[#0a1520] border border-white/10 rounded-md px-2 py-1.5 text-xs text-white/80 text-center focus:outline-none focus:border-[#d8c495]/40">
+                        </div>
+                        <button type="button" id="resizeCanvasBtn" class="px-3 py-1.5 rounded-md bg-[#d8c495]/10 hover:bg-[#d8c495]/20 border border-[#d8c495]/20 text-[#d8c495]/80 hover:text-[#d8c495] text-xs font-medium transition-all">Aplicar</button>
+                    </div>
+                </div>
+
+                <div class="overflow-auto rounded-xl border border-white/5 bg-[#0a1520]/80" style="max-height:60vh;">
+                    <canvas id="editorCanvas" width="{{ $template->canvas_width ?? 960 }}" height="{{ $template->canvas_height ?? 540 }}" class="block"></canvas>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 mt-4">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-[10px] text-white/30 uppercase tracking-wider font-medium mr-1">Zonas:</span>
+                    </div>
+                    <button type="button" id="addNameZone" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#d8c495]/10 hover:bg-[#d8c495]/15 border border-[#d8c495]/25 text-[#d8c495]/90 hover:text-[#d8c495] text-xs font-medium transition-all">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#d8c495]"></span>Nombre
+                    </button>
+                    <button type="button" id="addMessageZone" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#d8c495]/10 hover:bg-[#d8c495]/15 border border-[#d8c495]/25 text-[#d8c495]/90 hover:text-[#d8c495] text-xs font-medium transition-all">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#d8c495]/60"></span>Mensaje
+                    </button>
+                    <button type="button" id="addTextZone" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#d8c495]/10 hover:bg-[#d8c495]/15 border border-[#d8c495]/25 text-[#d8c495]/90 hover:text-[#d8c495] text-xs font-medium transition-all">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#d8c495]/30"></span>Texto
+                    </button>
+
+                    <div class="h-4 w-px bg-white/10 mx-1"></div>
+
+                    <button type="button" id="addOverlayBtn" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white/80 text-xs font-medium transition-all">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        Imagen
+                    </button>
+                    <input type="file" accept="image/*" id="overlayInput" class="hidden" multiple>
+
+                    <button type="button" id="deleteZone" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-red-500/20 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 text-xs font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent ml-auto" disabled>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        Eliminar
+                    </button>
+                </div>
+            </section>
+
             <div class="grid md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm text-white/80 mb-1">Nombre de plantilla</label>
-                    <input name="name" required value="{{ old('name', $template->name ?? 'Plantilla General') }}" class="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-white">
-                </div>
-                <div>
-                    <label class="block text-sm text-white/80 mb-1">Imagen de fondo</label>
-                    <input type="file" accept="image/*" name="background" id="backgroundInput" class="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-white">
-                    @if(!empty($template?->background_path))
-                        <label class="mt-2 inline-flex items-center gap-2 text-sm text-white/70">
-                            <input type="checkbox" name="remove_background" value="1" class="rounded border-white/30 bg-white/10">
-                            Quitar imagen actual
-                        </label>
-                    @endif
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-sm text-white/80 mb-1">Mensaje generico</label>
-                <textarea name="default_message" rows="4" class="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-white">{{ old('default_message', $template->default_message ?? 'Feliz cumpleanos [NOMBRE], te deseamos un excelente dia.') }}</textarea>
-            </div>
-
-            <div class="bg-white/5 border border-white/10 rounded-xl p-4">
-                <div class="flex gap-2 mb-3 flex-wrap">
-                    <button type="button" id="addNameZone" class="btn-dorado">Agregar zona nombre</button>
-                    <button type="button" id="addMessageZone" class="btn-dorado">Agregar zona mensaje</button>
-                    <button type="button" id="addTextZone" class="btn-dorado">Agregar zona texto</button>
-                    <button type="button" id="deleteZone" class="px-4 py-2 rounded-lg border border-red-400/40 text-red-300 bg-red-500/10 hover:bg-red-500/20 disabled:opacity-40 disabled:cursor-not-allowed" disabled>Eliminar zona</button>
-                </div>
-                <div class="mb-3 flex items-center gap-3">
-                    <label class="btn-dorado cursor-pointer">
-                        <span>Agregar imagen adicional</span>
-                        <input type="file" accept="image/*" id="overlayInput" class="hidden" multiple>
-                    </label>
-                    <div class="ml-auto flex items-center gap-2 text-sm text-white/50">
-                        <label class="text-xs">Ancho <input type="number" id="canvasWidth" value="960" min="400" max="2000" class="w-16 bg-white/10 border border-white/20 rounded px-2 py-1 text-white"></label>
-                        <span>x</span>
-                        <label class="text-xs">Alto <input type="number" id="canvasHeight" value="540" min="300" max="1500" class="w-16 bg-white/10 border border-white/20 rounded px-2 py-1 text-white"></label>
-                        <button type="button" id="resizeCanvasBtn" class="px-2 py-1 rounded bg-white/10 hover:bg-white/20 border border-white/20 text-xs">Aplicar</button>
+                <div id="overlayControls" class="hidden bg-[#0d1f30]/60 backdrop-blur-sm border border-[#d8c495]/10 rounded-2xl p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-1 h-3 rounded-full bg-[#d8c495]/60"></div>
+                        <h3 class="text-xs font-medium text-[#d8c495]/80">Imágenes superpuestas</h3>
                     </div>
+                    <div id="overlayList" class="space-y-2"></div>
                 </div>
-                <div class="w-full overflow-auto rounded-lg border border-white/20 bg-black/30" style="max-height:65vh;">
-                    <canvas id="editorCanvas" width="960" height="540" class="block"></canvas>
-                </div>
-            </div>
 
-            <div id="overlayControls" class="hidden bg-white/5 border border-white/10 rounded-xl p-4">
-                <h3 class="text-sm text-[#d8c495] font-bold mb-3">Imagenes agregadas</h3>
-                <div id="overlayList" class="space-y-3"></div>
-            </div>
-
-            <div id="zoneProperties" class="hidden bg-white/5 border border-white/10 rounded-xl p-4 mt-4">
-                <h3 class="text-sm text-[#d8c495] font-bold mb-3">Propiedades de zona</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-xs text-white/60 mb-1">Tipo</label>
-                        <span id="propZoneType" class="text-sm text-white font-medium">-</span>
+                <div id="zoneProperties" class="hidden bg-[#0d1f30]/60 backdrop-blur-sm border border-[#d8c495]/10 rounded-2xl p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-1 h-3 rounded-full bg-[#d8c495]/60"></div>
+                        <h3 class="text-xs font-medium text-[#d8c495]/80">Propiedades de zona</h3>
                     </div>
-                    <div>
-                        <label class="block text-xs text-white/60 mb-1">Tamano fuente</label>
-                        <input type="number" id="propFontSize" min="10" max="120" class="w-full bg-white/10 border border-white/20 rounded px-3 py-1.5 text-white text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-white/60 mb-1">Color texto</label>
-                        <input type="color" id="propTextColor" class="w-10 h-8 rounded border border-white/20 cursor-pointer">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-white/60 mb-1">Texto preview</label>
-                        <input type="text" id="propZoneText" class="w-full bg-white/10 border border-white/20 rounded px-3 py-1.5 text-white text-sm" placeholder="Texto ejemplo">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-white/40">Tipo</span>
+                            <span id="propZoneType" class="text-xs text-white/80 font-medium px-2.5 py-1 rounded-md bg-white/5 border border-white/10">-</span>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] text-white/40 uppercase tracking-wider">Capa (z-index)</label>
+                            <div class="flex items-center gap-2">
+                                <input type="number" id="propLayer" min="0" max="999" class="w-full bg-[#0a1520] border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-[#d8c495]/40">
+                                <div class="flex items-center gap-1">
+                                    <button type="button" id="btnLayerUp" title="Subir capa" class="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white transition-all flex items-center justify-center">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+                                    </button>
+                                    <button type="button" id="btnLayerDown" title="Bajar capa" class="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white transition-all flex items-center justify-center">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-white/40 uppercase tracking-wider">Tamaño fuente</label>
+                                <input type="number" id="propFontSize" min="10" max="120" class="w-full bg-[#0a1520] border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-[#d8c495]/40">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-white/40 uppercase tracking-wider">Color texto</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="color" id="propTextColor" value="#ffffff" class="w-8 h-8 rounded-lg border border-white/10 cursor-pointer bg-transparent">
+                                    <span id="propTextColorHex" class="text-xs text-white/50 font-mono">#ffffff</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] text-white/40 uppercase tracking-wider">Texto preview</label>
+                            <input type="text" id="propZoneText" class="w-full bg-[#0a1520] border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-[#d8c495]/40" placeholder="Escribe el texto aquí...">
+                        </div>
                     </div>
                 </div>
             </div>
 
             <input type="hidden" id="zonesJson" name="zones_json" value="{{ old('zones_json', json_encode($template->zones_json ?? [])) }}">
             <input type="hidden" id="overlayImagesJson" name="overlay_images_json" value="{{ old('overlay_images_json', json_encode($template->overlay_images ?? [])) }}">
+            <input type="hidden" name="canvas_width" id="canvasWidthInput" value="{{ old('canvas_width', $template->canvas_width ?? 960) }}">
+            <input type="hidden" name="canvas_height" id="canvasHeightInput" value="{{ old('canvas_height', $template->canvas_height ?? 540) }}">
 
-            <button class="btn-dorado" type="button" id="btnPreview">Previsualizar</button>
-            <button class="btn-dorado" type="submit">Guardar plantilla activa</button>
+            <div class="flex items-center justify-between pt-2">
+                <div class="flex items-center gap-2 text-xs text-white/30">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>Usa el canvas para posicionar las zonas arrastrando</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button type="button" id="btnPreview" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white text-sm font-medium transition-all">
+                        <svg class="w-4 h-4 mr-1.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        Previsualizar
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#d8c495] hover:bg-[#d8c495]/90 text-[#0f172a] text-sm font-bold transition-all shadow-lg shadow-[#d8c495]/10">
+                        <svg class="w-4 h-4 mr-1.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                        Guardar plantilla
+                    </button>
+                </div>
+            </div>
         </form>
 
-        <!-- Modal Previsualizar -->
-        <div id="previewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm">
-            <div class="bg-[#1a1a2e] border border-[#d8c495]/30 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden">
-                <div class="flex items-center justify-between p-5 border-b border-white/10">
-                    <h3 class="text-[#d8c495] font-bold text-lg">Previsualizacion de Plantilla</h3>
-                    <button type="button" id="btnClosePreview" class="text-white/50 hover:text-white text-2xl leading-none">&times;</button>
+        <div id="previewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm">
+            <div class="bg-[#0d1f30] border border-[#d8c495]/15 rounded-2xl shadow-2xl shadow-black/50 w-full max-w-3xl mx-4 overflow-hidden">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-white/5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-[#d8c495]/10 border border-[#d8c495]/20 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-[#d8c495]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-[#d8c495]">Vista previa</h3>
+                            <p class="text-[10px] text-white/30 mt-0.5">Previsualización de la tarjeta de cumpleaños</p>
+                        </div>
+                    </div>
+                    <button type="button" id="btnClosePreview" class="w-8 h-8 flex items-center justify-center rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-all">&times;</button>
                 </div>
-                <div class="p-5 flex justify-center" id="previewContent">
-                    <div id="previewCanvas" class="rounded-lg overflow-hidden" style="background:#1f2937;"></div>
+                <div class="p-6 flex justify-center" id="previewContent">
+                    <div id="previewCanvas" class="rounded-xl overflow-hidden shadow-xl" style="background:#1f2937;"></div>
                 </div>
-                <div class="flex justify-end p-5 border-t border-white/10 gap-3">
-                    <button type="button" id="btnAbrirNuevaPestana" class="px-4 py-2 rounded-lg bg-[#d8c495]/20 hover:bg-[#d8c495]/30 text-[#d8c495] border border-[#d8c495]/40 text-sm">Abrir en nueva pestana</button>
-                    <button type="button" id="btnCerrarPreview" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white/70 text-sm">Cerrar</button>
+                <div class="flex items-center justify-end gap-2 px-6 py-4 border-t border-white/5">
+                    <button type="button" id="btnAbrirNuevaPestana" class="px-4 py-2 rounded-lg bg-[#d8c495]/10 hover:bg-[#d8c495]/20 border border-[#d8c495]/20 text-[#d8c495]/80 hover:text-[#d8c495] text-xs font-medium transition-all">
+                        <svg class="w-3.5 h-3.5 mr-1.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        Abrir en nueva pestaña
+                    </button>
+                    <button type="button" id="btnCerrarPreview" class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white text-xs font-medium transition-all">
+                        Cerrar
+                    </button>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 @endsection
@@ -119,12 +223,28 @@ document.addEventListener('DOMContentLoaded', function () {
     const zonesInput = document.getElementById('zonesJson');
     const deleteZoneBtn = document.getElementById('deleteZone');
     const overlayInput = document.getElementById('overlayInput');
+    const addOverlayBtn = document.getElementById('addOverlayBtn');
     const overlayControls = document.getElementById('overlayControls');
     const overlayList = document.getElementById('overlayList');
     const overlayImagesJson = document.getElementById('overlayImagesJson');
 
     let overlayImages = JSON.parse(overlayImagesJson.value || '[]');
     let fabricOverlays = [];
+
+    const BASE_W = parseInt(document.getElementById('canvasWidth').value) || 960;
+    const BASE_H = parseInt(document.getElementById('canvasHeight').value) || 540;
+
+    function getCanvasScale() {
+        return {
+            scaleX: canvas.getWidth() / BASE_W,
+            scaleY: canvas.getHeight() / BASE_H,
+        };
+    }
+
+    function getScaledFontSize(baseSize) {
+        const { scaleX, scaleY } = getCanvasScale();
+        return Math.round(baseSize * (scaleX + scaleY) / 2);
+    }
 
     function zoneRect(label, color, left, top) {
         const rect = new fabric.Rect({
@@ -142,14 +262,16 @@ document.addEventListener('DOMContentLoaded', function () {
         rect.zoneColor = color;
         rect.fontSize = 28;
         rect.textColor = '#ffffff';
+        rect.zoneLayer = 0;
         return rect;
     }
 
     function drawZoneLabel(rect) {
-        const label = new fabric.Text(rect.zoneType === 'name' ? 'NOMBRE' : 'MENSAJE', {
+        const zoneLabel = rect.zoneType === 'name' ? 'NOMBRE' : rect.zoneType === 'message' ? 'MENSAJE' : 'TEXTO';
+        const label = new fabric.Text(rect.zoneText || zoneLabel, {
             left: rect.left + 10,
             top: rect.top + 20,
-            fontSize: 18,
+            fontSize: getScaledFontSize(18),
             fill: rect.zoneColor,
             selectable: false,
             evented: false,
@@ -159,15 +281,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function syncLabels() {
+        const baseLabelSize = getScaledFontSize(18);
         canvas.getObjects('rect').forEach(function (rect) {
             if (!rect._label) return;
-            rect._label.set({ left: rect.left + 10, top: rect.top + 20 });
+            rect._label.set({
+                left: rect.left + 10,
+                top: rect.top + 20,
+                fontSize: baseLabelSize,
+            });
         });
         canvas.renderAll();
     }
 
     function addZone(type) {
-        const color = type === 'name' ? '#d8c495' : '#34d399';
+        const color = type === 'name' ? '#d8c495' : (type === 'message' ? '#d8c495bb' : '#d8c49566');
         const rect = zoneRect(type, color);
         canvas.add(rect);
         drawZoneLabel(rect);
@@ -196,7 +323,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         panel.classList.remove('hidden');
-        typeSpan.textContent = activeObject.zoneType === 'name' ? 'Nombre' : activeObject.zoneType === 'message' ? 'Mensaje' : 'Texto';
+        const typeLabels = { name: 'Nombre', message: 'Mensaje', text: 'Texto' };
+        typeSpan.textContent = typeLabels[activeObject.zoneType] || 'Texto';
+        document.getElementById('propLayer').value = activeObject.zoneLayer !== undefined ? activeObject.zoneLayer : 0;
         fontSizeInput.value = activeObject.fontSize || 28;
         textColorInput.value = activeObject.textColor || '#ffffff';
         zoneTextInput.value = activeObject.zoneText || '';
@@ -209,14 +338,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const fontSize = parseInt(document.getElementById('propFontSize').value) || 28;
         const textColor = document.getElementById('propTextColor').value;
         const zoneText = document.getElementById('propZoneText').value;
+        const zoneLayer = parseInt(document.getElementById('propLayer').value) || 0;
 
         activeObject.fontSize = fontSize;
         activeObject.textColor = textColor;
         activeObject.zoneText = zoneText;
+        activeObject.zoneLayer = zoneLayer;
+        activeObject.moveTo(zoneLayer);
+        canvas.renderAll();
 
         if (activeObject._label) {
             activeObject._label.set({
-                fontSize: 18,
+                fontSize: getScaledFontSize(fontSize),
                 fill: activeObject.zoneColor,
             });
         }
@@ -228,6 +361,8 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             activeObject._label.set({ text: zoneText || 'TEXTO' });
         }
+
+        syncLabels();
 
         syncLabels();
         syncZonesToInput();
@@ -248,12 +383,16 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('addMessageZone').addEventListener('click', function () { addZone('message'); });
     document.getElementById('addTextZone').addEventListener('click', function () { addZone('text'); });
     deleteZoneBtn.addEventListener('click', deleteSelectedZone);
+    addOverlayBtn.addEventListener('click', function() { overlayInput.click(); });
 
     document.getElementById('resizeCanvasBtn').addEventListener('click', function () {
         const w = parseInt(document.getElementById('canvasWidth').value) || 960;
         const h = parseInt(document.getElementById('canvasHeight').value) || 540;
         canvas.setDimensions({ width: w, height: h });
         canvas.renderAll();
+        document.getElementById('canvasWidthInput').value = w;
+        document.getElementById('canvasHeightInput').value = h;
+        syncLabels();
         syncZonesToInput();
     });
     canvas.on('object:moving', function () { syncLabels(); syncZonesToInput(); });
@@ -265,14 +404,62 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('propFontSize').addEventListener('input', applyZoneProperties);
     document.getElementById('propTextColor').addEventListener('input', applyZoneProperties);
     document.getElementById('propZoneText').addEventListener('input', applyZoneProperties);
+    document.getElementById('propLayer').addEventListener('input', applyZoneProperties);
+
+    document.getElementById('btnLayerUp').addEventListener('click', function() {
+        const activeObject = canvas.getActiveObject();
+        if (!activeObject) return;
+        const layerInput = document.getElementById('propLayer');
+        const current = parseInt(layerInput.value) || 0;
+        layerInput.value = current + 1;
+        activeObject.zoneLayer = current + 1;
+        activeObject.moveTo(current + 1);
+        canvas.renderAll();
+        syncZonesToInput();
+    });
+
+    document.getElementById('btnLayerDown').addEventListener('click', function() {
+        const activeObject = canvas.getActiveObject();
+        if (!activeObject) return;
+        const layerInput = document.getElementById('propLayer');
+        const current = parseInt(layerInput.value) || 0;
+        if (current > 0) {
+            layerInput.value = current - 1;
+            activeObject.zoneLayer = current - 1;
+            activeObject.moveTo(current - 1);
+            canvas.renderAll();
+            syncZonesToInput();
+        }
+    });
 
     document.addEventListener('keydown', function (event) {
-        if (event.key !== 'Delete' && event.key !== 'Backspace') return;
         const targetTag = (event.target && event.target.tagName) ? event.target.tagName.toLowerCase() : '';
         if (targetTag === 'input' || targetTag === 'textarea') return;
-        if (canvas.getActiveObject()) {
+
+        const activeObject = canvas.getActiveObject();
+        const step = event.shiftKey ? 10 : 1;
+        let moved = false;
+
+        if (event.key === 'Delete' || event.key === 'Backspace') {
             event.preventDefault();
-            deleteSelectedZone();
+            if (activeObject) deleteSelectedZone();
+            return;
+        }
+
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+            event.preventDefault();
+            if (!activeObject) return;
+            switch (event.key) {
+                case 'ArrowUp': activeObject.set('top', activeObject.top - step); moved = true; break;
+                case 'ArrowDown': activeObject.set('top', activeObject.top + step); moved = true; break;
+                case 'ArrowLeft': activeObject.set('left', activeObject.left - step); moved = true; break;
+                case 'ArrowRight': activeObject.set('left', activeObject.left + step); moved = true; break;
+            }
+            if (moved) {
+                canvas.renderAll();
+                syncLabels();
+                syncZonesToInput();
+            }
         }
     });
 
@@ -288,11 +475,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const existingZones = JSON.parse(zonesInput.value || '[]');
     existingZones.forEach(function (z) {
-        const rect = zoneRect(z.type || 'name', z.color || '#d8c495', z.x || 60, z.y || 60);
+        const zoneColor = z.type === 'name' ? '#d8c495' : (z.type === 'message' ? '#d8c495bb' : '#d8c49566');
+        const rect = zoneRect(z.type || 'name', zoneColor, z.x || 60, z.y || 60);
         rect.set({ width: z.width || 260, height: z.height || 70 });
         rect.fontSize = z.fontSize || 28;
-        rect.textColor = z.color || '#ffffff';
+        rect.textColor = z.textColor || '#ffffff';
         rect.zoneText = z.zoneText || '';
+        rect.zoneLayer = z.layer !== undefined ? z.layer : 0;
+        rect.moveTo(rect.zoneLayer);
         canvas.add(rect);
         drawZoneLabel(rect);
     });
@@ -319,21 +509,25 @@ document.addEventListener('DOMContentLoaded', function () {
         overlayImages.forEach(function (imgData, idx) {
             const url = imgData.path.startsWith('http') ? imgData.path : @json(asset('storage/')).replace(/\/$/, '') + '/' + imgData.path;
             fabric.Image.fromURL(url, function (fabricImg) {
-                fabricImg._originalWidth = fabricImg.width;
-                fabricImg._originalHeight = fabricImg.height;
-                const desiredW = imgData.width || fabricImg.width || 150;
-                const desiredH = imgData.height || fabricImg.height || 150;
+                const originalSize = fabricImg.getOriginalSize();
+                fabricImg._originalWidth = originalSize.x;
+                fabricImg._originalHeight = originalSize.y;
+                const desiredW = imgData.width || originalSize.x || 150;
+                const desiredH = imgData.height || originalSize.y || 150;
+                const imgLayer = imgData.layer !== undefined ? imgData.layer : 0;
                 fabricImg.set({
                     left: imgData.x || 0,
                     top: imgData.y || 0,
-                    scaleX: desiredW / fabricImg.width,
-                    scaleY: desiredH / fabricImg.height,
+                    scaleX: desiredW / originalSize.x,
+                    scaleY: desiredH / originalSize.y,
                     angle: imgData.rotation || 0,
                     selectable: true,
                     hasControls: true,
                     hasBorders: true,
                 });
                 fabricImg._overlayIdx = idx;
+                fabricImg._overlayLayer = imgLayer;
+                fabricImg.moveTo(imgLayer);
                 canvas.add(fabricImg);
                 fabricOverlays.push(fabricImg);
             }, { crossOrigin: 'anonymous' });
@@ -349,16 +543,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         overlayControls.classList.remove('hidden');
         overlayList.innerHTML = overlayImages.map(function (img, idx) {
-            return '<div class="flex items-center gap-3 p-3 bg-white/5 rounded-lg flex-wrap">' +
-                '<span class="text-xs text-white/50 w-full mb-1">' + (img.originalFilename || 'Imagen ' + (idx + 1)) + '</span>' +
-                '<div class="flex items-center gap-1 flex-wrap">' +
-                    '<label class="text-xs text-white/60">X <input type="number" data-idx="' + idx + '" data-field="x" value="' + (img.x || 0) + '" class="w-16 bg-white/10 border border-white/20 rounded px-1 py-0.5 text-white text-xs"></label>' +
-                    '<label class="text-xs text-white/60">Y <input type="number" data-idx="' + idx + '" data-field="y" value="' + (img.y || 0) + '" class="w-16 bg-white/10 border border-white/20 rounded px-1 py-0.5 text-white text-xs"></label>' +
-                    '<label class="text-xs text-white/60">W <input type="number" data-idx="' + idx + '" data-field="width" value="' + (img.width || 150) + '" class="w-16 bg-white/10 border border-white/20 rounded px-1 py-0.5 text-white text-xs"></label>' +
-                    '<label class="text-xs text-white/60">H <input type="number" data-idx="' + idx + '" data-field="height" value="' + (img.height || 150) + '" class="w-16 bg-white/10 border border-white/20 rounded px-1 py-0.5 text-white text-xs"></label>' +
-                    '<label class="text-xs text-white/60">Rot <input type="number" data-idx="' + idx + '" data-field="rotation" value="' + (img.rotation || 0) + '" class="w-16 bg-white/10 border border-white/20 rounded px-1 py-0.5 text-white text-xs"></label>' +
+            return '<div class="flex items-center gap-3 p-3 bg-white/[0.02] rounded-lg border border-white/5 flex-wrap">' +
+                '<span class="text-[11px] text-white/40 w-full mb-1">' + (img.originalFilename || 'Imagen ' + (idx + 1)) + '</span>' +
+                '<div class="flex items-center gap-2 flex-wrap">' +
+                    '<label class="text-[10px] text-white/50">X <input type="number" data-idx="' + idx + '" data-field="x" value="' + (img.x || 0) + '" class="w-14 bg-[#0a1520] border border-white/10 rounded px-1.5 py-1 text-white/80 text-xs"></label>' +
+                    '<label class="text-[10px] text-white/50">Y <input type="number" data-idx="' + idx + '" data-field="y" value="' + (img.y || 0) + '" class="w-14 bg-[#0a1520] border border-white/10 rounded px-1.5 py-1 text-white/80 text-xs"></label>' +
+                    '<label class="text-[10px] text-white/50">W <input type="number" data-idx="' + idx + '" data-field="width" value="' + (img.width || 150) + '" class="w-14 bg-[#0a1520] border border-white/10 rounded px-1.5 py-1 text-white/80 text-xs"></label>' +
+                    '<label class="text-[10px] text-white/50">H <input type="number" data-idx="' + idx + '" data-field="height" value="' + (img.height || 150) + '" class="w-14 bg-[#0a1520] border border-white/10 rounded px-1.5 py-1 text-white/80 text-xs"></label>' +
+                    '<label class="text-[10px] text-white/50">Rot <input type="number" data-idx="' + idx + '" data-field="rotation" value="' + (img.rotation || 0) + '" class="w-14 bg-[#0a1520] border border-white/10 rounded px-1.5 py-1 text-white/80 text-xs"></label>' +
+                    '<label class="text-[10px] text-white/50">Capa <input type="number" data-idx="' + idx + '" data-field="layer" value="' + (img.layer !== undefined ? img.layer : 0) + '" min="0" max="999" class="w-14 bg-[#0a1520] border border-white/10 rounded px-1.5 py-1 text-white/80 text-xs"></label>' +
                 '</div>' +
-                '<button type="button" data-remove="' + idx + '" class="text-red-400 hover:text-red-300 text-xs px-2">Quitar</button>' +
+                '<button type="button" data-remove="' + idx + '" class="text-red-400/60 hover:text-red-400 text-[11px] px-2 py-1 rounded hover:bg-red-500/10 transition-all">Quitar</button>' +
             '</div>';
         }).join('');
 
@@ -389,6 +584,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const newHeight = imgData.height || 150;
         const scaleX = newWidth / (fabricImg._originalWidth || fabricImg.width || 150);
         const scaleY = newHeight / (fabricImg._originalHeight || fabricImg.height || 150);
+        const newLayer = imgData.layer !== undefined ? imgData.layer : 0;
 
         fabricImg.set({
             left: imgData.x || 0,
@@ -397,6 +593,8 @@ document.addEventListener('DOMContentLoaded', function () {
             scaleX: scaleX,
             scaleY: scaleY,
         });
+        fabricImg._overlayLayer = newLayer;
+        fabricImg.moveTo(newLayer);
         fabricImg.setCoords();
         canvas.renderAll();
     }
@@ -420,6 +618,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const reader = new FileReader();
             reader.onload = function (e) {
                 fabric.Image.fromURL(e.target.result, function (fabricImg) {
+                    const originalSize = fabricImg.getOriginalSize();
+                    fabricImg._originalWidth = originalSize.x;
+                    fabricImg._originalHeight = originalSize.y;
                     const idx = overlayImages.length;
                     fabricImg.set({
                         left: 100 + (idx * 50),
@@ -435,12 +636,16 @@ document.addEventListener('DOMContentLoaded', function () {
                         path: null,
                         x: fabricImg.left,
                         y: fabricImg.top,
-                        width: fabricImg.width,
-                        height: fabricImg.height,
+                        width: originalSize.x,
+                        height: originalSize.y,
                         rotation: 0,
+                        layer: 0,
                         originalFilename: file.name,
                         _tempData: e.target.result,
                     });
+
+                    fabricImg._overlayIdx = idx;
+                    fabricImg._overlayLayer = 0;
 
                     overlayImagesJson.value = JSON.stringify(overlayImages);
                     renderOverlayList();
@@ -644,6 +849,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 fontSize: rect.fontSize || 28,
                 color: rect.textColor || '#ffffff',
                 zoneText: rect.zoneText || '',
+                layer: rect.zoneLayer || 0,
             };
         });
         zonesInput.value = JSON.stringify(zones);

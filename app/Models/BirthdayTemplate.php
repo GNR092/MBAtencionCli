@@ -16,6 +16,8 @@ class BirthdayTemplate extends Model
         'overlay_images',
         'default_message',
         'is_active',
+        'canvas_width',
+        'canvas_height',
     ];
 
     protected $casts = [

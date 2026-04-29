@@ -29,12 +29,16 @@ class BirthdayCampaignController extends Controller
             'remove_background' => 'nullable|boolean',
             'overlay_images' => 'nullable|array',
             'overlay_images.*' => 'image|max:4096',
+            'canvas_width' => 'nullable|integer|min:400|max:2000',
+            'canvas_height' => 'nullable|integer|min:300|max:1500',
         ]);
 
         $template = BirthdayTemplate::where('is_active', true)->latest()->first() ?? new BirthdayTemplate();
         $template->name = $data['name'];
         $template->default_message = $data['default_message'] ?? '';
         $template->zones_json = json_decode($data['zones_json'], true, 512, JSON_THROW_ON_ERROR);
+        $template->canvas_width = $data['canvas_width'] ?? 960;
+        $template->canvas_height = $data['canvas_height'] ?? 540;
 
         if ($request->boolean('remove_background') && $template->background_path) {
             Storage::disk('public')->delete($template->background_path);
