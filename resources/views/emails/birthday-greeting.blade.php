@@ -39,6 +39,12 @@
                     {{ str_replace('[NOMBRE]', $delivery->user->name, $template->default_message ?? '') }}
                 </div>
             @endif
+
+            @foreach($zones->filter(fn($z) => $z['type'] === 'text') as $tz)
+                <div style="position:absolute;left:{{ (int) ($tz['x'] ?? 40) }}px;top:{{ (int) ($tz['y'] ?? 180) }}px;font-size:{{ (int) ($tz['fontSize'] ?? 18) }}px;color:{{ $tz['color'] ?? '#ffffff' }};max-width:80%;line-height:1.45;white-space:pre-wrap;">
+                    {{ str_replace('[NOMBRE]', $delivery->user->name, $tz['zoneText'] ?? '') }}
+                </div>
+            @endforeach
         </div>
     </div>
 </body>
