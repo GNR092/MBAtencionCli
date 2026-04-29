@@ -5,13 +5,29 @@
     <div class="max-w-full mx-auto p-4 md:p-6">
 
         <header class="mb-10 px-2">
-            <div class="flex items-baseline gap-4">
-                <span class="text-dorado-400 text-sm font-serif italic">|</span>
-                <h1 class="page-title">
-                    Cumpleaños
-                </h1>
+            <div class="flex items-center justify-between">
+                <div class="flex items-baseline gap-4">
+                    <span class="text-dorado-400 text-sm font-serif italic">|</span>
+                    <h1 class="page-title">
+                        Cumpleaños
+                    </h1>
+                </div>
+                <button type="button" onclick="openPlantillaModal()" class="btn-dorado flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                    Plantilla de mensaje
+                </button>
             </div>
         </header>
+
+        <section class="mb-8 px-2">
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ route('cumpleanios.template') }}" class="btn-dorado">Editor de plantilla</a>
+                <a href="{{ route('cumpleanios.settings') }}" class="btn-dorado">Configuracion de envio</a>
+                <a href="{{ route('cumpleanios.deliveries') }}" class="btn-dorado">Monitoreo de envios</a>
+            </div>
+        </section>
 
         {{-- Este mes --}}
         <section class="mb-10 px-2">
@@ -145,6 +161,74 @@
         </div>
         @endif
 
+        <!-- Modal Plantilla de Mensaje -->
+        <div id="plantillaModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div class="bg-[#1a1a2e] border border-[#d8c495]/30 rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center justify-between p-5 border-b border-white/10">
+                    <h3 class="text-[#d8c495] font-bold text-lg">Plantilla de Mensaje de Cumpleaños</h3>
+                    <button type="button" onclick="closePlantillaModal()" class="text-white/50 hover:text-white text-2xl leading-none">&times;</button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div>
+                        <label class="block text-white/70 text-sm font-medium mb-2">Nombre del cumpleañero</label>
+                        <input type="text" id="nombreCumpleaniero" placeholder="Ingresa el nombre" class="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:border-[#d8c495]/50">
+                    </div>
+                    <div>
+                        <label class="block text-white/70 text-sm font-medium mb-2">Mensaje</label>
+                        <textarea id="mensajeCumpleanios" rows="8" class="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#d8c495]/50 resize-none">¡Feliz cumpleaños, [NOMBRE]! 🎂
+
+Te deseamos un día lleno de alegría, amor y bendiciones. Que este nuevo año de vida esté lleno de éxitos y momentos inolvidables.
+
+¡Disfruta tu día! 🎉</textarea>
+                    </div>
+                </div>
+                <div class="flex gap-3 p-5 border-t border-white/10">
+                    <button type="button" onclick="copiarPlantilla()" class="flex-1 bg-[#d8c495]/20 hover:bg-[#d8c495]/30 text-[#d8c495] border border-[#d8c495]/40 px-4 py-2.5 rounded-lg text-sm font-bold transition-colors">
+                        Copiar al portapapeles
+                    </button>
+                    <button type="button" onclick="closePlantillaModal()" class="flex-1 bg-white/5 hover:bg-white/10 text-white/70 border border-white/20 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function openPlantillaModal() {
+    document.getElementById('plantillaModal').classList.remove('hidden');
+    document.getElementById('plantillaModal').style.display = 'flex';
+}
+
+function closePlantillaModal() {
+    document.getElementById('plantillaModal').classList.add('hidden');
+    document.getElementById('plantillaModal').style.display = 'none';
+}
+
+function copiarPlantilla() {
+    const nombre = document.getElementById('nombreCumpleaniero').value.trim();
+    let mensaje = document.getElementById('mensajeCumpleanios').value;
+    
+    if (nombre) {
+        mensaje = mensaje.replace('[NOMBRE]', nombre);
+    }
+    
+    navigator.clipboard.writeText(mensaje).then(() => {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = '¡Copiado!';
+        btn.classList.add('bg-green-500/30', 'border-green-500/50', 'text-green-400');
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.classList.remove('bg-green-500/30', 'border-green-500/50', 'text-green-400');
+        }, 2000);
+    }).catch(err => {
+        console.error('Error al copiar:', err);
+    });
+}
+</script>
+@endpush
