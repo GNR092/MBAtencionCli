@@ -202,7 +202,7 @@ class DescripcionParser
             $nombreLower = $candidato['nombre_normalizado'];
             $palabrasProyecto = array_filter(
                 explode(' ', $nombreLower),
-                fn ($p) => mb_strlen($p) > 2 || in_array($p, ['i', 'ii', 'iii', 'iv', 'v', '1', '2', '3', '4', '5'], true)
+                fn ($p) => (mb_strlen($p) > 2 || in_array($p, ['i', 'ii', 'iii', 'iv', 'v'], true)) && ! is_numeric($p)
             );
 
             if (empty($palabrasProyecto)) {
@@ -211,25 +211,40 @@ class DescripcionParser
 
             $palabrasEncontradas = 0;
             foreach ($palabrasProyecto as $palabra) {
-                // Coincidencia exacta por token
+                $palabraLen = mb_strlen($palabra);
+                $encontre = false;
+
                 if (in_array($palabra, $palabrasDescripcion, true)) {
                     $palabrasEncontradas += 1.0;
-
-                    continue;
+                    $encontre = true;
                 }
 
-                // Busqueda parcial: palabra truncada contenida en la otra (min 4 chars)
-                foreach ($palabrasDescripcion as $palDesc) {
-                    if (mb_strlen($palDesc) >= 4 && (mb_strpos($palabra, $palDesc) !== false || mb_strpos($palDesc, $palabra) !== false)) {
-                        $palabrasEncontradas += 0.3;
-                        break;
+                if (! $encontre) {
+                    foreach ($palabrasDescripcion as $palDesc) {
+                        $palDescLen = mb_strlen($palDesc);
+                        $minLen = min($palabraLen, $palDescLen);
+                        $maxLen = max($palabraLen, $palDescLen);
+
+                        if ($minLen >= 4 || ($palabraLen >= 4 && $palDescLen >= 3)) {
+                            $isSubstring = mb_strpos($palabra, $palDesc) !== false || mb_strpos($palDesc, $palabra) !== false;
+                            $isPrefix = mb_strpos($palabra, $palDesc) === 0 || mb_strpos($palDesc, $palabra) === 0;
+
+                            if ($isSubstring || $isPrefix) {
+                                $ratio = $minLen / $maxLen;
+                                $score = ($isPrefix || $ratio >= 0.8) ? 0.7 : ($ratio >= 0.6 ? 0.5 : 0.3);
+                                $palabrasEncontradas += $score;
+                                $encontre = true;
+
+                                break;
+                            }
+                        }
                     }
                 }
             }
 
             $puntaje = $palabrasEncontradas / count($palabrasProyecto);
 
-            if ($puntaje > $mejorPuntaje && $puntaje >= 0.8) {
+            if ($puntaje > $mejorPuntaje && $puntaje >= 0.35) {
                 $mejorPuntaje = $puntaje;
                 $mejorCoincidencia = is_array($candidato['raw']) ? $candidato['raw'] : $candidato['raw']->toArray();
             }

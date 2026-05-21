@@ -224,6 +224,14 @@ class UserFactController extends Controller
         $parsedProjectName = $parsedProjectInfo['nombre_proyecto'] ?? 'No detectado';
         $selectedProjectId = $currentFacturaData['select_project'];
 
+        Log::info("showInvoice project debug", [
+            'parsedProjectId' => $parsedProjectId,
+            'parsedProjectName' => $parsedProjectName,
+            'selectedProjectId' => $selectedProjectId,
+            'match' => $parsedProjectId && (int) $parsedProjectId === (int) $selectedProjectId,
+            'firstConceptDesc' => substr($factura['conceptos'][0]['descripcion'] ?? 'N/A', 0, 100),
+        ]);
+
         if ($parsedProjectId && (int) $parsedProjectId !== (int) $selectedProjectId) {
             $canAutoAssign = $this->canAssignProjectToUser($user->id, (int) $parsedProjectId);
             if ($canAutoAssign) {
