@@ -516,14 +516,21 @@ class UserFactController extends Controller
         if (empty($departamentosNormalizados)) {
             $errors[] = 'No se detectó un departamento válido en la descripción de la factura.';
         } else {
-            $deptoContrato = $this->normalizarDepartamento((string) ($contractDepto->nombre ?? ''));
+            $userDeptos = DB::table('user_depto')
+                ->where('id_user_p', (int) $userProyecto->id_user_p)
+                ->get(['id_user_depto', 'nombre', 'predial']);
+            $userDeptosNormalizados = $userDeptos
+                ->mapWithKeys(fn ($ud) => [$this->normalizarDepartamento((string) $ud->nombre) => $ud])
+                ->filter()
+                ->all();
+
             $invalidDeptos = collect($departamentosNormalizados)
-                ->filter(fn ($depto) => $depto !== $deptoContrato)
+                ->filter(fn ($depto) => ! isset($userDeptosNormalizados[$depto]))
                 ->values()
                 ->all();
 
             if (! empty($invalidDeptos)) {
-                $errors[] = 'El departamento de la factura no coincide con el contrato asignado ('.$contractDepto->nombre.').';
+                $errors[] = 'Los departamentos '.implode(', ', $invalidDeptos).' de la factura no están asignados al usuario en este proyecto.';
             }
         }
 
@@ -575,6 +582,7 @@ class UserFactController extends Controller
             DB::transaction(function () use (
                 $factura,
                 $user,
+                $userProyecto,
                 $selectedProjectId,
                 $tmpFilePath,
                 $newFilePath,
@@ -659,11 +667,32 @@ class UserFactController extends Controller
 
                 if (! empty($periodosConceptos)) {
                     DB::table('cuentasporpagar')
-                        ->where('id_contract', $contract->id)
+                        ->whereIn('id_contract', function ($q) use ($userProyecto) {
+                            $q->select('id')
+                                ->from('contract')
+                                ->where('id_user_p', (int) $userProyecto->id_user_p)
+                                ->where('estado', 'activo');
+                        })
                         ->whereIn('mes_pago', $periodosConceptos)
                         ->whereNull('uuid')
                         ->delete();
                 }
+
+                $userDeptosByDepto = DB::table('user_depto')
+                    ->where('id_user_p', (int) $userProyecto->id_user_p)
+                    ->get(['id_user_depto', 'nombre'])
+                    ->mapWithKeys(fn ($ud) => [$this->normalizarDepartamento((string) $ud->nombre) => $ud])
+                    ->all();
+
+                $contractsByDepto = DB::table('contract')
+                    ->where('id_user_p', (int) $userProyecto->id_user_p)
+                    ->where('estado', 'activo')
+                    ->whereNotNull('id_user_depto')
+                    ->get(['id', 'id_user_depto', 'importe_bruto_renta'])
+                    ->mapWithKeys(fn ($c) => [(int) $c->id_user_depto => $c])
+                    ->all();
+
+                $deptoPrincipalId = (int) $contractDepto->id_user_depto;
 
                 foreach ($factura['conceptos'] as $conceptIndex => $concepto) {
                     $periodo = $concepto['periodo'] ?? null;
@@ -671,12 +700,26 @@ class UserFactController extends Controller
                         continue;
                     }
 
+                    $deptoNombre = $concepto['departamento'] ?? null;
+                    $deptoNormalizado = $this->normalizarDepartamento((string) $deptoNombre);
+
+                    $deptoId = $deptoPrincipalId;
+                    $contractId = $contract->id;
+
+                    if ($deptoNormalizado && isset($userDeptosByDepto[$deptoNormalizado])) {
+                        $resolvedDeptoId = (int) $userDeptosByDepto[$deptoNormalizado]->id_user_depto;
+                        if (isset($contractsByDepto[$resolvedDeptoId])) {
+                            $deptoId = $resolvedDeptoId;
+                            $contractId = (int) $contractsByDepto[$resolvedDeptoId]->id;
+                        }
+                    }
+
                     $esRetroactivo = $periodo !== $currentPeriod;
 
                     $importeConcepto = (float) ($concepto['importe'] ?? 0);
                     if ($importeConcepto <= 0) {
                         $importeIncremento = DB::table('incrementos_importe')
-                            ->where('id_contract', $contract->id)
+                            ->where('id_contract', $contractId)
                             ->whereDate('fecha_inicio', '<=', $periodo.'-01')
                             ->where(function ($q) use ($periodo) {
                                 $q->whereNull('fecha_fin')
@@ -684,7 +727,8 @@ class UserFactController extends Controller
                             })
                             ->value('importe_base');
 
-                        $importeConcepto = (float) ($importeIncremento ?? $contract->importe_bruto_renta);
+                        $importeBruto = (float) ($contractsByDepto[$deptoId]->importe_bruto_renta ?? $contract->importe_bruto_renta);
+                        $importeConcepto = (float) ($importeIncremento ?? $importeBruto);
                     }
 
                     $totalImpuestos = 0;
@@ -698,8 +742,8 @@ class UserFactController extends Controller
                     $totalNeto = max(0, round($importeConcepto - abs($totalImpuestos), 2));
 
                     DB::table('cuentasporpagar')->insert([
-                        'id_contract' => $contract->id,
-                        'id_user_depto' => $contractDepto->id_user_depto,
+                        'id_contract' => $contractId,
+                        'id_user_depto' => $deptoId,
                         'origen' => 'xml',
                         'uuid' => $uuid,
                         'mes_pago' => $periodo,

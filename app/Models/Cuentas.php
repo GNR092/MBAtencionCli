@@ -63,16 +63,24 @@ class Cuentas extends Model
             return $this->importeBase;
         }
 
+        $driver = \DB::connection()->getDriverName();
+        $fechaInicioExpr = $driver === 'pgsql'
+            ? "TO_CHAR(fecha_inicio, 'YYYY-MM')"
+            : "DATE_FORMAT(fecha_inicio, '%Y-%m')";
+        $fechaFinExpr = $driver === 'pgsql'
+            ? "TO_CHAR(fecha_fin, 'YYYY-MM')"
+            : "DATE_FORMAT(fecha_fin, '%Y-%m')";
+
         $incremento = \DB::table('incrementos_importe')
             ->where('id_contract', $this->id_contract)
-            ->whereRaw("DATE_FORMAT(fecha_inicio, '%Y-%m') <= ?", [$mes])
-            ->where(function ($q) use ($mes) {
+            ->whereRaw("{$fechaInicioExpr} <= ?", [$mes])
+            ->where(function ($q) use ($mes, $fechaFinExpr) {
                 $q->whereNull('fecha_fin')
-                    ->orWhereRaw("DATE_FORMAT(fecha_fin, '%Y-%m') >= ?", [$mes]);
+                    ->orWhereRaw("{$fechaFinExpr} >= ?", [$mes]);
             })
             ->orderByDesc('fecha_inicio')
             ->value('importe_base');
 
-        return $incremento ?? $this->importeBase;
+        return floatval($incremento ?? $this->importeBase ?? 0);
     }
 }

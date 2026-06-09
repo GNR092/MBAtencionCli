@@ -157,6 +157,7 @@ Route::middleware([AuthUser::class.':administrador'])->group(function () {
     Route::get('/facturas', [UploadFactura::class, 'index'])->name('facturas.index');
     Route::get('/facturas/descargar/{id}', [UploadFactura::class, 'descargar'])->name('facturas.descargar');
     Route::get('/facturas/pdf/{id}', [UploadFactura::class, 'descargarPdf'])->name('facturas.descargarPdf');
+    Route::get('/facturas/ver-pdf/{id}', [UploadFactura::class, 'verPdf'])->name('facturas.verPdf');
     Route::post('/facturas/buscar', [UploadFactura::class, 'buscar'])->name('facturas.buscar');
     Route::get('/facturas/limpiar', [UploadFactura::class, 'limpiar'])->name('facturas.limpiar');
 

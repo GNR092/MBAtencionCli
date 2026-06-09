@@ -83,7 +83,7 @@ class XmlFile extends Model
         if (str_starts_with($pdfPath, 'pdf_files/')) {
             $fullPath = storage_path('app/public/'.$pdfPath);
         } elseif (str_starts_with($pdfPath, 'facturas/')) {
-            $fullPath = storage_path('app/'.$pdfPath);
+            $fullPath = storage_path('app/private/'.$pdfPath);
         } else {
             $fullPath = storage_path('app/public/pdf_files/'.$pdfPath);
         }

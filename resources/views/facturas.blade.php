@@ -59,10 +59,16 @@
                         </td>
                         <td>
                             @if($file->pdf_exists)
-                            <a href="{{ route('facturas.descargarPdf', $file->id) }}"
-                                class="inline-block bg-white/10 text-[#d8c495] px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-white/20 transition shadow-sm border border-[#d8c495]/30">
-                                Descargar PDF
-                            </a>
+                            <div class="flex gap-2">
+                                <a href="{{ route('facturas.verPdf', $file->id) }}" target="_blank" rel="noopener"
+                                    class="inline-block bg-[#d8c495] text-[#0d1f30] px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#c9a143] transition shadow-sm">
+                                    Ver
+                                </a>
+                                <a href="{{ route('facturas.descargarPdf', $file->id) }}"
+                                    class="inline-block bg-white/10 text-[#d8c495] px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-white/20 transition shadow-sm border border-[#d8c495]/30">
+                                    Descargar
+                                </a>
+                            </div>
                             @else
                             <span class="text-white/30 italic text-xs">Sin PDF</span>
                             @endif
