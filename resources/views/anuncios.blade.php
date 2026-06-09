@@ -248,7 +248,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-function editAnuncio(anuncio) {
+function editAnuncio(anuncioJson) {
+    const anuncio = JSON.parse(anuncioJson);
     document.getElementById('formEditar').action = `/anuncios-admin/${anuncio.id}`;
     document.getElementById('edit_titulo').value = anuncio.titulo;
     document.getElementById('edit_descripcion').value = anuncio.descripcion || '';
