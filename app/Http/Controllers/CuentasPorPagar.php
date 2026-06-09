@@ -445,7 +445,14 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 DB::raw("{$tiposUsuarioSql} as tipos_usuario"),
                 DB::raw("COALESCE(NULLIF(user_proyectos.metodo_pago, ''), users.metodo_pago) as metodo_pago"),
                 DB::raw("{$mesSubidaSql} as mes_subida"),
-            );
+            )
+            ->selectSub(function ($subQuery) {
+                $subQuery->from('impuesto as i')
+                    ->select('i.importeBase')
+                    ->whereColumn('i.xml_file_id', 'cuentasporpagar.xml_file_id')
+                    ->orderByDesc('i.importeBase')
+                    ->limit(1);
+            }, 'importeBaseXML');
 
         $this->aplicarExclusionCancelados($query);
         $selectedMonth = $request->month ?? now()->format('Y-m');
@@ -469,7 +476,13 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
                 'estado' => 'cuentasporpagar.estado',
             ];
             if (array_key_exists($request->categoria, $columnas)) {
-                $q->where($columnas[$request->categoria], 'LIKE', '%'.$request->search.'%');
+                $columna = $columnas[$request->categoria];
+                $valor = '%'.$request->search.'%';
+                if ($columna === 'users.name') {
+                    $q->whereRaw('LOWER(users.name) LIKE LOWER(?)', [$valor]);
+                } else {
+                    $q->where($columna, 'LIKE', $valor);
+                }
             }
         });
 
@@ -477,6 +490,44 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
         $totalPagado = (clone $query)->sum('cuentasporpagar.monto_pagado');
 
         $cuentasRaw = $query->orderBy('users.name')->orderBy('cuentasporpagar.id_cuentas_por_pagar')->get();
+
+        foreach ($cuentasRaw as $cuenta) {
+            $mesData = null;
+            if (! empty($cuenta->mesesdepago)) {
+                $decoded = json_decode($cuenta->mesesdepago, true);
+                if (is_array($decoded) && isset($decoded['mes'])) {
+                    $mesData = $decoded['mes'];
+                } elseif (is_string($decoded)) {
+                    $mesData = $decoded;
+                }
+            }
+
+            $incremento = null;
+            if ($mesData) {
+                try {
+                    $mesDate = Carbon::createFromFormat('Y-m', $mesData)->startOfMonth();
+                    $incremento = DB::table('incrementos_importe')
+                        ->where('id_contract', $cuenta->id_contract)
+                        ->where(function ($q) use ($mesDate) {
+                            $q->whereDate('fecha_inicio', '<=', $mesDate->copy()->endOfMonth());
+                        })
+                        ->where(function ($q) use ($mesDate) {
+                            $q->whereNull('fecha_fin')
+                                ->orWhereDate('fecha_fin', '>=', $mesDate->copy()->startOfMonth());
+                        })
+                        ->orderByDesc('fecha_inicio')
+                        ->first();
+                } catch (\Exception $e) {
+                    // fecha invalida en mesesdepago, se omite incremento
+                }
+            }
+
+            $cuenta->importe_base_final = floatval(
+                $cuenta->importeBaseXML
+                    ?? ($incremento->importe_base ?? null)
+                    ?? $cuenta->importeBase
+            );
+        }
 
         $grupos = $cuentasRaw->groupBy('name')->map(function ($grupo, $nombre) {
             return [
@@ -814,7 +865,7 @@ inicialmente, aunque no haya XML / factura cargada aún.*/
 
             switch ($categoria) {
                 case 'name':
-                    $query->where('users.name', 'LIKE', "%{$search}%");
+                    $query->whereRaw('LOWER(users.name) LIKE LOWER(?)', ["%{$search}%"]);
                     break;
                 case 'estado':
                     $query->where('cuentasporpagar.estado', 'LIKE', "%{$search}%");

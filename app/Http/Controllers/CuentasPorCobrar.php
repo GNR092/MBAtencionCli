@@ -68,7 +68,7 @@ class CuentasPorCobrar extends Controller
                     $query->where('cuentasporpagar.mesesdepago', 'LIKE', "%{$search}%");
                     break;
                 case 'name':
-                    $query->where('users.name', 'LIKE', "%{$search}%");
+                    $query->whereRaw('LOWER(users.name) LIKE LOWER(?)', ["%{$search}%"]);
                     break;
             }
         }
@@ -98,7 +98,7 @@ class CuentasPorCobrar extends Controller
 
                 $exists = DB::table('cuentasporpagar')
                     ->where('id_contract', $contract->id)
-                    ->whereRaw("JSON_EXTRACT(mesesdepago, '$.mes') = ?", [$mes])
+                    ->whereRaw("mesesdepago->>'mes' = ?", [$mes])
                     ->exists();
 
                 if (! $exists) {
@@ -413,7 +413,7 @@ class CuentasPorCobrar extends Controller
                 'cuentasporpagar.*',
                 'users.name as name',
                 'contract.importe_bruto_renta as importeBase',
-                DB::raw('COALESCE(proyectos.nombre_proyecto, "Sin proyecto") as proyecto'),
+                DB::raw("COALESCE(proyectos.nombre_proyecto, 'Sin proyecto') as proyecto"),
             )
             ->where('users.id', $user->id)
             ->where('cuentasporpagar.estado', '!=', 'pagado')

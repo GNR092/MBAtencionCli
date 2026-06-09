@@ -47,7 +47,13 @@ class RetroactivoController extends Controller
                 'estado' => 'cuentasporpagar.estado',
             ];
             if (array_key_exists($request->categoria, $columnas)) {
-                $q->where($columnas[$request->categoria], 'LIKE', '%'.$request->search.'%');
+                $columna = $columnas[$request->categoria];
+                $valor = '%'.$request->search.'%';
+                if ($columna === 'users.name') {
+                    $q->whereRaw('LOWER(users.name) LIKE LOWER(?)', [$valor]);
+                } else {
+                    $q->where($columna, 'LIKE', $valor);
+                }
             }
         });
 
@@ -181,7 +187,13 @@ class RetroactivoController extends Controller
                 'eliminado_por' => 'retroactivos_eliminados.eliminado_por',
             ];
             if (array_key_exists($request->categoria, $columnas)) {
-                $q->where($columnas[$request->categoria], 'LIKE', '%'.$request->search.'%');
+                $columna = $columnas[$request->categoria];
+                $valor = '%'.$request->search.'%';
+                if ($columna === 'users.name') {
+                    $q->whereRaw('LOWER(users.name) LIKE LOWER(?)', [$valor]);
+                } else {
+                    $q->where($columna, 'LIKE', $valor);
+                }
             }
         });
 
