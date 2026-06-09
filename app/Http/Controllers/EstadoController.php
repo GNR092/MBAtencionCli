@@ -50,10 +50,14 @@ class EstadoController extends Controller
                     $query->where('cuentasporpagar.mes_pago', 'LIKE', "%{$search}%");
                     break;
                 case 'id':
-                    $query->where('cuentasporpagar.id_cuentas_por_pagar', 'LIKE', "%{$search}%");
+                    if (ctype_digit((string) $search)) {
+                        $query->where('cuentasporpagar.id_cuentas_por_pagar', 'LIKE', "%{$search}%");
+                    } else {
+                        $query->whereRaw('1 = 0');
+                    }
                     break;
                 case 'estado':
-                    $query->where('cuentasporpagar.estado', 'LIKE', "%{$search}%");
+                    $query->whereRaw('LOWER(cuentasporpagar.estado) LIKE LOWER(?)', ["%{$search}%"]);
                     break;
             }
         }
@@ -96,7 +100,7 @@ class EstadoController extends Controller
     private function aplicarFiltros(&$query, Request $request)
     {
         if ($request->filled('mes')) {
-            $query->whereDate('cuentasporpagar.mesesdepago', $request->input('mes'));
+            $query->where('cuentasporpagar.mes_pago', $request->input('mes'));
         }
 
         if ($request->filled('id_cuentas_por_pagar')) {
@@ -104,7 +108,7 @@ class EstadoController extends Controller
         }
 
         if ($request->filled('name')) {
-            $query->where('users.name', 'LIKE', '%'.$request->input('name').'%');
+            $query->whereRaw('LOWER(users.name) LIKE LOWER(?)', ['%'.$request->input('name').'%']);
         }
 
         if ($request->filled('isr')) {
@@ -129,13 +133,17 @@ class EstadoController extends Controller
 
             switch ($categoria) {
                 case 'id':
-                    $query->where('cuentasporpagar.id_cuentas_por_pagar', 'LIKE', "%{$search}%");
+                    if (ctype_digit((string) $search)) {
+                        $query->where('cuentasporpagar.id_cuentas_por_pagar', 'LIKE', "%{$search}%");
+                    } else {
+                        $query->whereRaw('1 = 0');
+                    }
                     break;
                 case 'estado':
-                    $query->where('cuentasporpagar.estado', 'LIKE', "%{$search}%");
+                    $query->whereRaw('LOWER(cuentasporpagar.estado) LIKE LOWER(?)', ["%{$search}%"]);
                     break;
                 case 'mes':
-                    $query->where('cuentasporpagar.mesesdepago', 'LIKE', "%{$search}%");
+                    $query->where('cuentasporpagar.mes_pago', 'LIKE', "%{$search}%");
                     break;
             }
         }

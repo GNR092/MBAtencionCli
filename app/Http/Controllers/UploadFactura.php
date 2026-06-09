@@ -48,20 +48,24 @@ class UploadFactura extends Controller
         if ($search && $categoria) {
             switch ($categoria) {
                 case 'id':
-                    $query->where('batch_id', $search);
+                    if (ctype_digit((string) $search)) {
+                        $query->where('batch_id', $search);
+                    } else {
+                        $query->whereRaw('1 = 0');
+                    }
                     break;
                 case 'inversionista':
                     $query->whereHas('user', function ($q) use ($search) {
-                        $q->where('name', 'LIKE', '%'.$search.'%');
+                        $q->whereRaw('LOWER(name) LIKE LOWER(?)', ['%'.$search.'%']);
                     });
                     break;
                 case 'fecha':
-                    $query->whereDate('created_at', $search);
                     if ($search != Carbon::parse($search)->format('Y-m-d')) {
                         session()->forget(['search', 'categoria']);
 
                         return redirect()->back()->withErrors(['search' => 'La fecha no es válida.']);
                     }
+                    $query->whereDate('created_at', $search);
                     break;
             }
         }
@@ -152,9 +156,9 @@ class UploadFactura extends Controller
         if (str_starts_with($pdfPath, 'pdf_files/')) {
             $fullPath = storage_path('app/public/'.$pdfPath);
         }
-        // PDFs guardados desde UserFactController (local disk)
+        // PDFs guardados desde UserFactController (local disk en Laravel 11+ usa private/)
         elseif (str_starts_with($pdfPath, 'facturas/')) {
-            $fullPath = storage_path('app/'.$pdfPath);
+            $fullPath = storage_path('app/private/'.$pdfPath);
         }
         // Fallback: solo nombre de archivo
         else {
@@ -180,5 +184,67 @@ class UploadFactura extends Controller
         }
 
         return response()->download($fullPath, basename($fullPath));
+    }
+
+    /**
+     * Visualizar el PDF en el navegador (en lugar de forzar descarga)
+     */
+    public function verPdf($id)
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return redirect('/login');
+        }
+
+        $xmlFile = XmlFile::find($id);
+
+        if (! $xmlFile) {
+            return back()->with('error', 'Registro no encontrado. ID: '.$id);
+        }
+
+        if (! $xmlFile->pdf_path && ! $xmlFile->pdf_uploaded) {
+            return back()->with('error', 'Este XML no tiene un PDF asociado.');
+        }
+
+        $fullPath = $this->resolvePdfPath($xmlFile->pdf_path);
+
+        if (! $fullPath) {
+            \Log::error('PDF no encontrado: pdf_path en BD: '.$xmlFile->pdf_path);
+
+            return back()->with('error', 'El archivo PDF físico no existe. Ruta: '.$xmlFile->pdf_path);
+        }
+
+        return response()->file($fullPath, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.basename($fullPath).'"',
+        ]);
+    }
+
+    /**
+     * Resuelve la ruta fisica de un PDF segun su prefijo en BD.
+     * Retorna null si no existe.
+     */
+    private function resolvePdfPath(string $pdfPath): ?string
+    {
+        if (str_starts_with($pdfPath, 'pdf_files/')) {
+            $fullPath = storage_path('app/public/'.$pdfPath);
+        } elseif (str_starts_with($pdfPath, 'facturas/')) {
+            $fullPath = storage_path('app/private/'.$pdfPath);
+        } else {
+            $fullPath = storage_path('app/public/pdf_files/'.$pdfPath);
+        }
+
+        if (file_exists($fullPath)) {
+            return $fullPath;
+        }
+
+        $filename = basename($pdfPath);
+        $projectFacturasPath = base_path('Facturas');
+        $foundFiles = glob($projectFacturasPath.'/**/'.$filename, GLOB_BRACE);
+        if (! empty($foundFiles)) {
+            return $foundFiles[0];
+        }
+
+        return null;
     }
 }

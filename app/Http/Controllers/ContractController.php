@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Contract;
 use App\Models\User;
 use App\Models\UserDepto;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -38,12 +39,27 @@ class ContractController extends Controller
         if ($search && $categoria) {
             switch ($categoria) {
                 case 'id':
-                    $query->where('id', $search);
+                    if (ctype_digit((string) $search)) {
+                        $query->where('id', $search);
+                    } else {
+                        $query->whereRaw('1 = 0');
+                    }
                     break;
                 case 'folio':
                     $query->where('folio', $search);
                     break;
                 case 'fecha':
+                    try {
+                        if ($search != Carbon::parse($search)->format('Y-m-d')) {
+                            session()->forget(['search', 'categoria']);
+
+                            return redirect()->back()->withErrors(['search' => 'La fecha no es válida.']);
+                        }
+                    } catch (\Carbon\Exceptions\InvalidFormatException $e) {
+                        session()->forget(['search', 'categoria']);
+
+                        return redirect()->back()->withErrors(['search' => 'La fecha no es válida.']);
+                    }
                     $query->whereDate('fecha', $search);
                     break;
             }
@@ -487,10 +503,14 @@ class ContractController extends Controller
         if ($search && $categoria) {
             switch ($categoria) {
                 case 'id':
-                    $query->where('contract.id', $search);
+                    if (ctype_digit((string) $search)) {
+                        $query->where('contract.id', $search);
+                    } else {
+                        $query->whereRaw('1 = 0');
+                    }
                     break;
                 case 'name':
-                    $query->where('users.name', 'like', "%{$search}%");
+                    $query->whereRaw('LOWER(users.name) LIKE LOWER(?)', ["%{$search}%"]);
                     break;
             }
         }
